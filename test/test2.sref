@@ -1,0 +1,26 @@
+//FROM Library
+$EXTERN WriteLine, Arg;
+
+Fab {
+  'A' e.X = 'B' <Fab e.X>;
+  'a' e.X = 'b' <Fab e.X>;
+  '$'     = /* пусто */;
+  s.X e.Y = s.X <Fab e.Y>;
+}
+
+Run1 { = <Fab 'Abracadabra$'>; }
+
+Run2 { = <Run1> <Run1> <Run1> <Run1> <Run1>
+         <Run1> <Run1> <Run1> <Run1> <Run1>; }
+Run3 { = <Run2> <Run2> <Run2> <Run2> <Run2>
+         <Run2> <Run2> <Run2> <Run2> <Run2>; }
+Run4 { = <Run3> <Run3> <Run3> <Run3> <Run3>
+         <Run3> <Run3> <Run3> <Run3> <Run3>; }
+Run5 { = <Run4> <Run4> <Run4> <Run4> <Run4>
+         <Run4> <Run4> <Run4> <Run4> <Run4>; }
+Run6 { = <Run5> <Run5> <Run5> <Run5> <Run5>
+         <Run5> <Run5> <Run5> <Run5> <Run5>; }
+
+$ENTRY Go {
+  = <Run6> <WriteLine 'Test ' <Arg 1>>;
+}
