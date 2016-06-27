@@ -1,0 +1,101 @@
+$FORWARD MQualifiedNameP_CheckSegment;
+MQualifiedNameP_CheckSegments {
+  =
+    ;
+  (e.Segment )e.Tail =
+    (<MQualifiedNameP_CheckSegment e.Segment >)<MQualifiedNameP_CheckSegments e.Tail >;
+}
+
+$EXTERN MSelfDiagP_FailDown;
+MQualifiedNameP_CheckSegment {
+  =
+    <MSelfDiagP_FailDown 'Segment can\'t be empty' >;
+  e.Segment =
+    e.Segment ;
+}
+
+MQualifiedNameP_CreateTextual {
+  (e.Parser )(e.OneSegment )=
+    e.OneSegment ;
+  (e.Parser )(e.NextSegment )e.Tail =
+    e.NextSegment e.Parser <MQualifiedNameP_CreateTextual (e.Parser )e.Tail >;
+}
+
+$ENUM MQualifiedNameP_QName;
+$ENTRY MQualifiedNameP_Create {
+  e.Segments =
+    [MQualifiedNameP_QName <MQualifiedNameP_CheckSegments e.Segments >];
+}
+
+$ENTRY MQualifiedNameP_Destroy {
+  [MQualifiedNameP_QName e.Segments ]=
+    ;
+}
+
+$EXTERN MSelfDiagP_AssertD_NE;
+$ENTRY MQualifiedNameP_AddSubName {
+  [MQualifiedNameP_QName e.Qualifiers ]e.SubName =
+    <MSelfDiagP_AssertD_NE (e.SubName )()'SubName must be not empty' >[MQualifiedNameP_QName e.Qualifiers (<MQualifiedNameP_CheckSegment e.SubName >)];
+}
+
+$ENTRY MQualifiedNameP_AddSuperName {
+  [MQualifiedNameP_QName e.Qualifiers ]e.SuperName =
+    <MSelfDiagP_AssertD_NE (e.SuperName )()'SuperName must be not empty' >[MQualifiedNameP_QName (<MQualifiedNameP_CheckSegment e.SuperName >)e.Qualifiers ];
+}
+
+$ENTRY MQualifiedNameP_Append {
+  [MQualifiedNameP_QName e.AcceptorSegments ][MQualifiedNameP_QName e.ForAppendSegments ]=
+    [MQualifiedNameP_QName e.AcceptorSegments e.ForAppendSegments ];
+}
+
+$ENTRY MQualifiedNameP_Parse {
+  [MQualifiedNameP_QName e.Qualifiers ]=
+    e.Qualifiers ;
+}
+
+$ENTRY MQualifiedNameP_ParseD_T {
+  [MQualifiedNameP_QName e.Qualifiers ]=
+    [MQualifiedNameP_QName e.Qualifiers ]e.Qualifiers ;
+}
+
+$LABEL Relative;
+$ENTRY MQualifiedNameP_ToRelativeFSPathD_Pt {
+  [MQualifiedNameP_QName e.Segments ]=
+    (#Relative )e.Segments ;
+}
+
+$ENTRY MQualifiedNameP_ToRelativeFSPathD_Str {
+  [MQualifiedNameP_QName e.Segments ]=
+    <MQualifiedNameP_CreateTextual ('/' )e.Segments >;
+}
+
+$ENTRY MQualifiedNameP_ToPrintableD_Dot {
+  [MQualifiedNameP_QName e.Segments ]=
+    <MQualifiedNameP_CreateTextual ('.' )e.Segments >;
+}
+
+$ENTRY MQualifiedNameP_ToPrintableD_Quad {
+  [MQualifiedNameP_QName e.Segments ]=
+    <MQualifiedNameP_CreateTextual ('::' )e.Segments >;
+}
+
+$LABEL True;
+$LABEL False;
+$ENTRY MQualifiedNameP_EqualsD_T {
+  [MQualifiedNameP_QName e.Segments ][MQualifiedNameP_QName e.Segments ]=
+    #True [MQualifiedNameP_QName e.Segments ][MQualifiedNameP_QName e.Segments ];
+  t.QName1 t.QName2 =
+    #False t.QName1 t.QName2 ;
+}
+
+MQualifiedNameP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MQualifiedNameP_EntryPointE_ {
+  =
+    <RegisterE_ MQualifiedNameP_FinalizeE_ >;
+}
+

@@ -5,6 +5,14 @@ if "%~1"=="" (
   exit
 )
 
+if "%~2"=="" (
+  set REP=7
+) else (
+  set REP=%~2
+)
+
+if exist report.txt erase report.txt
+
 set OPT=NOOPT
 set OPTFLAG=
 call :PERFORM_ALL
@@ -13,7 +21,7 @@ set OPT=OPT
 set OPTFLAG=-X%~1
 call :PERFORM_ALL
 
-erase *.obj *.o temp.cmd
+erase *.obj *.o temp.cmd 2>NUL
 
 goto :EOF
 
@@ -97,8 +105,8 @@ setlocal
       popd
       goto :EOF
     )
-    erase %TEXE%.runout.txt %TEXE%.profile.txt >NUL
-    for /L %%M in (1, 1, 2) do (
+    erase %TEXE%.runout.txt %TEXE%.profile.txt 2>NUL
+    for /L %%M in (1, 1, %REP%) do (
       %TEXE% %TESTFLAGS% >>%TEXE%.runout.txt 2>>%TEXE%.profile.txt
       if errorlevel 1 (
         echo   failed run %TESTNAME%
@@ -118,9 +126,11 @@ setlocal
   )
 
   if {%OPT%}=={OPT} (
-    echo Analysis here: compare %TEXE%.profile.txt and %TEXE_NOOPT%.profile.txt
+    call gawk.bat -f mean.awk ^
+      %TESTDIR%/%TEXE%.profile.txt %TESTDIR%/%TEXE_NOOPT%.profile.txt ^
+      >> report.txt
   )
 
-  erase *.obj *.tds *.o %CCEXE% temp.cmd
+  erase *.obj *.tds *.o %CCEXE% temp.cmd 2>NUL
 endlocal
 goto :EOF

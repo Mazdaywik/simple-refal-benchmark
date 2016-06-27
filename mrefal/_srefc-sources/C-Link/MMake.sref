@@ -1,0 +1,237 @@
+$LABEL Compiler;
+$LABEL ProgName;
+$LABEL Prologue;
+$LABEL Epilogue;
+$LABEL Include;
+$LABEL Define;
+$LABEL OutputD_Exe;
+$LABEL OutputD_Obj;
+$LABEL Option;
+$FORWARD CD_LinkP_MMakeP_CD_LinkD_Aux;
+$LABEL CompilerInfo;
+$LABEL StartCompilerCmdLine;
+$LABEL OutputObjectOption;
+$LABEL CompileOnlyOption;
+$LABEL MakeInfo;
+$LABEL ObjectExtension;
+$LABEL Makefile;
+$LABEL MakePrg;
+$LABEL ObjectDirectory;
+CD_LinkP_MMakeP_ProfilingD_CD_Link {
+  (#Compiler (#ProgName e.ProgName )(#Prologue e.Prologue )(#Epilogue e.Epilogue ))(#Include e.IncludeInfo )(#Define e.DefineInfo )(#OutputD_Exe e.OutputInfo )(#OutputD_Obj (#Option e.OutputObject )(#Option e.Extension )(#Option e.CompileOnly )(#Option e.Makefile )(#Option e.MakePrg )(#Option e.ObjectDirectory ))e.FileNames =
+    <CD_LinkP_MMakeP_CD_LinkD_Aux (#CompilerInfo (#StartCompilerCmdLine e.ProgName ' ' e.Prologue ' ' )(#Epilogue e.Epilogue )(#Include e.IncludeInfo )(#Define e.DefineInfo )(#OutputD_Exe e.OutputInfo )(#OutputObjectOption e.OutputObject )(#CompileOnlyOption e.CompileOnly ))(#MakeInfo (#ObjectExtension e.Extension )(#Makefile e.Makefile )(#MakePrg e.MakePrg )(#ObjectDirectory e.ObjectDirectory ))e.FileNames >;
+}
+
+$FORWARD CD_LinkP_MMakeP_CD_LinkD_PerformDeleteAndCompile;
+$FORWARD CD_LinkP_MMakeP_CreateSourceObjectMap;
+$FORWARD CD_LinkP_MMakeP_LoadOldMapInfo;
+CD_LinkP_MMakeP_CD_LinkD_Aux {
+  t.CompilerInfo t.MakeInfo e.FileNames =
+    <CD_LinkP_MMakeP_CD_LinkD_PerformDeleteAndCompile t.MakeInfo <CD_LinkP_MMakeP_CreateSourceObjectMap t.CompilerInfo t.MakeInfo (<CD_LinkP_MMakeP_LoadOldMapInfo t.MakeInfo >)e.FileNames >>;
+}
+
+$FORWARD CD_LinkP_MMakeP_LoadOldMapInfoD_SwExist;
+$EXTERN MFileSystemP_ExistFileD_T;
+$FORWARD CD_LinkP_MMakeP_GetMakefileName;
+CD_LinkP_MMakeP_LoadOldMapInfo {
+  t.MakeInfo =
+    <CD_LinkP_MMakeP_LoadOldMapInfoD_SwExist <MFileSystemP_ExistFileD_T <CD_LinkP_MMakeP_GetMakefileName t.MakeInfo >>>;
+}
+
+CD_LinkP_MMakeP_GetMakefileName {
+  (#MakeInfo (#ObjectExtension e.Extension )(#Makefile e.Makefile )(#MakePrg e.MakePrg )(#ObjectDirectory e.ObjectDirectory ))=
+    e.ObjectDirectory '/' e.Makefile ;
+}
+
+$LABEL True;
+$FORWARD CD_LinkP_MMakeP_LoadOldMapInfoD_Parse;
+$EXTERN MFileIOP_Load;
+$LABEL False;
+CD_LinkP_MMakeP_LoadOldMapInfoD_SwExist {
+  #True e.FullMakefileName =
+    <CD_LinkP_MMakeP_LoadOldMapInfoD_Parse <MFileIOP_Load e.FullMakefileName >>;
+  #False e.FullMakefileName =
+    ;
+}
+
+$EXTERN MStringsP_Trim;
+CD_LinkP_MMakeP_LoadOldMapInfoD_Parse {
+  e.LinesD_B ('# OBJECT' )(e.Object ':' e.Source )e.LinesD_E =
+    ((<MStringsP_Trim e.Object >)(<MStringsP_Trim e.Source >))<CD_LinkP_MMakeP_LoadOldMapInfoD_Parse e.LinesD_E >;
+  e.Lines =
+    ;
+}
+
+$FORWARD CD_LinkP_MMakeP_CreateSourceObjectMapD_SelectKnown;
+$FORWARD CD_LinkP_MMakeP_SelectKnownNames;
+CD_LinkP_MMakeP_CreateSourceObjectMap {
+  t.CompilerInfo t.MakeInfo (e.OldMap )e.FileNames =
+    <CD_LinkP_MMakeP_CreateSourceObjectMapD_SelectKnown t.CompilerInfo t.MakeInfo <CD_LinkP_MMakeP_SelectKnownNames (e.OldMap )e.FileNames >>;
+}
+
+$FORWARD CD_LinkP_MMakeP_DoSelectKnownNames;
+CD_LinkP_MMakeP_SelectKnownNames {
+  (e.OldMap )e.FileNames =
+    <CD_LinkP_MMakeP_DoSelectKnownNames ()(e.OldMap )()e.FileNames >;
+}
+
+CD_LinkP_MMakeP_DoSelectKnownNames {
+  (e.Known )(e.MapD_B ((e.Object )(e.FileName ))e.MapD_E )(e.New )(e.FileName )e.FileNames =
+    <CD_LinkP_MMakeP_DoSelectKnownNames (e.Known ((e.Object )(e.FileName )))(e.MapD_B e.MapD_E )(e.New )e.FileNames >;
+  (e.Known )(e.Map )(e.New )(e.FileName )e.FileNames =
+    <CD_LinkP_MMakeP_DoSelectKnownNames (e.Known )(e.Map )(e.New (e.FileName ))e.FileNames >;
+  (e.Known )(e.Map )(e.New )=
+    (e.Known )(e.Map )e.New ;
+}
+
+$FORWARD CD_LinkP_MMakeP_CreateSourceObjectMapD_SetObjectsForNewFiles;
+$LABEL ForDelete;
+$EXTERN MLambdaP_Map;
+$FORWARD CD_LinkP_MMakeP_Object;
+$FORWARD CD_LinkP_MMakeP_SetObjectsForNewFiles;
+$LABEL Known;
+$LABEL Avail;
+CD_LinkP_MMakeP_CreateSourceObjectMapD_SelectKnown {
+  t.CompilerInfo t.MakeInfo (e.KnownNamesMap )(e.ForDeleteMap )e.NewFiles =
+    <CD_LinkP_MMakeP_CreateSourceObjectMapD_SetObjectsForNewFiles t.CompilerInfo t.MakeInfo (#ForDelete <MLambdaP_Map CD_LinkP_MMakeP_Object e.ForDeleteMap >)e.KnownNamesMap <CD_LinkP_MMakeP_SetObjectsForNewFiles t.MakeInfo (#Known <MLambdaP_Map CD_LinkP_MMakeP_Object e.KnownNamesMap >)(#Avail <MLambdaP_Map CD_LinkP_MMakeP_Object e.ForDeleteMap >)e.NewFiles >>;
+}
+
+CD_LinkP_MMakeP_Object {
+  ((e.Object )(e.Source ))=
+    (e.Object );
+}
+
+$FORWARD CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoAvail;
+CD_LinkP_MMakeP_SetObjectsForNewFiles {
+  t.MakeInfo (#Known e.KnownObjects )(#Avail e.AvailObjects )e.NewFiles =
+    <CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoAvail t.MakeInfo (e.KnownObjects )(e.AvailObjects )e.NewFiles >;
+}
+
+$FORWARD CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerate;
+CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoAvail {
+  t.MakeInfo (e.KnownObjects )((e.NextAvail )e.AvailObjects )(e.NextFile )e.NewFiles =
+    ((e.NextAvail )(e.NextFile ))<CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoAvail t.MakeInfo (e.KnownObjects (e.NextAvail ))(e.AvailObjects )e.NewFiles >;
+  t.MakeInfo (e.KnownObjects )(e.AvailObjects )=
+    ;
+  (#MakeInfo (#ObjectExtension e.Extension )(#Makefile e.Makefile )(#MakePrg e.MakePrg )(#ObjectDirectory e.ObjectDirectory ))(e.KnownObjects )()e.NewFiles =
+    <CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerate (e.ObjectDirectory )(e.Extension )1 (e.KnownObjects )e.NewFiles >;
+}
+
+$FORWARD CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerateD_SwKnown;
+$FORWARD CD_LinkP_MMakeP_ConstructObject;
+CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerate {
+  (e.Directory )(e.Ext )s.Next (e.Known )(e.NextSource )e.NewFiles =
+    <CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerateD_SwKnown (e.Directory )(e.Ext )s.Next (e.Known )(e.NextSource )e.NewFiles (<CD_LinkP_MMakeP_ConstructObject (e.Directory )s.Next e.Ext >)>;
+  (e.Directory )(e.Ext )s.Next (e.Known )=
+    ;
+}
+
+$EXTERN MStringsP_Symb;
+CD_LinkP_MMakeP_ConstructObject {
+  (e.Directory )s.Next e.Ext =
+    e.Directory '/' <MStringsP_Symb s.Next >'.' e.Ext ;
+}
+
+$EXTERN MMathP_Inc;
+CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerateD_SwKnown {
+  (e.Directory )(e.Ext )s.NextNum (e.KnownD_B (e.NextObject )e.KnownD_E )e.NewFiles (e.NextObject )=
+    <CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerate (e.Directory )(e.Ext )<MMathP_Inc s.NextNum >(e.KnownD_B (e.NextObject )e.KnownD_E )e.NewFiles >;
+  (e.Directory )(e.Ext )s.NextNum (e.Known )(e.NextSource )e.NewFiles (e.NextObject )=
+    ((e.NextObject )(e.NextSource ))<CD_LinkP_MMakeP_SetObjectsForNewFilesD_DoEnumerate (e.Directory )(e.Ext )<MMathP_Inc s.NextNum >(e.Known )e.NewFiles >;
+}
+
+$FORWARD CD_LinkP_MMakeP_GenNewMakefile;
+CD_LinkP_MMakeP_CreateSourceObjectMapD_SetObjectsForNewFiles {
+  t.CompilerInfo t.MakeInfo (#ForDelete e.ObjectsForDelete )e.ObjectsMap =
+    (#ForDelete e.ObjectsForDelete )<CD_LinkP_MMakeP_GenNewMakefile t.CompilerInfo (<CD_LinkP_MMakeP_GetMakefileName t.MakeInfo >)e.ObjectsMap >;
+}
+
+$EXTERN MFileIOP_Save;
+$EXTERN MCreateDirIfNeedP_CreatePathToFile;
+$FORWARD CD_LinkP_MMakeP_GenLinkCommand;
+$FORWARD CD_LinkP_MMakeP_GenCompileCommand;
+CD_LinkP_MMakeP_GenNewMakefile {
+  t.CompilerInfo (e.MakefileName )e.ObjectsMap =
+    (#Makefile e.MakefileName )<MFileIOP_Save (<MCreateDirIfNeedP_CreatePathToFile e.MakefileName >)<CD_LinkP_MMakeP_GenLinkCommand t.CompilerInfo e.ObjectsMap ><CD_LinkP_MMakeP_GenCompileCommand t.CompilerInfo e.ObjectsMap >>;
+}
+
+$FORWARD CD_LinkP_MMakeP_GenLinkCommandD_Aux;
+$FORWARD CD_LinkP_MMakeP_LinkD_Object;
+CD_LinkP_MMakeP_GenLinkCommand {
+  (#CompilerInfo (#StartCompilerCmdLine e.StartCmdLine )(#Epilogue e.Epilogue )t.Include t.Define (#OutputD_Exe (#Option e.OEOption )e.OutputFile )t.OutputObjectOption t.CompileOnlyOption )e.ObjectsMap =
+    <CD_LinkP_MMakeP_GenLinkCommandD_Aux (e.StartCmdLine )(e.Epilogue )(e.OEOption )(e.OutputFile )<MLambdaP_Map CD_LinkP_MMakeP_LinkD_Object e.ObjectsMap >>;
+}
+
+CD_LinkP_MMakeP_LinkD_Object {
+  ((e.Object )(e.Source ))=
+    ' ' e.Object ;
+}
+
+CD_LinkP_MMakeP_GenLinkCommandD_Aux {
+  (e.StartCmdLine )(e.Epilogue )(e.OEOpt )(e.OutputFile )e.Objects =
+    (e.OutputFile ' :' e.Objects )('\t' e.StartCmdLine e.OEOpt e.OutputFile e.Objects ' ' e.Epilogue );
+}
+
+$EXTERN MLambdaP_BindLeft;
+$FORWARD CD_LinkP_MMakeP_GenCompileCommandD_EachObject;
+$FORWARD CD_LinkP_MMakeP_MakeCmdLineOptions;
+CD_LinkP_MMakeP_GenCompileCommand {
+  (#CompilerInfo (#StartCompilerCmdLine e.StartCmdLine )(#Epilogue e.Epilogue )t.Include t.Define t.OutputD_Exe t.OutputObject t.CompileOnly )e.ObjectsMap =
+    <MLambdaP_Map <MLambdaP_BindLeft CD_LinkP_MMakeP_GenCompileCommandD_EachObject (e.StartCmdLine <CD_LinkP_MMakeP_MakeCmdLineOptions t.Include t.Define t.CompileOnly >)(e.Epilogue )t.OutputObject >e.ObjectsMap >;
+}
+
+$FORWARD CD_LinkP_MMakeP_AttachOption;
+CD_LinkP_MMakeP_MakeCmdLineOptions {
+  (#Include (#Option e.IncludeOption )e.IncludeList )(#Define (#Option e.DefineOption )e.DefineList )(#CompileOnlyOption e.CompileOnly )=
+    e.CompileOnly <CD_LinkP_MMakeP_AttachOption (e.IncludeOption )e.IncludeList ><CD_LinkP_MMakeP_AttachOption (e.DefineOption )e.DefineList >;
+}
+
+CD_LinkP_MMakeP_AttachOption {
+  (e.Option )(e.NextParam )e.List =
+    ' ' e.Option e.NextParam <CD_LinkP_MMakeP_AttachOption (e.Option )e.List >;
+  (e.Option )=
+    ;
+}
+
+CD_LinkP_MMakeP_GenCompileCommandD_EachObject {
+  (e.StartCmdLine )(e.Epilogue )(#OutputObjectOption e.OO )((e.Object )(e.Source ))=
+    ()('# OBJECT' )(e.Object ' : ' e.Source )('\t' e.StartCmdLine ' ' e.OO e.Object ' ' e.Source e.Epilogue );
+}
+
+$FORWARD CD_LinkP_MMakeP_DeleteFile;
+$EXTERN MOSP_System;
+$FORWARD CD_LinkP_MMakeP_MakePrg;
+CD_LinkP_MMakeP_CD_LinkD_PerformDeleteAndCompile {
+  t.MakeInfo (#ForDelete e.ObjectsForDelete )(#Makefile e.MakefileName )=
+    <MLambdaP_Map CD_LinkP_MMakeP_DeleteFile e.ObjectsForDelete ><MOSP_System <CD_LinkP_MMakeP_MakePrg t.MakeInfo >' -f ' e.MakefileName >;
+}
+
+CD_LinkP_MMakeP_MakePrg {
+  (#MakeInfo t.ObjectExtension t.Makefile (#MakePrg e.MakePrg )t.ObjectDirectory )=
+    e.MakePrg ;
+}
+
+$EXTERN MInOutP_WriteLine;
+$EXTERN MFileSystemP_RemoveFile;
+CD_LinkP_MMakeP_DeleteFile {
+  (e.FileName )=
+    <MInOutP_WriteLine 'Deleteing file ' e.FileName ><MFileSystemP_RemoveFile e.FileName >;
+}
+
+$EXTERN MProfilerP_Quantify;
+$ENTRY CD_LinkP_MMakeP_CD_Link {
+  e.ManyOptions =
+    <MProfilerP_Quantify CD_LinkP_MMakeP_ProfilingD_CD_Link e.ManyOptions >;
+}
+
+CD_LinkP_MMakeP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY CD_LinkP_MMakeP_EntryPointE_ {
+  =
+    <RegisterE_ CD_LinkP_MMakeP_FinalizeE_ >;
+}
+

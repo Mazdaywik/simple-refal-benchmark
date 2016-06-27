@@ -1,0 +1,42 @@
+$ENUM FED_MRefalP_MVarTableP_VarTable;
+$ENTRY FED_MRefalP_MVarTableP_Create {
+  =
+    [FED_MRefalP_MVarTableP_VarTable ];
+}
+
+$ENTRY FED_MRefalP_MVarTableP_Destroy {
+  [FED_MRefalP_MVarTableP_VarTable e.Q_Vars ]=
+    ;
+}
+
+$LABEL Success;
+$EXTERN MErrorP_AddVarTypeMismatch;
+$LABEL Fails;
+$ENTRY FED_MRefalP_MVarTableP_AddVariable {
+  t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.VarType e.Index )e.VarsD_E ]t.SrcPos s.VarType e.Index =
+    t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.VarType e.Index )e.VarsD_E ]#Success ;
+  t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.OneVarType e.Index )e.VarsD_E ]t.SrcPos s.OtherVarType e.Index =
+    <MErrorP_AddVarTypeMismatch t.hErrorList t.SrcPos e.Index >[FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.OneVarType e.Index )e.VarsD_E ]#Fails ;
+  t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.Variables ]t.SrcPos s.VarType e.Index =
+    t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.Variables (s.VarType e.Index )]#Success ;
+}
+
+$EXTERN MErrorP_AddUndeclaredVariable;
+$ENTRY FED_MRefalP_MVarTableP_CheckVariable {
+  t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.VarType e.Index )e.VarsD_E ]t.SrcPos s.VarType e.Index =
+    t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.VarsD_B (s.VarType e.Index )e.VarsD_E ]#Success ;
+  t.hErrorList [FED_MRefalP_MVarTableP_VarTable e.OtherVariables ]t.SrcPos s.VarType e.Index =
+    <MErrorP_AddUndeclaredVariable t.hErrorList t.SrcPos s.VarType e.Index >[FED_MRefalP_MVarTableP_VarTable e.OtherVariables ]#Fails ;
+}
+
+FED_MRefalP_MVarTableP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY FED_MRefalP_MVarTableP_EntryPointE_ {
+  =
+    <RegisterE_ FED_MRefalP_MVarTableP_FinalizeE_ >;
+}
+

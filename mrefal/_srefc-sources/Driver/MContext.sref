@@ -1,0 +1,72 @@
+$EXTERN DriverP_MTablesP_Modules;
+$EXTERN DriverP_TablesP_MModulesP_GetStatusType;
+$ENTRY DriverP_MContextP_GetStatusType {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetStatusType t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetCachedModuleIF;
+$ENTRY DriverP_MContextP_GetCachedModuleIF {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetCachedModuleIF t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetMinMaxTime;
+$ENTRY DriverP_MContextP_GetMinMaxTime {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetMinMaxTime t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_SetClusterType;
+$ENTRY DriverP_MContextP_SetClusterType {
+  t.hTables t.ModuleName s.NewType =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_SetClusterType t.ModuleName s.NewType >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetBackEndList;
+$ENTRY DriverP_MContextP_GetBackEndList {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetBackEndList t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetFrontEnd;
+$ENTRY DriverP_MContextP_GetFrontEnd {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetFrontEnd t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_SetMinMaxTime;
+$ENTRY DriverP_MContextP_SetMinMaxTime {
+  t.hTables t.ModuleName (e.MinTime )(e.MaxTime )=
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_SetMinMaxTime t.ModuleName (e.MinTime )(e.MaxTime )>;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetBackEnd;
+$ENTRY DriverP_MContextP_GetBackEnd {
+  t.hTables t.ModuleName s.BackEndName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetBackEnd t.ModuleName s.BackEndName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_GetTarget;
+$ENTRY DriverP_MContextP_GetTarget {
+  t.hTables t.ModuleName =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_GetTarget t.ModuleName >;
+}
+
+$EXTERN DriverP_TablesP_MModulesP_CreateModule;
+$ENTRY DriverP_MContextP_CreateModule {
+  t.hTables t.ModuleName e.Parameters =
+    <DriverP_MTablesP_Modules t.hTables DriverP_TablesP_MModulesP_CreateModule t.ModuleName e.Parameters >;
+}
+
+DriverP_MContextP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY DriverP_MContextP_EntryPointE_ {
+  =
+    <RegisterE_ DriverP_MContextP_FinalizeE_ >;
+}
+

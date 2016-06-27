@@ -1,0 +1,299 @@
+$EXTERN MLambdaP_UnBracket;
+$EXTERN MLambdaP_Reduce;
+$EXTERN MLambdaP_BindLeftD_H;
+$FORWARD DriverP_MResolverP_AddModuleInfoD_Entity;
+DriverP_MResolverP_AddModuleInfoD_Aux {
+  t.hResolveTable t.Prefix t.hIModule e.LocalInfo =
+    <MLambdaP_UnBracket <MLambdaP_Reduce <MLambdaP_BindLeftD_H DriverP_MResolverP_AddModuleInfoD_Entity t.Prefix >(t.hResolveTable t.hIModule )e.LocalInfo >>;
+}
+
+$FORWARD DriverP_MResolverP_AddModuleInfoD_EntityD_Aux;
+$EXTERN MIModuleP_GetModuleName;
+DriverP_MResolverP_AddModuleInfoD_Entity {
+  (t.hResolveTable t.hIModule )t.Prefix (s.ScopeClass t.Name )=
+    <DriverP_MResolverP_AddModuleInfoD_EntityD_Aux t.hResolveTable <MIModuleP_GetModuleName t.hIModule >t.Prefix s.ScopeClass t.Name >;
+}
+
+$EXTERN DriverP_MResolveTableP_Add;
+$FORWARD DriverP_MResolverP_AppendPrefix;
+$EXTERN MQualifiedNameP_Append;
+DriverP_MResolverP_AddModuleInfoD_EntityD_Aux {
+  t.hResolveTable t.hIModule t.ModuleName t.Prefix s.ScopeClass t.Name =
+    (<DriverP_MResolveTableP_Add t.hResolveTable <DriverP_MResolverP_AppendPrefix t.Prefix t.Name >s.ScopeClass <MQualifiedNameP_Append t.ModuleName t.Name >>t.hIModule );
+}
+
+$LABEL NoPrefix;
+DriverP_MResolverP_AppendPrefix {
+  #NoPrefix t.Name =
+    t.Name ;
+  t.Prefix t.Name =
+    <MQualifiedNameP_Append t.Prefix t.Name >;
+}
+
+$FORWARD DriverP_MResolverP_ExtractLocalInfoD_ADT;
+$FORWARD DriverP_MResolverP_AddScopes;
+$EXTERN MIModuleP_GetFunctionList;
+DriverP_MResolverP_ExtractLocalInfo {
+  t.IModule =
+    <DriverP_MResolverP_ExtractLocalInfoD_ADT <DriverP_MResolverP_AddScopes <MIModuleP_GetFunctionList t.IModule >>>;
+}
+
+$FORWARD DriverP_MResolverP_DoAddScope;
+DriverP_MResolverP_AddScopes {
+  t.IModule e.FnList =
+    <DriverP_MResolverP_DoAddScope t.IModule e.FnList >;
+}
+
+$FORWARD DriverP_MResolverP_DoAddScopeD_Aux;
+$EXTERN MIModuleP_GetFunctionAttribute;
+$LABEL ScopeClass;
+DriverP_MResolverP_DoAddScope {
+  t.IModule e.FnList t.Next =
+    <DriverP_MResolverP_DoAddScopeD_Aux <MIModuleP_GetFunctionAttribute t.IModule #ScopeClass t.Next >e.FnList t.Next >;
+  t.IModule =
+    t.IModule ;
+}
+
+$LABEL Found;
+DriverP_MResolverP_DoAddScopeD_Aux {
+  t.IModule #Found s.ScopeClass e.FnList t.Next =
+    <DriverP_MResolverP_DoAddScope t.IModule e.FnList >(s.ScopeClass t.Next );
+}
+
+$FORWARD DriverP_MResolverP_DoExtractLocalInfoD_ADT;
+$EXTERN MIModuleP_GetADTList;
+DriverP_MResolverP_ExtractLocalInfoD_ADT {
+  t.IModule e.LocalFunctions =
+    <DriverP_MResolverP_DoExtractLocalInfoD_ADT <MIModuleP_GetADTList t.IModule >(e.LocalFunctions )>;
+}
+
+$LABEL ADT;
+DriverP_MResolverP_DoExtractLocalInfoD_ADT {
+  t.IModule t.ADTName e.ADTs (e.LocalScope )=
+    <DriverP_MResolverP_DoExtractLocalInfoD_ADT t.IModule e.ADTs (e.LocalScope (#ADT t.ADTName ))>;
+  t.IModule (e.LocalScope )=
+    t.IModule e.LocalScope ;
+}
+
+$LABEL Entry;
+$EXTERN DriverP_MModuleIFP_GetName;
+DriverP_MResolverP_AddEntryScope {
+  t.FunctionIF =
+    (#Entry <DriverP_MModuleIFP_GetName t.FunctionIF >);
+}
+
+$FORWARD DriverP_MResolverP_AddModuleInfoD_EntityD_IF;
+DriverP_MResolverP_AddModuleInfoD_AuxD_IF {
+  t.hResolveTable t.Prefix t.ModuleName e.LocalInfo =
+    <MLambdaP_Reduce <MLambdaP_BindLeftD_H DriverP_MResolverP_AddModuleInfoD_EntityD_IF t.Prefix t.ModuleName >t.hResolveTable e.LocalInfo >;
+}
+
+DriverP_MResolverP_AddModuleInfoD_EntityD_IF {
+  t.hResolveTable t.Prefix t.ModuleName (s.ScopeClass t.Name )=
+    <DriverP_MResolveTableP_Add t.hResolveTable <DriverP_MResolverP_AppendPrefix t.Prefix t.Name >s.ScopeClass <MQualifiedNameP_Append t.ModuleName t.Name >>;
+}
+
+$FORWARD DriverP_MResolverP_DoResolvingFunctions;
+$LABEL Success;
+DriverP_MResolverP_ResolvingElements {
+  t.IModule e.Functions t.hErrorList t.ResolveTable =
+    <DriverP_MResolverP_DoResolvingFunctions #Success t.IModule t.hErrorList t.ResolveTable e.Functions >;
+}
+
+$FORWARD DriverP_MResolverP_ResolvingFunction;
+$FORWARD DriverP_MResolverP_ResolvingEntry;
+$EXTERN MIModuleP_GetEntryPoint;
+DriverP_MResolverP_DoResolvingFunctions {
+  s.Errors t.hIModule t.hErrorList t.ResolveTable t.NextFunction e.Tail =
+    <DriverP_MResolverP_DoResolvingFunctions <DriverP_MResolverP_ResolvingFunction s.Errors t.hIModule t.hErrorList t.ResolveTable t.NextFunction >e.Tail >;
+  s.Errors t.hIModule t.hErrorList t.ResolveTable =
+    <DriverP_MResolverP_ResolvingEntry s.Errors <MIModuleP_GetEntryPoint t.hIModule >t.hErrorList t.ResolveTable >;
+}
+
+$FORWARD DriverP_MResolverP_ResolvingFunctionD_ScopeClass;
+DriverP_MResolverP_ResolvingFunction {
+  s.Error t.IModule t.hErrorList t.ResolveTable t.Function =
+    <DriverP_MResolverP_ResolvingFunctionD_ScopeClass s.Error <MIModuleP_GetFunctionAttribute t.IModule #ScopeClass t.Function >t.hErrorList t.ResolveTable t.Function >;
+}
+
+$LABEL Swap;
+$FORWARD DriverP_MResolverP_ResolvingFunctionD_Body;
+$LABEL Body;
+DriverP_MResolverP_ResolvingFunctionD_ScopeClass {
+  s.Errors t.hIModule #Found #Swap t.hErrorList t.ResolveTable t.FunctionName =
+    s.Errors t.hIModule t.hErrorList t.ResolveTable ;
+  s.Errors t.hIModule #Found s.ScopeClass t.hErrorList t.ResolveTable t.FunctionName =
+    <DriverP_MResolverP_ResolvingFunctionD_Body s.Errors <MIModuleP_GetFunctionAttribute t.hIModule #Body t.FunctionName >t.hErrorList t.ResolveTable t.FunctionName >;
+}
+
+DriverP_MResolverP_CheckSuccess {
+  t.IModule #Success =
+    t.IModule ;
+}
+
+$FORWARD DriverP_MResolverP_ResolvingBody;
+$LABEL NoAttrib;
+DriverP_MResolverP_ResolvingFunctionD_Body {
+  s.Errors t.hIModule #Found (e.Sentences )t.hErrorList t.ResolveTable t.FnName =
+    <DriverP_MResolverP_ResolvingBody t.FnName t.hIModule s.Errors t.hErrorList t.ResolveTable ()e.Sentences >;
+  s.Errors t.hIModule #NoAttrib t.hErrorList t.ResolveTable t.FnName =
+    s.Errors t.hIModule t.hErrorList t.ResolveTable ;
+}
+
+$EXTERN MIModuleP_UpdateFunction;
+$FORWARD DriverP_MResolverP_ResolvingSentence;
+DriverP_MResolverP_ResolvingBody {
+  t.FnName t.IModule s.Errors t.hErrorList t.ResolveTable (e.Resolved )=
+    s.Errors <DriverP_MResolverP_CheckSuccess <MIModuleP_UpdateFunction t.IModule t.FnName (#Body (e.Resolved ))>>t.hErrorList t.ResolveTable ;
+  t.FnName t.IModule s.Errors t.hErrorList t.ResolveTable (e.Resolved )t.NextSentence e.Tail =
+    <DriverP_MResolverP_ResolvingBody t.FnName t.IModule <DriverP_MResolverP_ResolvingSentence s.Errors t.hErrorList t.ResolveTable (e.Resolved )t.NextSentence >e.Tail >;
+}
+
+$LABEL Go;
+$FORWARD DriverP_MResolverP_ResolvingEntryD_Aux;
+$FORWARD DriverP_MResolverP_ResolvingEntryD_EntrySeq;
+$EXTERN MIModuleP_SetGoEntryPoint;
+$LABEL Regular;
+$EXTERN MIModuleP_SetInitEntryPoint;
+$EXTERN MIModuleP_SetFinalEntryPoint;
+DriverP_MResolverP_ResolvingEntry {
+  s.Errors t.hIModule #Go t.GoSeq t.hErrorList t.ResolveTable =
+    <DriverP_MResolverP_ResolvingEntryD_Aux <DriverP_MResolverP_ResolvingEntryD_EntrySeq (s.Errors t.hIModule t.hErrorList t.ResolveTable )(MIModuleP_SetGoEntryPoint t.GoSeq )>>;
+  s.Errors t.hIModule #Regular t.InitSeq t.FinalSeq t.hErrorList t.ResolveTable =
+    <DriverP_MResolverP_ResolvingEntryD_Aux <MLambdaP_Reduce DriverP_MResolverP_ResolvingEntryD_EntrySeq (s.Errors t.hIModule t.hErrorList t.ResolveTable )(MIModuleP_SetInitEntryPoint t.InitSeq )(MIModuleP_SetFinalEntryPoint t.FinalSeq )>>;
+}
+
+$EXTERN DriverP_MResolveTableP_Destroy;
+DriverP_MResolverP_ResolvingEntryD_Aux {
+  (s.Errors t.hIModule t.hErrorList t.ResolveTable )=
+    t.hIModule <DriverP_MResolveTableP_Destroy t.ResolveTable >s.Errors t.hErrorList ;
+}
+
+$LABEL None;
+$LABEL Result;
+$FORWARD DriverP_MResolverP_ResolvingEntryD_EntrySeqD_Aux;
+DriverP_MResolverP_ResolvingEntryD_EntrySeq {
+  (s.Errors t.hIModule t.hErrorList t.ResolveTable )(s.FnUpdate #None )=
+    (s.Errors t.hIModule t.hErrorList t.ResolveTable );
+  (s.Errors t.hIModule t.hErrorList t.ResolveTable )(s.FnUpdate (#Result e.Result ))=
+    <DriverP_MResolverP_ResolvingEntryD_EntrySeqD_Aux s.FnUpdate t.hIModule <DriverP_MResolverP_ResolvingSentence s.Errors t.hErrorList t.ResolveTable ()((#Result e.Result ))>>;
+}
+
+DriverP_MResolverP_ResolvingEntryD_EntrySeqD_Aux {
+  s.FnUpdate t.hIModule s.Errors t.hErrorList t.ResolveTable (((#Result e.Result )))=
+    (s.Errors <s.FnUpdate t.hIModule e.Result >t.hErrorList t.ResolveTable );
+}
+
+$FORWARD DriverP_MResolverP_ResolvingChain;
+DriverP_MResolverP_ResolvingSentence {
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.UnresolvedChain )=
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )('$' )e.UnresolvedChain '$' >;
+}
+
+$LABEL Pattern;
+$LABEL Structure;
+$LABEL Abstract;
+$LABEL Qualified;
+$FORWARD DriverP_MResolverP_ResolvingQualified;
+$LABEL Function;
+$LABEL FnPtr;
+$LABEL IndirectCall;
+$LABEL SVar;
+DriverP_MResolverP_ResolvingChain {
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )('$' e.ScannedChain )'$' =
+    s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences (e.ScannedChain ));
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Pattern e.SubChain )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Pattern e.ScannedChain ))e.SubChain ('!' #Pattern e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Result e.SubChain )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Result e.ScannedChain ))e.SubChain ('!' #Result e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Structure e.InBrackets )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Structure e.ScannedChain ))e.InBrackets ('!' #Structure e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Abstract e.InBrackets )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Abstract e.ScannedChain ))e.InBrackets ('!' #Abstract e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Qualified t.SrcPos t.QualifiedName )e.Tail =
+    <DriverP_MResolverP_ResolvingChain <DriverP_MResolverP_ResolvingQualified s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Qualified t.SrcPos t.QualifiedName )e.Tail >>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#Function t.Callable e.Argument )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Function e.ScannedChain ))t.Callable e.Argument ('!' #Function e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#FnPtr t.Callable )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #FnPtr e.ScannedChain ))t.Callable ('!' #FnPtr e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )(#IndirectCall (#SVar e.Index )e.Argument )e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #IndirectCall e.ScannedChain )(#SVar e.Index ))e.Argument ('!' #IndirectCall e.Tail )>;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' s.BracketType e.LMultiBracket )e.InBrackets )('!' s.BracketType e.RMultiBracket )=
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.LMultiBracket (s.BracketType e.InBrackets ))e.RMultiBracket >;
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain )t.NextTerm e.Tail =
+    <DriverP_MResolverP_ResolvingChain s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain t.NextTerm )e.Tail >;
+}
+
+$FORWARD DriverP_MResolverP_SwResolvingQualified;
+$EXTERN DriverP_MResolveTableP_Lookup;
+$FORWARD DriverP_MResolverP_ValidScopes;
+DriverP_MResolverP_ResolvingQualified {
+  s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' s.BracketType e.LMultiBracket ))(#Qualified t.SrcPosModule t.QualifiedName )e.Argument ('!' s.BracketType e.RMultiBracket )=
+    <DriverP_MResolverP_SwResolvingQualified s.Errors t.hErrorList <DriverP_MResolveTableP_Lookup t.ResolveTable (<DriverP_MResolverP_ValidScopes s.BracketType >)t.QualifiedName >t.SrcPosModule (e.ResolvedSentences )(('!' s.BracketType e.LMultiBracket ))e.Argument ('!' s.BracketType e.RMultiBracket )>;
+}
+
+$LABEL Local;
+DriverP_MResolverP_ValidScopes {
+  #FnPtr =
+    #Local #Entry #Swap ;
+  #Function =
+    #Local #Entry #Swap ;
+  #Abstract =
+    #ADT ;
+}
+
+$LABEL Fails;
+$LABEL NotFound;
+$LABEL Errors;
+$EXTERN MErrorP_AddUnresolvedFunction;
+$LABEL BrokenImport;
+DriverP_MResolverP_SwResolvingQualified {
+  s.Errors t.hErrorList t.ResolveTable #Success s.ScopeClass t.QualifiedName t.SrcPos (e.ResolvedSentences )(e.ScannedChain )e.Argument (e.NotScannedResult )=
+    s.Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(e.ScannedChain (s.ScopeClass t.SrcPos t.QualifiedName ))e.Argument (e.NotScannedResult );
+  s.Errors t.hErrorList t.ResolveTable #Fails #NotFound t.UnresolvedQualified t.SrcPos (e.ResolvedSentences )(('!' s.BracketType e.LMultiBracket ))e.Argument ('!' s.BracketType e.RMultiBracket )=
+    #Errors <MErrorP_AddUnresolvedFunction t.hErrorList t.SrcPos t.UnresolvedQualified >t.ResolveTable (e.ResolvedSentences )(('!' #Structure e.LMultiBracket ))e.Argument ('!' #Structure e.RMultiBracket );
+  s.Errors t.hErrorList t.ResolveTable #Fails #BrokenImport t.UnresolvedQualified t.SrcPos (e.ResolvedSentences )(('!' s.BracketType e.LMultiBracket ))e.Argument ('!' s.BracketType e.RMultiBracket )=
+    #Errors t.hErrorList t.ResolveTable (e.ResolvedSentences )(('!' #Structure e.LMultiBracket ))e.Argument ('!' #Structure e.RMultiBracket );
+}
+
+$EXTERN DriverP_MResolveTableP_Create;
+$ENTRY DriverP_MResolverP_CreateTable {
+  =
+    <DriverP_MResolveTableP_Create >;
+}
+
+$LABEL BrokenModule;
+$EXTERN DriverP_MResolveTableP_AddBrokenImport;
+$ENTRY DriverP_MResolverP_AddModuleInfo {
+  t.hResolveTable t.Prefix #BrokenModule =
+    <DriverP_MResolveTableP_AddBrokenImport t.hResolveTable t.Prefix >;
+  t.hResolveTable t.Prefix t.hIModule =
+    <DriverP_MResolverP_AddModuleInfoD_Aux t.hResolveTable t.Prefix <DriverP_MResolverP_ExtractLocalInfo t.hIModule >>;
+}
+
+$LABEL CantLoadInterface;
+$EXTERN MLambdaP_Map;
+$EXTERN DriverP_MModuleIFP_GetFunctions;
+$ENTRY DriverP_MResolverP_AddModuleInfoD_IF {
+  t.hResolveTable t.Prefix #CantLoadInterface =
+    <DriverP_MResolveTableP_AddBrokenImport t.hResolveTable t.Prefix >;
+  t.hResolveTable t.Prefix t.ModuleIF =
+    <DriverP_MResolverP_AddModuleInfoD_AuxD_IF t.hResolveTable t.Prefix <DriverP_MModuleIFP_GetName t.ModuleIF ><MLambdaP_Map DriverP_MResolverP_AddEntryScope <DriverP_MModuleIFP_GetFunctions t.ModuleIF >>>;
+}
+
+$ENTRY DriverP_MResolverP_Resolve {
+  t.hIModule t.hErrorList t.hResolveTable =
+    <DriverP_MResolverP_ResolvingElements <MIModuleP_GetFunctionList t.hIModule >t.hErrorList t.hResolveTable >;
+}
+
+DriverP_MResolverP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY DriverP_MResolverP_EntryPointE_ {
+  =
+    <RegisterE_ DriverP_MResolverP_FinalizeE_ >;
+}
+

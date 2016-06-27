@@ -1,0 +1,221 @@
+$EXTERN MLambdaP_MapReduce;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_ParallelD_H;
+$EXTERN MLambdaP_Identity;
+$EXTERN MIModuleP_AbsolutName;
+$EXTERN MLambdaP_BindLeft;
+$FORWARD MPredeclGeneratorP_GenerateFunction;
+$EXTERN MIModuleP_GetFunctionList;
+MPredeclGeneratorP_GenerateFunctions {
+  s.FnProperties t.hIModule =
+    <MLambdaP_MapReduce <MLambdaP_Composite <MLambdaP_ParallelD_H MLambdaP_Identity MIModuleP_AbsolutName ><MLambdaP_BindLeft MPredeclGeneratorP_GenerateFunction s.FnProperties >><MIModuleP_GetFunctionList t.hIModule >>;
+}
+
+$FORWARD MPredeclGeneratorP_GenerateFunctionD_Aux;
+$EXTERN MLambdaP_Apply;
+$EXTERN MLambdaP_BindLeftD_H;
+$EXTERN MIModuleP_GetFunctionAttribute;
+$LABEL ScopeClass;
+$LABEL Body;
+MPredeclGeneratorP_GenerateFunction {
+  s.FnProperties t.hIModule t.RelativeName t.AbsolutName =
+    <MPredeclGeneratorP_GenerateFunctionD_Aux s.FnProperties <MLambdaP_Apply <MLambdaP_ParallelD_H <MLambdaP_BindLeftD_H MIModuleP_GetFunctionAttribute #ScopeClass t.RelativeName ><MLambdaP_BindLeftD_H MIModuleP_GetFunctionAttribute #Body t.RelativeName >>t.hIModule >t.AbsolutName >;
+}
+
+$LABEL Found;
+$LABEL Swap;
+$LABEL NoAttrib;
+$LABEL Define;
+$LABEL Function;
+$LABEL GenSwap;
+$LABEL SwitchEnum;
+$EXTERN MPredeclGeneratorP_GenFunction;
+MPredeclGeneratorP_GenerateFunctionD_Aux {
+  s.FnProperties t.hIModule #Found #Swap #NoAttrib t.AbsolutName =
+    t.hIModule (#Define #Function t.AbsolutName (<s.FnProperties #GenSwap >t.AbsolutName ));
+  s.FnProperties t.hIModule #Found s.ScopeClass #Found ()t.AbsolutName =
+    t.hIModule (#Define #Function t.AbsolutName (<s.FnProperties #SwitchEnum s.ScopeClass >t.AbsolutName ));
+  s.FnProperties t.hIModule #Found s.ScopeClass #Found (e.Sentences )t.AbsolutName =
+    t.hIModule <MPredeclGeneratorP_GenFunction s.FnProperties t.AbsolutName s.ScopeClass e.Sentences >;
+}
+
+$FORWARD MPredeclGeneratorP_GenerateD_EntryCodeD_Aux;
+$EXTERN MIModuleP_GetModuleName;
+$EXTERN MIModuleP_GetEntryPoint;
+$EXTERN MLambdaP_BracketD_H;
+$EXTERN MIModuleP_GetImportListD_RealNames;
+MPredeclGeneratorP_GenerateEntryCode {
+  s.FnProperties t.hIModule =
+    <MPredeclGeneratorP_GenerateD_EntryCodeD_Aux s.FnProperties <MLambdaP_Apply <MLambdaP_ParallelD_H MIModuleP_GetModuleName <MLambdaP_Composite MIModuleP_GetEntryPoint MLambdaP_BracketD_H >MIModuleP_GetImportListD_RealNames >t.hIModule >>;
+}
+
+$EXTERN MProfilerP_Quantify;
+$FORWARD MPredeclGeneratorP_ProfilingD_MFileIOD_Save;
+$LABEL GenCommonHeaders;
+$FORWARD MPredeclGeneratorP_FilterDecls;
+MPredeclGeneratorP_GenerateD_Aux {
+  s.FnProperties (e.OutName )t.hIModule e.FunctionsEntries =
+    t.hIModule <MProfilerP_Quantify MPredeclGeneratorP_ProfilingD_MFileIOD_Save (e.OutName )<s.FnProperties #GenCommonHeaders ><MPredeclGeneratorP_FilterDecls e.FunctionsEntries >>;
+}
+
+$EXTERN MFileIOP_Save;
+MPredeclGeneratorP_ProfilingD_MFileIOD_Save {
+  (e.OutName )e.Lines =
+    <MFileIOP_Save (e.OutName )e.Lines >;
+}
+
+$LABEL Go;
+$LABEL Result;
+$LABEL GenerateD_EntryCodeD_Go;
+$LABEL Regular;
+$LABEL GenerateD_EntryCodeD_InitFinal;
+MPredeclGeneratorP_GenerateD_EntryCodeD_Aux {
+  s.FnProperties t.hIModule t.ModuleName (#Go (#Result e.Result ))e.Imports =
+    t.hIModule <MLambdaP_Apply <s.FnProperties #GenerateD_EntryCodeD_Go >s.FnProperties t.ModuleName (e.Result )e.Imports >;
+  s.FnProperties t.hIModule t.ModuleName (#Regular t.InitSeq t.FinalSeq )e.Imports =
+    t.hIModule <MLambdaP_Apply <s.FnProperties #GenerateD_EntryCodeD_InitFinal >s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports >;
+}
+
+$FORWARD MPredeclGeneratorP_DoFilterDecls;
+MPredeclGeneratorP_FilterDecls {
+  e.Info =
+    <MPredeclGeneratorP_DoFilterDecls ()e.Info >;
+}
+
+$LABEL Declare;
+$FORWARD MPredeclGeneratorP_GenerateElems;
+MPredeclGeneratorP_DoFilterDecls {
+  (e.KnownD_B (s.Known s.Type t.Name t.Gen )e.KnownD_E )(#Declare s.Type t.Name t.Gen2 )e.Tail =
+    <MPredeclGeneratorP_DoFilterDecls (e.KnownD_B (s.Known s.Type t.Name t.Gen )e.KnownD_E )e.Tail >;
+  (e.Known )(#Declare s.Type t.Name t.Gen )e.Tail =
+    <MPredeclGeneratorP_DoFilterDecls (e.Known (#Declare s.Type t.Name t.Gen ))e.Tail >;
+  (e.Known )(#Define s.Type t.Name t.Gen )e.Tail =
+    <MPredeclGeneratorP_DoFilterDecls (e.Known (#Define s.Type t.Name t.Gen ))e.Tail >;
+  (e.Known )=
+    <MPredeclGeneratorP_GenerateElems e.Known >;
+}
+
+$FORWARD MPredeclGeneratorP_ProfilingD_GenerateElems;
+MPredeclGeneratorP_GenerateElems {
+  e.Known =
+    <MProfilerP_Quantify MPredeclGeneratorP_ProfilingD_GenerateElems e.Known >;
+}
+
+$EXTERN MLambdaP_Map;
+$FORWARD MPredeclGeneratorP_GenerateElem;
+MPredeclGeneratorP_ProfilingD_GenerateElems {
+  e.Known =
+    <MLambdaP_Map MPredeclGeneratorP_GenerateElem e.Known >;
+}
+
+MPredeclGeneratorP_GenerateElem {
+  (s.DeclareDefine s.Type t.Name (s.Generator e.Arguments ))=
+    <MProfilerP_Quantify s.Generator e.Arguments >;
+}
+
+MPredeclGeneratorP_FilterSelf {
+  t.FnName e.DeclsD_Begin (#Declare #Function t.FnName t.Gen )e.DeclsD_End =
+    e.DeclsD_Begin <MPredeclGeneratorP_FilterSelf t.FnName e.DeclsD_End >;
+  t.FnName e.Decls =
+    e.Decls ;
+}
+
+$LABEL Pattern;
+$FORWARD MPredeclGeneratorP_DeclarationsD_Expr;
+MPredeclGeneratorP_GenFunctionD_Declarations {
+  s.FnProperties ((#Pattern e.PatternExpr )(#Result e.ResultExpr ))e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.PatternExpr ><MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.ResultExpr ><MPredeclGeneratorP_GenFunctionD_Declarations s.FnProperties e.Tail >;
+  s.FnProperties ((#Pattern e.PatternExpr )s.EntryCodeType (#Result e.ResultExpr ))e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.PatternExpr ><MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.ResultExpr ><MPredeclGeneratorP_GenFunctionD_Declarations s.FnProperties e.Tail >;
+  s.FnProperties =
+    ;
+}
+
+$LABEL Structure;
+$LABEL Abstract;
+$FORWARD MPredeclGeneratorP_DeclarationsD_Callable;
+$LABEL IndirectCall;
+$LABEL SVar;
+$LABEL EntryCode;
+$FORWARD MPredeclGeneratorP_DeclarationsD_Term;
+MPredeclGeneratorP_DeclarationsD_Expr {
+  s.FnProperties (#Structure e.InBrackets )e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.InBrackets e.Tail >;
+  s.FnProperties (#Abstract t.Callable e.InBrackets )e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Callable s.FnProperties t.Callable ><MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.InBrackets e.Tail >;
+  s.FnProperties (#Function t.Callable e.InBrackets )e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Callable s.FnProperties t.Callable ><MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.InBrackets e.Tail >;
+  s.FnProperties (#IndirectCall (#SVar e.Index )e.InBrackets )e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.InBrackets e.Tail >;
+  s.FnProperties (#EntryCode s.CodeType e.InBracket )e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.InBracket e.Tail >;
+  s.FnProperties t.SimpleTerm e.Tail =
+    <MPredeclGeneratorP_DeclarationsD_Term s.FnProperties t.SimpleTerm ><MPredeclGeneratorP_DeclarationsD_Expr s.FnProperties e.Tail >;
+  s.FnProperties =
+    ;
+}
+
+$FORWARD MPredeclGeneratorP_DeclarationsD_CallableD_Aux;
+$LABEL GenerateLabelForFunction;
+MPredeclGeneratorP_DeclarationsD_Callable {
+  s.FnProperties (s.CallType t.SrcPos t.QualifiedName )=
+    <MPredeclGeneratorP_DeclarationsD_CallableD_Aux s.FnProperties <s.FnProperties #GenerateLabelForFunction >s.CallType t.SrcPos t.QualifiedName >;
+}
+
+$LABEL Yes;
+$LABEL Identifier;
+$LABEL GenFunctionD_Decl;
+$LABEL No;
+MPredeclGeneratorP_DeclarationsD_CallableD_Aux {
+  s.FnProperties #Yes s.GenIdentD_FuncName s.CallType t.SrcPos t.QualifiedName =
+    (#Declare #Identifier t.QualifiedName (s.GenIdentD_FuncName t.QualifiedName ))(#Declare #Function t.QualifiedName (<s.FnProperties #GenFunctionD_Decl >s.CallType t.QualifiedName ));
+  s.FnProperties #No s.CallType t.SrcPos t.QualifiedName =
+    (#Declare #Function t.QualifiedName (<s.FnProperties #GenFunctionD_Decl >s.CallType t.QualifiedName ));
+}
+
+$EXTERN MQualifiedNameP_Create;
+$LABEL GenIdent;
+$LABEL EVar;
+$LABEL TVar;
+$LABEL Literal;
+$LABEL Macro;
+$LABEL FnPtr;
+MPredeclGeneratorP_DeclarationsD_Term {
+  s.FnProperties (#Identifier t.SrcPos e.Name )=
+    (#Declare #Identifier <MQualifiedNameP_Create (e.Name )>(<s.FnProperties #GenIdent >e.Name ));
+  s.FnProperties (#EVar e.Index )=
+    ;
+  s.FnProperties (#TVar e.Index )=
+    ;
+  s.FnProperties (#SVar e.Index )=
+    ;
+  s.FnProperties (#Literal e.Content )=
+    ;
+  s.FnProperties (#Macro s.Value )=
+    ;
+  s.FnProperties (#FnPtr t.Callable )=
+    <MPredeclGeneratorP_DeclarationsD_Callable s.FnProperties t.Callable >;
+}
+
+$ENTRY MPredeclGeneratorP_GenerateD_Generic {
+  s.FnProperties t.hIModule e.OutName =
+    <MPredeclGeneratorP_GenerateD_Aux s.FnProperties (e.OutName )<MLambdaP_Apply <MLambdaP_ParallelD_H <MLambdaP_BindLeft MPredeclGeneratorP_GenerateFunctions s.FnProperties ><MLambdaP_BindLeft MPredeclGeneratorP_GenerateEntryCode s.FnProperties >>t.hIModule >>;
+}
+
+$LABEL GenFunctionD_Code;
+$ENTRY MPredeclGeneratorP_GenFunction {
+  s.FnProperties t.AbsolutName s.ScopeClass e.Sentences =
+    <MPredeclGeneratorP_FilterSelf t.AbsolutName <MPredeclGeneratorP_GenFunctionD_Declarations s.FnProperties e.Sentences >>(#Define #Function t.AbsolutName (<s.FnProperties #GenFunctionD_Code >t.AbsolutName s.ScopeClass e.Sentences ));
+}
+
+MPredeclGeneratorP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MPredeclGeneratorP_EntryPointE_ {
+  =
+    <RegisterE_ MPredeclGeneratorP_FinalizeE_ >;
+}
+

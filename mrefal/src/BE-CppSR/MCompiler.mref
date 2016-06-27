@@ -1,0 +1,159 @@
+$MODULE BE-CppSR::MCompiler;
+
+$IMPORT Algorithm = BE-CppSR::Algorithm;
+$IMPORT Generator = BE-CppSR::Generator;
+$IMPORT MLambda;
+$IMPORT MMath;
+$IMPORT MPredeclGenerator;
+$IMPORT MQualifiedName;
+$IMPORT MStrings;
+
+$IMPORT MProfiler;
+
+/**
+  <Generate t.hIModule e.OutName>
+    == t.hIModule
+*/
+$ENTRY Generate
+  t.hIModule e.OutName =
+    <MPredeclGenerator::Generate-Generic
+      & Generate-Properties t.hIModule e.OutName
+    >;
+
+Generate-Properties {
+  GenSwap = & Generator.GenSwap;
+  SwitchEnum Entry = & Generator.GenEEnum;
+  SwitchEnum Local = & Generator.GenEnum;
+  GenCommonHeaders = <Generator::GenCommonHeaders>;
+  GenerateLabelForFunction = Yes & Generator.GenIdent-FuncName;
+  GenIdent = & GenIdent;
+  GenFunction-Decl = & GenFunction-Decl;
+  Generate-EntryCode-Go = & Generate-EntryCode-Go;
+  Generate-EntryCode-InitFinal = & Generate-EntryCode-InitFinal;
+  GenFunction-Code = & GenFunction-Code;
+}
+
+GenIdent
+  e.Name = <Generator::GenIdent <MQualifiedName::Create (e.Name)>>;
+
+GenFunction-Decl {
+  Entry t.FunctionName =
+    <Generator::GenExtern t.FunctionName>;
+
+  Local t.FunctionName =
+    <Generator::GenForward t.FunctionName>;
+
+  ADT t.FunctionName =
+    <Generator::GenEnum t.FunctionName>;
+
+  Swap t.FunctionName =
+    <Generator::GenForward t.FunctionName>;
+}
+
+GenFunction-Code {
+  t.FuncName s.ScopeClass e.Sentences =
+    <Generator::GenFnStart s.ScopeClass t.FuncName>
+    <Generator::GenInitCounter s.ScopeClass>
+    <GenSentences e.Sentences>
+    <Generator::GenFnEnd>;
+}
+
+GenSentences
+  e.Sentences =
+    <Generator::GenSentence
+      <Algorithm::MakeAlgorithm e.Sentences>
+    >;
+
+Generate-EntryCode-Go
+  s.FnProperties t.ModuleName (e.Result) e.Imports =
+    <MPredeclGenerator::GenFunction
+      s.FnProperties
+      <MQualifiedName::Create (Go)>
+      Entry
+      (
+        (Pattern)
+        (Result
+          <MLambda::Map & GenInitImport e.Imports>
+          e.Result
+          (Function
+            (Entry NoPos <MQualifiedName::Create ('Exit' Entry)>)
+            (Macro 0) // код возврата
+          )
+        )
+      )
+    >
+    <MPredeclGenerator::GenFunction
+      s.FnProperties
+      <MQualifiedName::Create ('Exit' Entry)>
+      Entry
+      (
+        (Pattern (SVar 'RetCode'))
+        (Result
+          <MLambda::Map
+            & GenFinalImport
+            <MStrings::Reverse e.Imports>
+          >
+          (Function
+            (Entry NoPos <MQualifiedName::Create ('Exit')>)
+            (SVar 'RetCode')
+          )
+        )
+      )
+    >;
+
+Generate-EntryCode-InitFinal
+  s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports =
+    <MPredeclGenerator::GenFunction
+      s.FnProperties
+      <MQualifiedName::AddSubName t.ModuleName 'Init' Entry>
+      InitFinal
+      (
+        (Pattern (Identifier NoPos 'Init'))
+        Init
+        (Result
+          <MLambda::Map & GenInitImport e.Imports>
+          <GenEntry t.InitSeq>
+        )
+      )
+      (
+        (Pattern (Identifier NoPos 'Final'))
+        Final
+        (Result
+          <GenEntry t.FinalSeq>
+          <MLambda::Map
+            & GenFinalImport
+            <MStrings::Reverse e.Imports>
+          >
+        )
+      )
+    >;
+
+GenEntry {
+  None = ;
+  (Result e.Result) = e.Result;
+}
+
+GenInitImport {
+  t.ImportName =
+    (Function
+      (
+        Entry NoPos
+        <MQualifiedName::AddSubName t.ImportName 'Init' Entry>
+      )
+      (Identifier NoPos 'Init')
+    );
+}
+
+GenFinalImport {
+  t.ImportName =
+    (Function
+      (
+        Entry NoPos
+        <MQualifiedName::AddSubName t.ImportName 'Init' Entry>
+      )
+      (Identifier NoPos 'Final')
+    );
+}
+
+$END BE-CppSR::MCompiler.
+

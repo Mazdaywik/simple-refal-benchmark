@@ -1,0 +1,20 @@
+$EXTERN ConfigP_MConfigP_RegisterBackEnd;
+$LABEL XLinxBE;
+$EXTERN BED_XLinxP_MCompilerP_Generate;
+$EXTERN BED_XLinxP_MLinkerP_Link;
+$ENTRY BED_XLinxP_MInitP_Register {
+  t.Config (e.Dir )(e.Ext )=
+    <ConfigP_MConfigP_RegisterBackEnd t.Config #XLinxBE BED_XLinxP_MCompilerP_Generate BED_XLinxP_MLinkerP_Link (e.Dir )(e.Ext )>;
+}
+
+BED_XLinxP_MInitP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_XLinxP_MInitP_EntryPointE_ {
+  =
+    <RegisterE_ BED_XLinxP_MInitP_FinalizeE_ >;
+}
+

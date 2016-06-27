@@ -1,0 +1,71 @@
+$MODULE MSrcPos;
+
+$IMPORT MStrings;
+
+/**
+  <Create-FilePos s.LnNum e.FileName>
+    == t.SrcPos
+*/
+$ENTRY Create-FilePos
+  s.LnNum e.FileName =
+    (SrcPos 'F' e.FileName s.LnNum);
+
+/**
+  <Create-CmdLine s.ArgNo>
+    == t.SrcPos
+*/
+$ENTRY Create-CmdLine
+  s.ArgNo = (SrcPos 'C' s.ArgNo);
+
+/**
+  <Create-CmdLine-Common> == t.SrcPos
+*/
+$ENTRY Create-CmdLine-Common
+  = (SrcPos 'CC');
+
+/**
+  <Create-RunTime> == t.SrcPos
+*/
+$ENTRY Create-RunTime
+  = (SrcPos 'RT');
+
+/**
+  <ToString-Error t.SrcPos> == s.Char*
+  <ToString t.SrcPos> == s.Char*
+*/
+$ENTRY ToString-Error {
+  (SrcPos 'F' e.FileName s.LnNum) =
+    e.FileName ':' <MStrings::Symb s.LnNum>;
+
+  (SrcPos 'CC') = '<unknown>';
+
+  (SrcPos 'C' s.ArgNo) =
+    'Command line, argument ' <MStrings::Symb s.ArgNo>;
+
+  (SrcPos 'RT') = 'Runtime call';
+}
+
+$ENTRY ToString {
+  (SrcPos 'F' e.FileName s.LnNum) =
+    '\'' e.FileName '\', ' <MStrings::Symb s.LnNum>;
+
+  (SrcPos 'CC') = '<unknown>';
+
+  (SrcPos 'C' s.ArgNo) =
+    'Command line, argument ' <MStrings::Symb s.ArgNo>;
+
+  (SrcPos 'RT') = 'Runtime call';
+}
+
+/**
+  <File t.SrcPos>
+    == NotInFile
+    == e.StrFileName
+*/
+$ENTRY File {
+  (SrcPos 'F' e.FileName s.LnNum) = e.FileName;
+
+  (SrcPos e.Other) = NotInFile;
+}
+
+$END MSrcPos.

@@ -1,0 +1,10 @@
+$module CoreBE::MStrings;
+
+
+$entry Chr;
+$entry Numb;
+$entry Ord;
+$entry Symb;
+$entry SerializeAtom;
+
+$end CoreBE::MStrings.

@@ -1,0 +1,131 @@
+$FORWARD MRefalP_CompileList;
+$EXTERN DriverP_MTablesP_Create;
+$EXTERN DriverP_TablesP_MLookupP_Create;
+$EXTERN DriverP_TablesP_MModulesP_Create;
+$EXTERN DriverP_TablesP_MModuleTreeP_Create;
+$EXTERN ConfigP_MLoadP_Load;
+$EXTERN MErrorP_CreateErrList;
+$EXTERN MOSP_ArgList;
+MRefalP_ProfilingD_Go {
+  =
+    <MRefalP_CompileList <DriverP_MTablesP_Create DriverP_TablesP_MLookupP_Create DriverP_TablesP_MModulesP_Create DriverP_TablesP_MModuleTreeP_Create ><ConfigP_MLoadP_Load <MErrorP_CreateErrList ><MOSP_ArgList >>>;
+}
+
+$EXTERN DriverP_MTablesP_Destroy;
+$EXTERN DriverP_TablesP_MLookupP_Destroy;
+$EXTERN DriverP_TablesP_MModulesP_Destroy;
+$EXTERN DriverP_TablesP_MModuleTreeP_Destroy;
+MRefalP_DestroyContext {
+  t.hContext =
+    <DriverP_MTablesP_Destroy t.hContext DriverP_TablesP_MLookupP_Destroy DriverP_TablesP_MModulesP_Destroy DriverP_TablesP_MModuleTreeP_Destroy >;
+}
+
+$LABEL Success;
+$LABEL Help;
+$EXTERN MErrorP_DestroyErrList;
+$EXTERN MInOutP_WriteText;
+$FORWARD MRefalP_CompileListD_Aux;
+$LABEL Fails;
+$EXTERN MErrorP_PrintErrors;
+MRefalP_CompileList {
+  t.hContext t.hErrorList #Success (#Help e.Message )=
+    <MRefalP_DestroyContext t.hContext ><MErrorP_DestroyErrList t.hErrorList ><MInOutP_WriteText e.Message >;
+  t.hContext t.hErrorList #Success t.Config e.PtModules =
+    <MRefalP_CompileListD_Aux t.Config t.hContext t.hErrorList e.PtModules >;
+  t.hContext t.hErrorList #Fails =
+    <MRefalP_DestroyContext t.hContext ><MErrorP_PrintErrors t.hErrorList >;
+}
+
+$FORWARD MRefalP_CheckFoundResult;
+$EXTERN MLambdaP_MapReduce;
+$EXTERN MLambdaP_BindLeft;
+$FORWARD MRefalP_AddCommandLineModule;
+MRefalP_CompileListD_Aux {
+  t.Config t.hContext t.hErrorList e.PtModules =
+    <MRefalP_CheckFoundResult t.Config t.hErrorList <MLambdaP_MapReduce <MLambdaP_BindLeft MRefalP_AddCommandLineModule t.Config >t.hContext e.PtModules >>;
+}
+
+$FORWARD MRefalP_AddCommandLineModuleD_Aux;
+$EXTERN DriverP_MModuleFinderP_LookupCmdLineModule;
+MRefalP_AddCommandLineModule {
+  t.LD_Config t.hContext (t.SrcPos e.PtModuleName t.Target )=
+    <MRefalP_AddCommandLineModuleD_Aux t.SrcPos (e.PtModuleName )t.Target <DriverP_MModuleFinderP_LookupCmdLineModule t.hContext t.LD_Config e.PtModuleName >>;
+}
+
+$LABEL NotFound;
+$LABEL Redefinition;
+$LABEL NoTarget;
+$LABEL Found;
+$FORWARD MRefalP_AddCommandLineModuleD_AuxD_Guard;
+$EXTERN DriverP_MTablesP_Modules;
+$EXTERN DriverP_TablesP_MModulesP_SetTarget;
+MRefalP_AddCommandLineModuleD_Aux {
+  t.SrcPos (e.PtModuleName )t.Target t.hContext #NotFound =
+    t.hContext (#NotFound t.SrcPos e.PtModuleName );
+  t.SrcPos (e.PtModuleName )t.Target t.hContext #Redefinition =
+    t.hContext (#Redefinition t.SrcPos e.PtModuleName );
+  t.SrcPos (e.PtModuleName )#NoTarget t.hContext #Found t.QualifiedName s.FrontEnd e.PtBaseDirectory =
+    t.hContext (#Found t.SrcPos t.QualifiedName );
+  t.SrcPos (e.PtModuleName )(e.PtTargetName )t.hContext #Found t.QualifiedName s.FrontEnd e.PtBaseDirectory =
+    <MRefalP_AddCommandLineModuleD_AuxD_Guard <DriverP_MTablesP_Modules t.hContext DriverP_TablesP_MModulesP_SetTarget t.QualifiedName e.PtTargetName >>(#Found t.SrcPos t.QualifiedName );
+}
+
+MRefalP_AddCommandLineModuleD_AuxD_Guard {
+  t.hContext #Success =
+    t.hContext ;
+}
+
+$EXTERN MLambdaP_Reduce;
+$FORWARD MRefalP_PrintErrorLookup;
+$EXTERN MLambdaP_TerminateAccumulator;
+$FORWARD MRefalP_FinishMake;
+$FORWARD MRefalP_Make;
+MRefalP_CheckFoundResult {
+  t.Config t.hErrorList t.hContext e.ResultsD_B (#NotFound t.SrcPos e.Module )e.ResultsD_E =
+    <MRefalP_DestroyContext t.hContext ><MErrorP_PrintErrors <MLambdaP_Reduce MRefalP_PrintErrorLookup t.hErrorList e.ResultsD_B (#NotFound t.SrcPos e.Module )e.ResultsD_E >>;
+  t.Config t.hErrorList t.hContext e.ResultsD_B (#Redefinition t.SrcPos e.Module )e.ResultsD_E =
+    <MRefalP_DestroyContext t.hContext ><MErrorP_PrintErrors <MLambdaP_Reduce MRefalP_PrintErrorLookup t.hErrorList e.ResultsD_B (#Redefinition t.SrcPos e.Module )e.ResultsD_E >>;
+  t.Config t.hErrorList t.hContext e.ResultsFound =
+    <MLambdaP_TerminateAccumulator MRefalP_FinishMake <MLambdaP_Reduce <MLambdaP_BindLeft MRefalP_Make t.Config >(t.hContext t.hErrorList #Success )e.ResultsFound >>;
+}
+
+$EXTERN MErrorP_AddCmdLineError;
+$EXTERN MFileSystemP_StrFromPath;
+MRefalP_PrintErrorLookup {
+  t.hErrorList (#NotFound t.SrcPos e.PtModule )=
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'module ' <MFileSystemP_StrFromPath e.PtModule >' not found' >;
+  t.hErrorList (#Redefinition t.SrcPos e.PtModule )=
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'module ' <MFileSystemP_StrFromPath e.PtModule >' redefined' >;
+  t.hErrorList (#Found t.SrcPos t.QualifiedName )=
+    t.hErrorList ;
+}
+
+$EXTERN DriverP_MCompilerP_Make;
+MRefalP_Make {
+  t.Config (t.hTables t.hErrorList #Success )(#Found t.SrcPos t.ModuleName )=
+    (<DriverP_MCompilerP_Make t.hTables t.hErrorList t.Config t.SrcPos t.ModuleName >);
+  t.Config (t.hTables t.hErrorList #Fails )(#Found t.SrcPos t.ModuleName )=
+    (t.hTables t.hErrorList #Fails );
+}
+
+MRefalP_FinishMake {
+  (t.hContext t.hErrorList #Success )=
+    <MRefalP_DestroyContext t.hContext ><MErrorP_PrintErrors t.hErrorList >;
+  (t.hContext t.hErrorList #Fails )=
+    <MRefalP_DestroyContext t.hContext ><MErrorP_PrintErrors t.hErrorList >;
+}
+
+$EXTERN MVersionP_Show;
+$EXTERN MProfilerP_SetOutputName;
+$EXTERN MProfilerP_QuantifyD_Flush;
+$ENTRY MRefalP_Go {
+  =
+    <MVersionP_Show ><MProfilerP_SetOutputName '_MRefal_profiler.log' ><MProfilerP_QuantifyD_Flush MRefalP_ProfilingD_Go >;
+}
+
+$EXTERN ExitE_;
+$ENTRY MRefalP_EntryPointE_ {
+  =
+    <MRefalP_Go ><ExitE_ 0 >;
+}
+

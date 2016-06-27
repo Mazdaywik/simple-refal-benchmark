@@ -1,0 +1,623 @@
+$LABEL Pattern;
+$LABEL Result;
+$FORWARD BED_CppSRP_AlgorithmP_MakeAlgorithmD_Result;
+$FORWARD BED_CppSRP_AlgorithmP_GenPattern;
+$FORWARD BED_CppSRP_AlgorithmP_PrepareExprD_Pattern;
+$LABEL Regular;
+$FORWARD BED_CppSRP_AlgorithmP_PrepareExprD_Result;
+BED_CppSRP_AlgorithmP_MakeAlgorithmD_Sentence {
+  ((#Pattern e.Pattern )(#Result e.Result ))=
+    <BED_CppSRP_AlgorithmP_MakeAlgorithmD_Result <BED_CppSRP_AlgorithmP_GenPattern <BED_CppSRP_AlgorithmP_PrepareExprD_Pattern e.Pattern >>#Regular <BED_CppSRP_AlgorithmP_PrepareExprD_Result e.Result >>;
+  ((#Pattern e.Pattern )s.EntryCodeType (#Result e.Result ))=
+    <BED_CppSRP_AlgorithmP_MakeAlgorithmD_Result <BED_CppSRP_AlgorithmP_GenPattern <BED_CppSRP_AlgorithmP_PrepareExprD_Pattern e.Pattern >>s.EntryCodeType <BED_CppSRP_AlgorithmP_PrepareExprD_Result e.Result >>;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_GeneralizeResult;
+$FORWARD BED_CppSRP_AlgorithmP_GenResult;
+BED_CppSRP_AlgorithmP_MakeAlgorithmD_Result {
+  (e.PatternVars )(e.PatternCommands )s.SentenceType e.Result =
+    <BED_CppSRP_AlgorithmP_GeneralizeResult (e.PatternVars )(e.PatternCommands )s.SentenceType <BED_CppSRP_AlgorithmP_GenResult (e.PatternVars )e.Result >>;
+}
+
+$LABEL CmdStartSentence;
+$EXTERN MLambdaP_Map;
+$FORWARD BED_CppSRP_AlgorithmP_MakeDeclaration;
+$EXTERN MOrderP_Sort;
+$FORWARD BED_CppSRP_AlgorithmP_GenOpenedEEndCycle;
+$LABEL CmdEmptyResult;
+$LABEL CmdReturnResult;
+$LABEL CmdEndSentence;
+$LABEL CmdStartEntryCode;
+$LABEL CmdEndEntryCode;
+BED_CppSRP_AlgorithmP_GeneralizeResult {
+  (e.PatternVars )(e.PatternCommands )#Regular e.ResultCommands =
+    (#CmdStartSentence )<MLambdaP_Map BED_CppSRP_AlgorithmP_MakeDeclaration <MOrderP_Sort e.PatternVars >><BED_CppSRP_AlgorithmP_GenOpenedEEndCycle e.PatternCommands (#CmdEmptyResult )e.ResultCommands (#CmdReturnResult )>(#CmdEndSentence );
+  (e.PatternVars )(e.PatternCommands )s.EntryCodeType e.ResultCommands =
+    (#CmdStartSentence )<MLambdaP_Map BED_CppSRP_AlgorithmP_MakeDeclaration <MOrderP_Sort e.PatternVars >><BED_CppSRP_AlgorithmP_GenOpenedEEndCycle e.PatternCommands (#CmdEmptyResult )(#CmdStartEntryCode s.EntryCodeType )e.ResultCommands (#CmdEndEntryCode )(#CmdReturnResult )>(#CmdEndSentence );
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern;
+BED_CppSRP_AlgorithmP_PrepareExprD_Pattern {
+  e.Expr =
+    <BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern 1 e.Expr '$' >;
+}
+
+$LABEL Identifier;
+$LABEL TkIdentifier;
+$EXTERN MQualifiedNameP_Create;
+$LABEL EVar;
+$LABEL TkVariable;
+$LABEL TVar;
+$LABEL SVar;
+$LABEL Literal;
+$FORWARD BED_CppSRP_AlgorithmP_PrepareLiteral;
+$LABEL Macro;
+$LABEL TkNumber;
+$LABEL FnPtr;
+$LABEL TkName;
+$LABEL Structure;
+$LABEL TkOpenBracket;
+$EXTERN MMathP_Inc;
+$LABEL TkCloseBracket;
+$LABEL Abstract;
+$LABEL TkOpenADT;
+$LABEL TkCloseADT;
+BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern {
+  s.BracketNum (#Identifier t.SrcPos e.Name )e.Tail t.MultiBracket =
+    (#TkIdentifier <MQualifiedNameP_Create (e.Name )>)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#EVar e.Index )e.Tail t.MultiBracket =
+    (#TkVariable 'e' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#TVar e.Index )e.Tail t.MultiBracket =
+    (#TkVariable 't' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#SVar e.Index )e.Tail t.MultiBracket =
+    (#TkVariable 's' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#Literal e.Content )e.Tail t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_PrepareLiteral e.Content ><BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#Macro s.Value )e.Tail t.MultiBracket =
+    (#TkNumber s.Value )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#FnPtr (s.CallType t.SrcPos t.Name ))e.Tail t.MultiBracket =
+    (#TkName t.Name )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum (#Structure e.InBrackets )e.Tail t.MultiBracket =
+    (#TkOpenBracket s.BracketNum )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern <MMathP_Inc s.BracketNum >e.InBrackets ((#TkCloseBracket s.BracketNum )e.Tail t.MultiBracket )>;
+  s.BracketNum (#Abstract (s.CallType t.SrcPos t.Name )e.InBrackets )e.Tail t.MultiBracket =
+    (#TkOpenADT s.BracketNum )(#TkName t.Name )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern <MMathP_Inc s.BracketNum >e.InBrackets ((#TkCloseADT s.BracketNum )e.Tail t.MultiBracket )>;
+  s.BracketNum (t.CloseBracket e.Tail t.MultiBracket )=
+    t.CloseBracket <BED_CppSRP_AlgorithmP_DoPrepareExprD_Pattern s.BracketNum e.Tail t.MultiBracket >;
+  s.BracketNum '$' =
+    ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_DoPrepareExprD_Result;
+BED_CppSRP_AlgorithmP_PrepareExprD_Result {
+  e.Expr =
+    <BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Expr >;
+}
+
+$LABEL EntryCode;
+$LABEL Brackets;
+$LABEL Function;
+$LABEL IndirectCall;
+BED_CppSRP_AlgorithmP_DoPrepareExprD_Result {
+  (#Identifier t.SrcPos e.Name )e.Tail =
+    (#TkIdentifier <MQualifiedNameP_Create (e.Name )>)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#EVar e.Index )e.Tail =
+    (#TkVariable 'e' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#TVar e.Index )e.Tail =
+    (#TkVariable 't' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#SVar e.Index )e.Tail =
+    (#TkVariable 's' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#Literal e.Content )e.Tail =
+    <BED_CppSRP_AlgorithmP_PrepareLiteral e.Content ><BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#Macro s.Value )e.Tail =
+    (#TkNumber s.Value )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#FnPtr (s.CallType t.SrcPos t.Name ))e.Tail =
+    (#TkName t.Name )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#EntryCode s.CodeType e.InBrackets )e.Tail =
+    (#Brackets #EntryCode s.CodeType <BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.InBrackets >)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#Structure e.InBrackets )e.Tail =
+    (#Brackets #Structure <BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.InBrackets >)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#Abstract (s.CallType t.SrcPos t.Name )e.InBrackets )e.Tail =
+    (#Brackets #Abstract (#TkName t.Name )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.InBrackets >)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#Function (s.CallType t.SrcPos t.Name )e.InBrackets )e.Tail =
+    (#Brackets #Function (#TkName t.Name )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.InBrackets >)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  (#IndirectCall (#SVar e.Index )e.InBrackets )e.Tail =
+    (#Brackets #Function (#TkVariable 's' e.Index )<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.InBrackets >)<BED_CppSRP_AlgorithmP_DoPrepareExprD_Result e.Tail >;
+  =
+    ;
+}
+
+$LABEL TkChar;
+BED_CppSRP_AlgorithmP_PrepareLiteral {
+  s.First e.Tail =
+    (#TkChar s.First )<BED_CppSRP_AlgorithmP_PrepareLiteral e.Tail >;
+  =
+    ;
+}
+
+$LABEL CmdOpenedE;
+$LABEL AlgLeft;
+$LABEL CmdOpenedED_EndCycle;
+BED_CppSRP_AlgorithmP_GenOpenedEEndCycle {
+  e.CommandsD_B (#CmdOpenedE #AlgLeft s.Bracket s.Nested 'e' e.Index (e.Saved ))e.CommandsD_E =
+    e.CommandsD_B (#CmdOpenedE #AlgLeft s.Bracket s.Nested 'e' e.Index (e.Saved ))<BED_CppSRP_AlgorithmP_GenOpenedEEndCycle e.CommandsD_E >(#CmdOpenedED_EndCycle s.Bracket s.Nested 'e' e.Index );
+  e.Commands =
+    e.Commands ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_MakeOneDeclaration;
+$EXTERN MMathP_Dec;
+BED_CppSRP_AlgorithmP_MakeDeclaration {
+  (s.Mode e.Index 1 )=
+    <BED_CppSRP_AlgorithmP_MakeOneDeclaration s.Mode e.Index 1 >;
+  (s.Mode e.Index s.Usings )=
+    <BED_CppSRP_AlgorithmP_MakeDeclaration (s.Mode e.Index <MMathP_Dec s.Usings >)><BED_CppSRP_AlgorithmP_MakeOneDeclaration s.Mode e.Index s.Usings >;
+}
+
+$LABEL CmdDeclareEVar;
+$LABEL CmdDeclareVar;
+BED_CppSRP_AlgorithmP_MakeOneDeclaration {
+  'e' e.Index s.Usings =
+    (#CmdDeclareEVar s.Usings 'e' e.Index );
+  s.Mode e.Index s.Usings =
+    (#CmdDeclareVar s.Usings s.Mode e.Index );
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_DoGenPattern;
+$LABEL LeftPtr;
+$LABEL RightPtr;
+BED_CppSRP_AlgorithmP_GenPattern {
+  e.Pattern =
+    <BED_CppSRP_AlgorithmP_DoGenPattern (#LeftPtr 0 )e.Pattern (#RightPtr 0 )()()>;
+}
+
+$LABEL CmdChar;
+$LABEL CmdNumber;
+$LABEL CmdName;
+$LABEL CmdIdent;
+$LABEL AlgRight;
+$LABEL CmdBrackets;
+$LABEL CmdADT;
+$LABEL CmdEmpty;
+$LABEL CmdRepeated;
+$LABEL CmdClosedE;
+$LABEL CmdVar;
+$LABEL CmdComment;
+$FORWARD BED_CppSRP_AlgorithmP_TextFromPattern;
+$FORWARD BED_CppSRP_AlgorithmP_SaveBrackets;
+BED_CppSRP_AlgorithmP_DoGenPattern {
+  e.PatternD_B (#LeftPtr s.Num )(#TkChar s.Char )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkChar s.Char )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdChar #AlgLeft s.Num s.Char ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkNumber s.Number )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkNumber s.Number )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdNumber #AlgLeft s.Num s.Number ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkName e.Name )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkName e.Name )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdName #AlgLeft s.Num e.Name ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkIdentifier t.Name )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkIdentifier t.Name )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdIdent #AlgLeft s.Num t.Name ))>;
+  e.PatternD_B (#TkChar s.Char )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkChar s.Char )e.PatternD_E (e.Vars )(e.Commands (#CmdChar #AlgRight s.Num s.Char ))>;
+  e.PatternD_B (#TkNumber s.Number )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkNumber s.Number )e.PatternD_E (e.Vars )(e.Commands (#CmdNumber #AlgRight s.Num s.Number ))>;
+  e.PatternD_B (#TkName e.Name )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkName e.Name )e.PatternD_E (e.Vars )(e.Commands (#CmdName #AlgRight s.Num e.Name ))>;
+  e.PatternD_B (#TkIdentifier t.Name )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkIdentifier t.Name )e.PatternD_E (e.Vars )(e.Commands (#CmdIdent #AlgRight s.Num t.Name ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkOpenBracket s.Inner )e.PatternD_M (#TkCloseBracket s.Inner )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkOpenBracket s.Inner )(#LeftPtr s.Inner )e.PatternD_M (#RightPtr s.Inner )(#TkCloseBracket s.Inner )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdBrackets #AlgLeft s.Num s.Inner ))>;
+  e.PatternD_B (#TkOpenBracket s.Inner )e.PatternD_M (#TkCloseBracket s.Inner )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkOpenBracket s.Inner )(#LeftPtr s.Inner )e.PatternD_M (#RightPtr s.Inner )(#TkCloseBracket s.Inner )e.PatternD_E (e.Vars )(e.Commands (#CmdBrackets #AlgRight s.Num s.Inner ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkOpenADT s.Inner )(#TkName e.Name )e.PatternD_M (#TkCloseADT s.Inner )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkOpenADT s.Inner )(#TkName e.Name )(#LeftPtr s.Inner )e.PatternD_M (#RightPtr s.Inner )(#TkCloseADT s.Inner )(#LeftPtr s.Num )e.PatternD_E (e.Vars )(e.Commands (#CmdADT #AlgLeft s.Num s.Inner e.Name ))>;
+  e.PatternD_B (#TkOpenADT s.Inner )(#TkName e.Name )e.PatternD_M (#TkCloseADT s.Inner )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkOpenADT s.Inner )(#TkName e.Name )(#LeftPtr s.Inner )e.PatternD_M (#RightPtr s.Inner )(#TkCloseADT s.Inner )e.PatternD_E (e.Vars )(e.Commands (#CmdADT #AlgRight s.Num s.Inner e.Name ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B e.PatternD_E (e.Vars )(e.Commands (#CmdEmpty s.Num ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkVariable s.Mode e.Index )e.PatternD_E (e.VarsD_B (s.Mode e.Index s.Count )e.VarsD_E )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkVariable s.Mode e.Index )(#LeftPtr s.Num )e.PatternD_E (e.VarsD_B (s.Mode e.Index <MMathP_Inc s.Count >)e.VarsD_E )(e.Commands (#CmdRepeated #AlgLeft s.Num <MMathP_Inc s.Count >s.Mode e.Index ))>;
+  e.PatternD_B (#TkVariable s.Mode e.Index )(#RightPtr s.Num )e.PatternD_E (e.VarsD_B (s.Mode e.Index s.Count )e.VarsD_E )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkVariable s.Mode e.Index )e.PatternD_E (e.VarsD_B (s.Mode e.Index <MMathP_Inc s.Count >)e.VarsD_E )(e.Commands (#CmdRepeated #AlgRight s.Num <MMathP_Inc s.Count >s.Mode e.Index ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkVariable 'e' e.Index )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkVariable 'e' e.Index )e.PatternD_E (e.Vars ('e' e.Index 1 ))(e.Commands (#CmdClosedE #AlgLeft s.Num 'e' e.Index ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkVariable 's' e.Index )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkVariable 's' e.Index )(#LeftPtr s.Num )e.PatternD_E (e.Vars ('s' e.Index 1 ))(e.Commands (#CmdVar #AlgLeft s.Num 's' e.Index ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkVariable 't' e.Index )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkVariable 't' e.Index )(#LeftPtr s.Num )e.PatternD_E (e.Vars ('t' e.Index 1 ))(e.Commands (#CmdVar #AlgLeft s.Num 't' e.Index ))>;
+  e.PatternD_B (#TkVariable 's' e.Index )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkVariable 's' e.Index )e.PatternD_E (e.Vars ('s' e.Index 1 ))(e.Commands (#CmdVar #AlgRight s.Num 's' e.Index ))>;
+  e.PatternD_B (#TkVariable 't' e.Index )(#RightPtr s.Num )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#RightPtr s.Num )(#TkVariable 't' e.Index )e.PatternD_E (e.Vars ('t' e.Index 1 ))(e.Commands (#CmdVar #AlgRight s.Num 't' e.Index ))>;
+  e.PatternD_B (#LeftPtr s.Num )(#TkVariable 'e' e.Index )e.PatternD_E (e.Vars )(e.Commands )=
+    <BED_CppSRP_AlgorithmP_DoGenPattern e.PatternD_B (#TkVariable 'e' e.Index )(#LeftPtr s.Num )e.PatternD_E (e.Vars ('e' e.Index 1 ))(e.Commands (#CmdOpenedE #AlgLeft s.Num 'e' e.Index ))>;
+  e.Pattern (e.Vars )(e.Commands )=
+    (e.Vars )((#CmdComment <BED_CppSRP_AlgorithmP_TextFromPattern e.Pattern >)<BED_CppSRP_AlgorithmP_SaveBrackets e.Commands >);
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_RenumerateD_Comment;
+$EXTERN MLambdaP_MapReduce;
+$FORWARD BED_CppSRP_AlgorithmP_RenumerateSavedBrackets;
+$FORWARD BED_CppSRP_AlgorithmP_DoSaveBrackets;
+BED_CppSRP_AlgorithmP_SaveBrackets {
+  e.Commands =
+    <BED_CppSRP_AlgorithmP_RenumerateD_Comment <MLambdaP_MapReduce BED_CppSRP_AlgorithmP_RenumerateSavedBrackets ((0 0 ))<BED_CppSRP_AlgorithmP_DoSaveBrackets ()e.Commands >>>;
+}
+
+BED_CppSRP_AlgorithmP_RenumerateD_Comment {
+  (e.RenumerateMap )e.Commands =
+    (#CmdComment e.RenumerateMap )e.Commands ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_DoSaveBracketsD_Aux;
+BED_CppSRP_AlgorithmP_DoSaveBrackets {
+  (e.Scanned )e.CommandsD_B (#CmdOpenedE #AlgLeft s.Num 'e' e.Index )e.CommandsD_E =
+    <BED_CppSRP_AlgorithmP_DoSaveBracketsD_Aux (e.Scanned e.CommandsD_B (#CmdOpenedE #AlgLeft s.Num 'e' e.Index ))e.CommandsD_E >;
+  (e.Scanned )e.Commands =
+    e.Scanned e.Commands ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_CalcSavedBrackets;
+BED_CppSRP_AlgorithmP_DoSaveBracketsD_Aux {
+  (e.Scanned (#CmdOpenedE #AlgLeft s.Num 'e' e.Index ))e.Commands =
+    <BED_CppSRP_AlgorithmP_DoSaveBrackets (e.Scanned (#CmdOpenedE #AlgLeft s.Num 'e' e.Index (<BED_CppSRP_AlgorithmP_CalcSavedBrackets (e.Scanned (#CmdOpenedE #AlgLeft s.Num 'e' e.Index ))e.Commands (#CmdOpenedE #AlgLeft s.Num 'e' e.Index )>)))e.Commands >;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_BracketsU_Intersect;
+$FORWARD BED_CppSRP_AlgorithmP_BracketsU_Set;
+$FORWARD BED_CppSRP_AlgorithmP_ExtractBrackets;
+BED_CppSRP_AlgorithmP_CalcSavedBrackets {
+  (e.Scanned )e.Commands =
+    <BED_CppSRP_AlgorithmP_BracketsU_Intersect (<BED_CppSRP_AlgorithmP_BracketsU_Set <MLambdaP_Map BED_CppSRP_AlgorithmP_ExtractBrackets e.Scanned >>)(<BED_CppSRP_AlgorithmP_BracketsU_Set <MLambdaP_Map BED_CppSRP_AlgorithmP_ExtractBrackets e.Commands >>)>;
+}
+
+$EXTERN MLambdaP_BindLeft;
+$FORWARD BED_CppSRP_AlgorithmP_IncrementBySaved;
+$FORWARD BED_CppSRP_AlgorithmP_IncrementSaved;
+BED_CppSRP_AlgorithmP_RenumerateSavedBrackets {
+  (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(#CmdOpenedE #AlgLeft s.Bracket s.Mode e.Index (e.Saved ))=
+    (<MLambdaP_Map <MLambdaP_BindLeft BED_CppSRP_AlgorithmP_IncrementBySaved e.Saved >e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E >)(#CmdComment 'Открытая e-переменная ' s.Mode '.' e.Index )(#CmdOpenedE #AlgLeft s.Bracket s.Nested s.Mode e.Index (<MLambdaP_Map <MLambdaP_BindLeft BED_CppSRP_AlgorithmP_IncrementSaved e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E >e.Saved >));
+  (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(#CmdEmpty s.Bracket )=
+    (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(#CmdEmpty s.Bracket s.Nested );
+  (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(#CmdBrackets s.Direction s.Bracket s.Inner )=
+    (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E (s.Inner 0 ))(#CmdBrackets s.Direction s.Bracket s.Nested s.Inner );
+  (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(#CmdADT s.Direction s.Bracket s.Inner e.Name )=
+    (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E (s.Inner 0 ))(#CmdADT s.Direction s.Bracket s.Nested s.Inner e.Name );
+  (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(s.Command s.Direction s.Bracket e.Info )=
+    (e.BracketsD_B (s.Bracket s.Nested )e.BracketsD_E )(s.Command s.Direction s.Bracket s.Nested e.Info );
+}
+
+BED_CppSRP_AlgorithmP_IncrementBySaved {
+  e.SavedD_B s.Bracket e.SavedD_E (s.Bracket s.Nested )=
+    (s.Bracket <MMathP_Inc s.Nested >);
+  e.Saved (s.Bracket s.Nested )=
+    (s.Bracket s.Nested );
+}
+
+BED_CppSRP_AlgorithmP_IncrementSaved {
+  e.NumeratedD_B (s.Bracket s.Nested )e.NumeratedD_E s.Bracket =
+    (s.Bracket s.Nested );
+}
+
+BED_CppSRP_AlgorithmP_ExtractBrackets {
+  (#CmdEmpty s.BracketNum )=
+    s.BracketNum ;
+  (#CmdBrackets s.Direction s.BracketNum s.InnerNum )=
+    s.BracketNum s.InnerNum ;
+  (s.Command s.Direction s.BracketNum e.Info )=
+    s.BracketNum ;
+}
+
+BED_CppSRP_AlgorithmP_BracketsU_Set {
+  e.Unique s.Repeated e.Middle s.Repeated e.Rest =
+    e.Unique <BED_CppSRP_AlgorithmP_BracketsU_Set s.Repeated e.Middle e.Rest >;
+  e.Unique =
+    e.Unique ;
+}
+
+BED_CppSRP_AlgorithmP_BracketsU_Intersect {
+  (e.Set1D_B s.Common e.Set1D_E )(e.Set2D_B s.Common e.Set2D_E )=
+    s.Common <BED_CppSRP_AlgorithmP_BracketsU_Intersect (e.Set1D_E )(e.Set2D_B e.Set2D_E )>;
+  (e.Set1 )(e.Set2 )=
+    ;
+}
+
+$EXTERN MStringsP_Symb;
+$FORWARD BED_CppSRP_AlgorithmP_TextFromPatternU_Char;
+$EXTERN MQualifiedNameP_ToPrintableD_Dot;
+BED_CppSRP_AlgorithmP_TextFromPattern {
+  (#TkOpenBracket s.Number )e.Tail =
+    ' (~' <MStringsP_Symb s.Number ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkCloseBracket s.Number )e.Tail =
+    ' )~' <MStringsP_Symb s.Number ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkOpenADT s.Number )e.Tail =
+    ' [~' <MStringsP_Symb s.Number ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkCloseADT s.Number )e.Tail =
+    ' ]~' <MStringsP_Symb s.Number ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkChar s.Char )e.Tail =
+    ' ' '\'' <BED_CppSRP_AlgorithmP_TextFromPatternU_Char (#TkChar s.Char )e.Tail >;
+  (#TkNumber s.Number )e.Tail =
+    ' ' <MStringsP_Symb s.Number ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkName e.Name )e.Tail =
+    ' & ' e.Name <BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkVariable s.Mode e.Index )e.Tail =
+    ' ' s.Mode '.' e.Index <BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  (#TkIdentifier t.Name )e.Tail =
+    ' # ' <MQualifiedNameP_ToPrintableD_Dot t.Name ><BED_CppSRP_AlgorithmP_TextFromPattern e.Tail >;
+  =
+    ;
+}
+
+BED_CppSRP_AlgorithmP_Escape {
+  '\n' =
+    '\\n' ;
+  '\r' =
+    '\\r' ;
+  '\t' =
+    '\\t' ;
+  '\\' =
+    '\\\\' ;
+  '\'' =
+    '\\' '\'' ;
+  '\"' =
+    '\\\"' ;
+  s.Other =
+    s.Other ;
+}
+
+BED_CppSRP_AlgorithmP_TextFromPatternU_Char {
+  (#TkChar s.Char )e.Tail =
+    <BED_CppSRP_AlgorithmP_Escape s.Char ><BED_CppSRP_AlgorithmP_TextFromPatternU_Char e.Tail >;
+  =
+    '\'' ;
+  e.Other =
+    <BED_CppSRP_AlgorithmP_TextFromPattern e.Other >;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_DoGenResult;
+$FORWARD BED_CppSRP_AlgorithmP_OptimizeStrings;
+BED_CppSRP_AlgorithmP_GenResult {
+  (e.PatternVars )e.Result =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.PatternVars )()0 <BED_CppSRP_AlgorithmP_OptimizeStrings e.Result >'$' >;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_OptimizeStringsD_Collect;
+BED_CppSRP_AlgorithmP_OptimizeStrings {
+  (#TkChar s.First )(#TkChar s.Second )e.Tail =
+    <BED_CppSRP_AlgorithmP_OptimizeStringsD_Collect (2 s.First s.Second )e.Tail >;
+  (#Brackets s.Type e.Expr )e.Tail =
+    (#Brackets s.Type <BED_CppSRP_AlgorithmP_OptimizeStrings e.Expr >)<BED_CppSRP_AlgorithmP_OptimizeStrings e.Tail >;
+  t.Other e.Tail =
+    t.Other <BED_CppSRP_AlgorithmP_OptimizeStrings e.Tail >;
+  =
+    ;
+}
+
+$LABEL TkString;
+BED_CppSRP_AlgorithmP_OptimizeStringsD_Collect {
+  (s.Len e.String )(#TkChar s.Char )e.Tail =
+    <BED_CppSRP_AlgorithmP_OptimizeStringsD_Collect (<MMathP_Inc s.Len >e.String s.Char )e.Tail >;
+  (s.Len e.String )e.Tail =
+    (#TkString s.Len e.String )<BED_CppSRP_AlgorithmP_OptimizeStrings e.Tail >;
+}
+
+$LABEL CtAlloc;
+$LABEL StChar;
+$LABEL StName;
+$LABEL StNumber;
+$LABEL StIdent;
+$LABEL CtAllocString;
+$EXTERN MMathP_Add;
+$LABEL StOpenBracket;
+$LABEL StOpenADT;
+$LABEL StOpenCall;
+$LABEL CtEndEntryCode;
+$LABEL CtEntryCode;
+$LABEL StCloseBracket;
+$LABEL CtBrackets;
+$LABEL StLink;
+$LABEL StCloseADT;
+$LABEL StCloseCall;
+$LABEL StStack;
+$LABEL CtAllocCopyVar;
+$FORWARD BED_CppSRP_AlgorithmP_ReturnVar;
+$LABEL CtInsertVarBefore;
+$FORWARD BED_CppSRP_AlgorithmP_GenResult2U_Commands;
+$FORWARD BED_CppSRP_AlgorithmP_CalcBefores;
+$FORWARD BED_CppSRP_AlgorithmP_FillAltPtr;
+$LABEL BEGIN;
+BED_CppSRP_AlgorithmP_DoGenResult {
+  (e.Vars )(e.Commands )s.Counter (#TkChar s.Value )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StChar s.Counter s.Value ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkName e.Name )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StName s.Counter e.Name ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkNumber s.Number )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StNumber s.Counter s.Number ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkIdentifier t.Name )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StIdent s.Counter t.Name ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkString s.Len e.String )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAllocString s.Counter <MMathP_Inc s.Counter >s.Len e.String ))<MMathP_Add s.Counter 2 >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#Brackets #Structure e.InBrackets )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StOpenBracket s.Counter ))<MMathP_Inc s.Counter >e.InBrackets (#Structure s.Counter e.Result t.MultiBracket )>;
+  (e.Vars )(e.Commands )s.Counter (#Brackets #Abstract e.InBrackets )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StOpenADT s.Counter ))<MMathP_Inc s.Counter >e.InBrackets (#Abstract s.Counter e.Result t.MultiBracket )>;
+  (e.Vars )(e.Commands )s.Counter (#Brackets #Function e.InBrackets )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAlloc #StOpenCall s.Counter ))<MMathP_Inc s.Counter >e.InBrackets (#Function s.Counter e.Result t.MultiBracket )>;
+  (e.Vars )(e.Commands )s.Counter (#Brackets #EntryCode s.CodeType e.InBrackets )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtEndEntryCode ))s.Counter e.InBrackets (#EntryCode s.CodeType e.Result t.MultiBracket )>;
+  (e.Vars )(e.Commands )s.Counter (#EntryCode s.CodeType e.Result t.MultiBracket )=
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtEntryCode s.CodeType ))s.Counter e.Result t.MultiBracket >;
+  (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenBracket s.OpenCounter )e.CommandsD_E )s.Counter (#Structure s.OpenCounter e.Result t.MultiBracket )=
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenBracket s.OpenCounter )e.CommandsD_E (#CtAlloc #StCloseBracket s.Counter )(#CtBrackets #StLink s.OpenCounter s.Counter ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenADT s.OpenCounter )e.CommandsD_E )s.Counter (#Abstract s.OpenCounter e.Result t.MultiBracket )=
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenADT s.OpenCounter )e.CommandsD_E (#CtAlloc #StCloseADT s.Counter )(#CtBrackets #StLink s.OpenCounter s.Counter ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenCall s.OpenCounter )e.CommandsD_E )s.Counter (#Function s.OpenCounter e.Result t.MultiBracket )=
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.CommandsD_B (#CtAlloc #StOpenCall s.OpenCounter )e.CommandsD_E (#CtAlloc #StCloseCall s.Counter )(#CtBrackets #StStack s.OpenCounter )(#CtBrackets #StStack s.Counter ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkVariable 's' e.Index )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAllocCopyVar s.Counter 's' e.Index ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.VarsD_B (s.Mode e.Index s.Count )e.VarsD_E )(e.Commands )s.Counter (#TkVariable s.Mode e.Index )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.VarsD_B <BED_CppSRP_AlgorithmP_ReturnVar s.Mode e.Index s.Count >e.VarsD_E )(e.Commands (#CtInsertVarBefore s.Count s.Mode e.Index ))s.Counter e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter (#TkVariable s.Mode e.Index )e.Result t.MultiBracket =
+    <BED_CppSRP_AlgorithmP_DoGenResult (e.Vars )(e.Commands (#CtAllocCopyVar s.Counter s.Mode e.Index ))<MMathP_Inc s.Counter >e.Result t.MultiBracket >;
+  (e.Vars )(e.Commands )s.Counter '$' =
+    <BED_CppSRP_AlgorithmP_GenResult2U_Commands <BED_CppSRP_AlgorithmP_CalcBefores <BED_CppSRP_AlgorithmP_FillAltPtr e.Commands #BEGIN >#BEGIN >>;
+}
+
+BED_CppSRP_AlgorithmP_ReturnVar {
+  s.Mode e.Index 1 =
+    ;
+  s.Mode e.Index s.Count =
+    (s.Mode e.Index <MMathP_Dec s.Count >);
+}
+
+BED_CppSRP_AlgorithmP_FillAltPtr {
+  e.Commands (#CtAlloc s.Type s.Number e.Info )s.Prev =
+    <BED_CppSRP_AlgorithmP_FillAltPtr e.Commands s.Number >(#CtAlloc s.Type s.Number e.Info );
+  e.Commands (#CtAllocString s.NumberB s.NumberE s.Len e.String )=
+    <BED_CppSRP_AlgorithmP_FillAltPtr e.Commands s.NumberB >(#CtAllocString s.NumberB s.NumberE s.Len e.String );
+  e.Commands (#CtAllocCopyVar s.Number s.Mode e.Index )s.Prev =
+    <BED_CppSRP_AlgorithmP_FillAltPtr e.Commands s.Prev >(#CtAllocCopyVar s.Number s.Mode e.Index s.Prev );
+  e.Commands t.Other s.Prev =
+    <BED_CppSRP_AlgorithmP_FillAltPtr e.Commands s.Prev >t.Other ;
+  s.Prev =
+    ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_CalcBeforesD_Insert;
+BED_CppSRP_AlgorithmP_CalcBefores {
+  e.Commands #BEGIN =
+    <BED_CppSRP_AlgorithmP_CalcBeforesD_Insert e.Commands #BEGIN >;
+  e.Commands (#CtAlloc s.Type s.Number e.Info )=
+    <BED_CppSRP_AlgorithmP_CalcBeforesD_Insert e.Commands s.Number >(#CtAlloc s.Type s.Number e.Info );
+  e.Commands (#CtAllocString s.NumberB s.NumberE s.Len e.String s.AltPrev )=
+    <BED_CppSRP_AlgorithmP_CalcBeforesD_Insert e.Commands s.NumberB >(#CtAllocString s.NumberB s.NumberE s.Len e.String s.AltPrev );
+  e.Commands (#CtAllocCopyVar s.Number s.Mode e.Index s.AltPrev )=
+    <BED_CppSRP_AlgorithmP_CalcBeforesD_Insert e.Commands s.Number >(#CtAllocCopyVar s.Number s.Mode e.Index s.AltPrev );
+  e.Commands t.Other =
+    <BED_CppSRP_AlgorithmP_CalcBefores e.Commands >t.Other ;
+  =
+    ;
+}
+
+BED_CppSRP_AlgorithmP_CalcBeforesD_Insert {
+  e.Commands (#CtInsertVarBefore s.Usings s.Mode e.Index )s.Prev =
+    <BED_CppSRP_AlgorithmP_CalcBeforesD_Insert e.Commands s.Prev >(#CtInsertVarBefore s.Prev s.Usings s.Mode e.Index );
+  e.Commands s.Prev =
+    <BED_CppSRP_AlgorithmP_CalcBefores e.Commands >;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_ConvertCommandsU_Separated;
+$FORWARD BED_CppSRP_AlgorithmP_SeparateAllocatesAndSplices;
+BED_CppSRP_AlgorithmP_GenResult2U_Commands {
+  e.Commands =
+    <BED_CppSRP_AlgorithmP_ConvertCommandsU_Separated <MLambdaP_MapReduce BED_CppSRP_AlgorithmP_SeparateAllocatesAndSplices (())e.Commands >>;
+}
+
+$LABEL CmdInsertEVarBefore;
+$LABEL CmdInsertSTVarBefore;
+BED_CppSRP_AlgorithmP_SeparateAllocatesAndSplices {
+  (e.Allocates (e.Splices ))(#CtAlloc e.Info )=
+    (e.Allocates (#CtAlloc e.Info )(e.Splices ));
+  (e.Allocates (e.Splices ))(#CtAllocString e.Info )=
+    (e.Allocates (#CtAllocString e.Info )(e.Splices ));
+  (e.Allocates (e.Splices ))(#CtAllocCopyVar s.Number s.Mode e.Index s.AltPrev )=
+    (e.Allocates (#CtAllocCopyVar s.Number s.Mode e.Index s.AltPrev )(e.Splices ));
+  (e.Allocates (e.Splices ))(#CtInsertVarBefore s.Prev s.Number 'e' e.Index )=
+    (e.Allocates (e.Splices (#CmdInsertEVarBefore s.Prev s.Number 'e' e.Index )));
+  (e.Allocates (e.Splices ))(#CtInsertVarBefore s.Prev s.Number s.STMode e.Index )=
+    (e.Allocates (e.Splices (#CmdInsertSTVarBefore s.Prev s.Number s.STMode e.Index )));
+  (e.Allocates (e.Splices ))t.Other =
+    (e.Allocates (e.Splices ))t.Other ;
+}
+
+$FORWARD BED_CppSRP_AlgorithmP_ConvertAllocates;
+$FORWARD BED_CppSRP_AlgorithmP_CorrectAllocates;
+$LABEL CmdSpliceFromFreeList;
+$FORWARD BED_CppSRP_AlgorithmP_ConvertCommand;
+$EXTERN MStringsP_Reverse;
+BED_CppSRP_AlgorithmP_ConvertCommandsU_Separated {
+  (e.Allocates (e.Splices ))e.OtherCommands =
+    <MLambdaP_Map BED_CppSRP_AlgorithmP_ConvertAllocates e.Allocates ><MLambdaP_Map BED_CppSRP_AlgorithmP_CorrectAllocates e.Allocates >(#CmdSpliceFromFreeList )e.Splices <MLambdaP_Map BED_CppSRP_AlgorithmP_ConvertCommand <MStringsP_Reverse e.OtherCommands >>;
+}
+
+$LABEL CmdAllocateElem;
+$FORWARD BED_CppSRP_AlgorithmP_ElemType;
+$LABEL CmdAllocateString;
+$LABEL CmdCopyVar;
+BED_CppSRP_AlgorithmP_ConvertAllocates {
+  (#CtAlloc s.Type s.Number e.Value )=
+    (#CmdAllocateElem s.Number <BED_CppSRP_AlgorithmP_ElemType s.Type e.Value >);
+  (#CtAllocString s.NumBegin s.NumEnd s.Len e.Value )=
+    (#CmdAllocateString s.NumBegin s.NumEnd s.Len e.Value );
+  (#CtAllocCopyVar s.Number 'e' e.Index s.AltPrev )=
+    (#CmdCopyVar s.Number 'e' e.Index );
+  (#CtAllocCopyVar s.Number s.Mode e.Index s.AltPrev )=
+    (#CmdCopyVar s.Number s.Mode e.Index );
+}
+
+$LABEL ElChar;
+$LABEL ElName;
+$LABEL ElNumber;
+$LABEL ElIdent;
+$LABEL ElOpenADT;
+$LABEL ElCloseADT;
+$LABEL ElOpenBracket;
+$LABEL ElCloseBracket;
+$LABEL ElOpenCall;
+$LABEL ElCloseCall;
+BED_CppSRP_AlgorithmP_ElemType {
+  #StChar s.Char =
+    #ElChar s.Char ;
+  #StName e.Name =
+    #ElName e.Name ;
+  #StNumber s.Number =
+    #ElNumber s.Number ;
+  #StIdent t.Name =
+    #ElIdent t.Name ;
+  #StOpenADT =
+    #ElOpenADT ;
+  #StCloseADT =
+    #ElCloseADT ;
+  #StOpenBracket =
+    #ElOpenBracket ;
+  #StCloseBracket =
+    #ElCloseBracket ;
+  #StOpenCall =
+    #ElOpenCall ;
+  #StCloseCall =
+    #ElCloseCall ;
+}
+
+$LABEL CmdCorrectAllocCopyEVar;
+BED_CppSRP_AlgorithmP_CorrectAllocates {
+  (#CtAllocCopyVar s.Number 'e' e.Index s.AltPrev )=
+    (#CmdCorrectAllocCopyEVar s.Number s.AltPrev );
+  t.Other =
+    ;
+}
+
+$LABEL CmdPushStack;
+$LABEL CmdLinkBrackets;
+BED_CppSRP_AlgorithmP_ConvertCommand {
+  (#CtBrackets #StStack s.Number )=
+    (#CmdPushStack s.Number );
+  (#CtBrackets #StLink s.LeftNumber s.RightNumber )=
+    (#CmdLinkBrackets s.LeftNumber s.RightNumber );
+  (#CtEntryCode s.CodeType )=
+    (#CmdStartEntryCode s.CodeType );
+  (#CtEndEntryCode )=
+    (#CmdEndEntryCode );
+}
+
+$ENTRY BED_CppSRP_AlgorithmP_MakeAlgorithm {
+  e.Sentences =
+    <MLambdaP_Map BED_CppSRP_AlgorithmP_MakeAlgorithmD_Sentence e.Sentences >;
+}
+
+BED_CppSRP_AlgorithmP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_CppSRP_AlgorithmP_EntryPointE_ {
+  =
+    <RegisterE_ BED_CppSRP_AlgorithmP_FinalizeE_ >;
+}
+

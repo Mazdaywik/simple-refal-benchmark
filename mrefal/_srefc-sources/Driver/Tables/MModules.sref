@@ -1,0 +1,355 @@
+$LABEL Kind;
+$LABEL Module;
+$LABEL FrontEnd;
+$LABEL Unknowns;
+$LABEL BackEnds;
+$LABEL RealName;
+$LABEL Unknown;
+$LABEL Target;
+$LABEL Default;
+$LABEL Type;
+$LABEL Errors;
+$LABEL Status;
+$LABEL Found;
+$LABEL MinMaxTime;
+$LABEL ModuleType;
+$LABEL Main;
+$LABEL CachedSym;
+$LABEL None;
+$LABEL CachedModuleIF;
+$LABEL NotCached;
+DriverP_TablesP_MModulesP_DefaultOptions {
+  =
+    (#Kind #Module )(#FrontEnd #Unknowns )(#BackEnds #Unknowns )(#RealName #Unknown )(#Target #Default )(#Type #Errors )(#Status #Found )(#MinMaxTime #Unknown )(#ModuleType #Main )(#CachedSym #None )(#CachedModuleIF #NotCached );
+}
+
+$EXTERN MStringsP_Lower;
+$EXTERN MQualifiedNameP_Parse;
+DriverP_TablesP_MModulesP_Explode {
+  t.QualifiedName =
+    <MStringsP_Lower <MQualifiedNameP_Parse t.QualifiedName >>;
+}
+
+$ENUM DriverP_TablesP_MModulesP_Context;
+$FORWARD DriverP_TablesP_MModulesP_IsKnownD_CheckKind;
+$EXTERN MSymTableP_GetAttrib;
+DriverP_TablesP_MModulesP_IsKnown {
+  [DriverP_TablesP_MModulesP_Context t.SymTable ]t.ModuleName =
+    <DriverP_TablesP_MModulesP_IsKnownD_CheckKind <MSymTableP_GetAttrib t.SymTable <DriverP_TablesP_MModulesP_Explode t.ModuleName >#Kind >>;
+}
+
+$LABEL Known;
+$LABEL NoName;
+$LABEL NotKnown;
+DriverP_TablesP_MModulesP_IsKnownD_CheckKind {
+  t.SymTable #Found #Module =
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#Known ;
+  t.SymTable #NoName =
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#NotKnown ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_UpdateInfoD_Aux;
+DriverP_TablesP_MModulesP_UpdateInfo {
+  [DriverP_TablesP_MModulesP_Context t.SymTable ]t.ModuleName e.NewOptions =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_Aux t.SymTable t.ModuleName (<DriverP_TablesP_MModulesP_Explode t.ModuleName >)e.NewOptions >;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_UpdateInfoD_FindKind;
+DriverP_TablesP_MModulesP_UpdateInfoD_Aux {
+  t.SymTable t.ModuleName (e.KeyName )e.NewOptions =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_FindKind <MSymTableP_GetAttrib t.SymTable e.KeyName #Kind >t.ModuleName (e.KeyName )e.NewOptions >;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptions;
+$EXTERN MSymTableP_UpdateAttribSet;
+DriverP_TablesP_MModulesP_UpdateInfoD_FindKind {
+  t.SymTable #Found #Module t.RealName (e.KeyName )e.NewOptions =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptions t.SymTable (e.KeyName )e.NewOptions >;
+  t.SymTable #NoName t.ModuleName (e.KeyName )e.NewOptions =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptions <MSymTableP_UpdateAttribSet t.SymTable (e.KeyName )<DriverP_TablesP_MModulesP_DefaultOptions >>(e.KeyName )e.NewOptions >;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptions;
+DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptions {
+  t.SymTable (e.KeyName )e.Options =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptions t.SymTable (e.KeyName )()e.Options >;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptionsD_SwExist;
+$LABEL Success;
+DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptions {
+  t.SymTable (e.KeyName )(e.Scanned )(s.NextOption e.NextValue )e.Options =
+    <DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptionsD_SwExist <MSymTableP_GetAttrib t.SymTable e.KeyName s.NextOption >(e.KeyName )(e.Scanned )(s.NextOption e.NextValue )(e.Options )>;
+  t.SymTable (e.KeyName )(e.Scanned )=
+    [DriverP_TablesP_MModulesP_Context <MSymTableP_UpdateAttribSet t.SymTable (e.KeyName )e.Scanned >]#Success ;
+}
+
+$LABEL NoAttrib;
+$LABEL Fails;
+$LABEL UnknownOption;
+DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptionsD_SwExist {
+  t.SymTable #Found e.Value (e.KeyName )(e.Scanned )(s.NextOption e.NewValue )(e.Options )=
+    <DriverP_TablesP_MModulesP_UpdateInfoD_UpdateOptionsD_ExistOptions t.SymTable (e.KeyName )(e.Scanned (s.NextOption e.NewValue ))e.Options >;
+  t.SymTable #NoAttrib (e.KeyName )(e.Scanned )(s.NextOption e.NewValue )(e.Options )=
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#Fails #UnknownOption ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_ExtractOptionD_Aux;
+DriverP_TablesP_MModulesP_ExtractOption {
+  [DriverP_TablesP_MModulesP_Context t.SymTable ]t.QualifiedName s.Option =
+    <DriverP_TablesP_MModulesP_ExtractOptionD_Aux t.SymTable t.QualifiedName <DriverP_TablesP_MModulesP_Explode t.QualifiedName >s.Option >;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_ExtractOptionD_SwExist;
+DriverP_TablesP_MModulesP_ExtractOptionD_Aux {
+  t.SymTable t.ModuleName e.KeyName s.Option =
+    <DriverP_TablesP_MModulesP_ExtractOptionD_SwExist <MSymTableP_GetAttrib t.SymTable e.KeyName s.Option >t.ModuleName (e.KeyName )>;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_ExtractOptionD_SwExistD_CheckKind;
+$LABEL OptionNotFound;
+$LABEL ModuleNotFound;
+DriverP_TablesP_MModulesP_ExtractOptionD_SwExist {
+  t.SymTable #Found e.Info t.ModuleName (e.KeyName )=
+    <DriverP_TablesP_MModulesP_ExtractOptionD_SwExistD_CheckKind e.Info <MSymTableP_GetAttrib t.SymTable e.KeyName #Kind >>;
+  t.SymTable #NoAttrib t.ModuleName (e.KeyName )=
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#OptionNotFound ;
+  t.SymTable #NoName t.ModuleName (e.KeyName )=
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_ExtractOptionD_SwExistD_CheckKind {
+  e.Info t.SymTable #Found #Module =
+    [DriverP_TablesP_MModulesP_Context t.SymTable ]#Found e.Info ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_GetStatusTypeD_ReadStatus;
+DriverP_TablesP_MModulesP_GetStatusTypeD_SwKnown {
+  t.hContext #Known t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetStatusTypeD_ReadStatus <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #Status >t.ModuleName >;
+  t.hContext #NotKnown t.ModuleName =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_GetStatusTypeD_ReadType;
+DriverP_TablesP_MModulesP_GetStatusTypeD_ReadStatus {
+  t.hContext #Found s.Status t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetStatusTypeD_ReadType s.Status <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #Type >>;
+}
+
+DriverP_TablesP_MModulesP_GetStatusTypeD_ReadType {
+  s.Status t.hContext #Found s.Type =
+    t.hContext #Success s.Status s.Type ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_CreateModuleD_SwCreated;
+$LABEL Redefinition;
+DriverP_TablesP_MModulesP_CreateModuleD_SwDefined {
+  t.hContext #NotKnown t.ModuleName e.NewOptions =
+    <DriverP_TablesP_MModulesP_CreateModuleD_SwCreated <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName e.NewOptions >>;
+  t.hContext #Known t.ModuleName e.NewOptions =
+    t.hContext #Fails #Redefinition ;
+}
+
+DriverP_TablesP_MModulesP_CreateModuleD_SwCreated {
+  t.hContext #Success =
+    t.hContext #Success ;
+}
+
+DriverP_TablesP_MModulesP_GetFrontEndD_Aux {
+  t.hContext #Found #None =
+    t.hContext #Success #None ;
+  t.hContext #Found s.FrontEnd e.Path =
+    t.hContext #Success s.FrontEnd e.Path ;
+  t.hContext #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_GetBackEndListD_Aux {
+  t.hContext #Found e.BackEndList =
+    t.hContext #Success e.BackEndList ;
+  t.hContext #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+$LABEL BackEndNotFound;
+DriverP_TablesP_MModulesP_GetBackEndD_Aux {
+  t.hContext #Success e.BackEndsD_B (s.BackEnd e.Path )e.BackEndsD_E s.BackEnd =
+    t.hContext #Success e.Path ;
+  t.hContext #Success e.BackEnds s.BackEnd =
+    t.hContext #Fails #BackEndNotFound ;
+  t.hContext #Fails #ModuleNotFound s.BackEnd =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_GuardUpdateInfo;
+$LABEL Cluster;
+$LABEL CantUpdate;
+DriverP_TablesP_MModulesP_SetClusterTypeD_SwKnown {
+  t.hContext #Success #Found s.OldType t.ModuleName s.NewType =
+    <DriverP_TablesP_MModulesP_GuardUpdateInfo <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName (#Status #Cluster )(#Type s.NewType )>>;
+  t.hContext #Success s.OtherStatus s.OldType t.ModuleName s.NewType =
+    t.hContext #Fails #CantUpdate ;
+  t.hContext #Fails #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_GuardUpdateInfo {
+  t.hContext #Success =
+    t.hContext #Success ;
+}
+
+DriverP_TablesP_MModulesP_SetMinMaxTimeD_SwKnown {
+  t.hContext #Known t.ModuleName (e.MinTime )(e.MaxTime )=
+    <DriverP_TablesP_MModulesP_GuardUpdateInfo <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName (#MinMaxTime (e.MinTime )(e.MaxTime ))>>;
+  t.hContext #NotKnown t.ModuleName (e.MinTime )(e.MaxTime )=
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_GetMinMaxTimeD_Aux {
+  t.hContext #Found #Unknown =
+    t.hContext #Success #Unknown ;
+  t.hContext #Found (e.MinTime )(e.MaxTime )=
+    t.hContext #Success (e.MinTime )(e.MaxTime );
+  t.hContext #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+$FORWARD DriverP_TablesP_MModulesP_FinishModuleD_Aux;
+DriverP_TablesP_MModulesP_FinishModuleD_SwKnown {
+  t.hContext #Success #Cluster s.Type t.ModuleName e.NewOptions =
+    <DriverP_TablesP_MModulesP_FinishModuleD_Aux <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName e.NewOptions >>;
+  t.hContext #Success s.Status s.Type t.ModuleName e.NewOptions =
+    t.hContext #Fails #CantUpdate ;
+  t.hContext #Fails #ModuleNotFound t.ModuleName e.NewOptions =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_FinishModuleD_Aux {
+  t.hContext #Success =
+    t.hContext #Success ;
+}
+
+DriverP_TablesP_MModulesP_GetTargetD_Aux {
+  t.hContext #Found #Default =
+    t.hContext #Success #Default ;
+  t.hContext #Found e.PtTarget =
+    t.hContext #Success e.PtTarget ;
+  t.hContext #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_SetTargetD_SwKnown {
+  t.hContext #Known t.ModuleName e.PtTargetName =
+    <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName (#Target e.PtTargetName )>;
+  t.hContext #NotKnown t.ModuleName e.PtTargetName =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_GetCachedModuleIFD_Aux {
+  t.hContext #Found #NotCached =
+    t.hContext #Success #NotCached ;
+  t.hContext #Found t.ModuleIF =
+    t.hContext #Success t.ModuleIF ;
+  t.hContext #ModuleNotFound =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+DriverP_TablesP_MModulesP_SetCachedModuleIFD_SwKnown {
+  t.hContext #Known t.ModuleName t.ModuleIF =
+    <DriverP_TablesP_MModulesP_UpdateInfo t.hContext t.ModuleName (#CachedModuleIF t.ModuleIF )>;
+  t.hContext #NotKnown t.ModuleName t.ModuleIF =
+    t.hContext #Fails #ModuleNotFound ;
+}
+
+$EXTERN MSymTableP_Create;
+$ENTRY DriverP_TablesP_MModulesP_Create {
+  =
+    [DriverP_TablesP_MModulesP_Context <MSymTableP_Create >];
+}
+
+$EXTERN MSymTableP_Destroy;
+$ENTRY DriverP_TablesP_MModulesP_Destroy {
+  [DriverP_TablesP_MModulesP_Context t.SymTable ]=
+    <MSymTableP_Destroy t.SymTable >;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetStatusType {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetStatusTypeD_SwKnown <DriverP_TablesP_MModulesP_IsKnown t.hContext t.ModuleName >t.ModuleName >;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_CreateModule {
+  t.hContext t.ModuleName (#Type s.Type )(#FrontEnd s.FrontEnd e.PathToFrontEnd )(#BackEnds e.BackEnds )=
+    <DriverP_TablesP_MModulesP_CreateModuleD_SwDefined <DriverP_TablesP_MModulesP_IsKnown t.hContext t.ModuleName >t.ModuleName (#Type s.Type )(#FrontEnd s.FrontEnd e.PathToFrontEnd )(#BackEnds e.BackEnds )(#Status #Found )>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetFrontEnd {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetFrontEndD_Aux <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #FrontEnd >>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetBackEndList {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetBackEndListD_Aux <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #BackEnds >>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetBackEnd {
+  t.hContext t.ModuleName s.BackEnd =
+    <DriverP_TablesP_MModulesP_GetBackEndD_Aux <DriverP_TablesP_MModulesP_GetBackEndList t.hContext t.ModuleName >s.BackEnd >;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_SetClusterType {
+  t.hContext t.ModuleName s.Type =
+    <DriverP_TablesP_MModulesP_SetClusterTypeD_SwKnown <DriverP_TablesP_MModulesP_GetStatusType t.hContext t.ModuleName >t.ModuleName s.Type >;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_SetMinMaxTime {
+  t.hContext t.ModuleName (e.MinTime )(e.MaxTime )=
+    <DriverP_TablesP_MModulesP_SetMinMaxTimeD_SwKnown <DriverP_TablesP_MModulesP_IsKnown t.hContext t.ModuleName >t.ModuleName (e.MinTime )(e.MaxTime )>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetMinMaxTime {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetMinMaxTimeD_Aux <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #MinMaxTime >>;
+}
+
+$LABEL Ready;
+$ENTRY DriverP_TablesP_MModulesP_FinishModule {
+  t.hContext t.RealModuleName s.ModuleType #Errors =
+    <DriverP_TablesP_MModulesP_FinishModuleD_SwKnown <DriverP_TablesP_MModulesP_GetStatusType t.hContext t.RealModuleName >t.RealModuleName (#Type #Errors )(#Status #Ready )>;
+  t.hContext t.RealModuleName s.ModuleType s.Type =
+    <DriverP_TablesP_MModulesP_FinishModuleD_SwKnown <DriverP_TablesP_MModulesP_GetStatusType t.hContext t.RealModuleName >t.RealModuleName (#Type s.Type )(#Status #Ready )(#RealName t.RealModuleName )(#ModuleType s.ModuleType )>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetTarget {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetTargetD_Aux <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #Target >>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_SetTarget {
+  t.hContext t.ModuleName e.PtTargetName =
+    <DriverP_TablesP_MModulesP_SetTargetD_SwKnown <DriverP_TablesP_MModulesP_IsKnown t.hContext t.ModuleName >t.ModuleName e.PtTargetName >;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_GetCachedModuleIF {
+  t.hContext t.ModuleName =
+    <DriverP_TablesP_MModulesP_GetCachedModuleIFD_Aux <DriverP_TablesP_MModulesP_ExtractOption t.hContext t.ModuleName #CachedModuleIF >>;
+}
+
+$ENTRY DriverP_TablesP_MModulesP_SetCachedModuleIF {
+  t.hContext t.ModuleName t.ModuleIF =
+    <DriverP_TablesP_MModulesP_SetCachedModuleIFD_SwKnown <DriverP_TablesP_MModulesP_IsKnown t.hContext t.ModuleName >t.ModuleName t.ModuleIF >;
+}
+
+DriverP_TablesP_MModulesP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY DriverP_TablesP_MModulesP_EntryPointE_ {
+  =
+    <RegisterE_ DriverP_TablesP_MModulesP_FinalizeE_ >;
+}
+

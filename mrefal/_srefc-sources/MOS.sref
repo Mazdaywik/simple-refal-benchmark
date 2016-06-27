@@ -1,0 +1,52 @@
+$EXTERN CoreBEP_MOSP_System;
+$ENTRY MOSP_System {
+  e.Command =
+    <CoreBEP_MOSP_System e.Command >;
+}
+
+$EXTERN CoreBEP_MOSP_Arg;
+$ENTRY MOSP_Arg {
+  s.Num =
+    <CoreBEP_MOSP_Arg s.Num >;
+}
+
+$EXTERN CoreBEP_MOSP_ArgList;
+$ENTRY MOSP_ArgList {
+  =
+    <CoreBEP_MOSP_ArgList >;
+}
+
+$ENTRY MOSP_ProgName {
+  =
+    <MOSP_Arg 0 >;
+}
+
+$EXTERN CoreBEP_MOSP_Exit;
+$ENTRY MOSP_Exit {
+  s.RetCode =
+    <CoreBEP_MOSP_Exit s.RetCode >;
+}
+
+$EXTERN CoreBEP_MOSP_EnvList;
+$ENTRY MOSP_EnvList {
+  =
+    <CoreBEP_MOSP_EnvList >;
+}
+
+$EXTERN CoreBEP_MOSP_Env;
+$ENTRY MOSP_Env {
+  e.Name =
+    <CoreBEP_MOSP_Env e.Name >;
+}
+
+MOSP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MOSP_EntryPointE_ {
+  =
+    <RegisterE_ MOSP_FinalizeE_ >;
+}
+

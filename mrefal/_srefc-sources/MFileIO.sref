@@ -1,0 +1,111 @@
+$FORWARD MFileIOP_SwOpen;
+$EXTERN CoreBEP_MFileIOP_Open;
+MFileIOP_OpenD_Aux {
+  s.Mode e.FileName =
+    <MFileIOP_SwOpen <CoreBEP_MFileIOP_Open s.Mode e.FileName >s.Mode e.FileName >;
+}
+
+$LABEL Fails;
+$FORWARD MFileIOP_OpenD_CantOpenFile;
+MFileIOP_SwOpen {
+  #Fails s.Mode e.FileName =
+    <MFileIOP_OpenD_CantOpenFile s.Mode e.FileName >;
+  s.Handle s.Mode e.FileName =
+    s.Handle ;
+}
+
+$ENUM MFileIOP_OpenD_CantOpenFile;
+
+$EXTERN MFileIOP_NulClose;
+$EXTERN MFileIOP_ReadLine;
+MFileIOP_DoLoad {
+  t.File 0 =
+    <MFileIOP_NulClose t.File >;
+  t.File e.Line 0 =
+    (e.Line )<MFileIOP_NulClose t.File >;
+  t.File e.Line =
+    (e.Line )<MFileIOP_DoLoad <MFileIOP_ReadLine t.File >>;
+}
+
+$EXTERN MFileIOP_WriteLine;
+MFileIOP_DoSave {
+  t.File (e.NextLine )e.Tail =
+    <MFileIOP_DoSave <MFileIOP_WriteLine t.File e.NextLine >e.Tail >;
+  t.File =
+    <MFileIOP_NulClose t.File >;
+}
+
+$ENTRY MFileIOP_Open {
+  'r' e.FileName =
+    <MFileIOP_OpenD_Aux 'r' e.FileName >;
+  'w' e.FileName =
+    <MFileIOP_OpenD_Aux 'w' e.FileName >;
+  'a' e.FileName =
+    <MFileIOP_OpenD_Aux 'a' e.FileName >;
+  'br' e.FileName =
+    <MFileIOP_OpenD_Aux 'br' e.FileName >;
+  'bw' e.FileName =
+    <MFileIOP_OpenD_Aux 'bw' e.FileName >;
+  'ba' e.FileName =
+    <MFileIOP_OpenD_Aux 'ba' e.FileName >;
+}
+
+$EXTERN CoreBEP_MFileIOP_Close;
+$ENTRY MFileIOP_Close {
+  s.Handle =
+    <CoreBEP_MFileIOP_Close s.Handle >;
+}
+
+$ENTRY MFileIOP_NulClose {
+  s.Handle =
+    <CoreBEP_MFileIOP_Close s.Handle >;
+}
+
+$EXTERN CoreBEP_MFileIOP_ReadLine;
+$ENTRY MFileIOP_ReadLine {
+  s.Handle =
+    s.Handle <CoreBEP_MFileIOP_ReadLine s.Handle >;
+}
+
+$EXTERN CoreBEP_MFileIOP_Write;
+$ENTRY MFileIOP_Write {
+  s.Handle e.Line =
+    s.Handle <CoreBEP_MFileIOP_Write s.Handle e.Line >;
+}
+
+$ENTRY MFileIOP_WriteD_T {
+  s.Handle e.Line =
+    <MFileIOP_Write s.Handle e.Line >e.Line ;
+}
+
+$ENTRY MFileIOP_WriteLine {
+  s.Handle e.Line =
+    s.Handle <CoreBEP_MFileIOP_Write s.Handle e.Line '\n' >;
+}
+
+$ENTRY MFileIOP_WriteLineD_T {
+  s.Handle e.Line =
+    <MFileIOP_WriteLine s.Handle e.Line >e.Line ;
+}
+
+$ENTRY MFileIOP_Load {
+  e.FileName =
+    <MFileIOP_DoLoad <MFileIOP_ReadLine <MFileIOP_Open 'r' e.FileName >>>;
+}
+
+$ENTRY MFileIOP_Save {
+  (e.FileName )e.Content =
+    <MFileIOP_DoSave <MFileIOP_Open 'w' e.FileName >e.Content >;
+}
+
+MFileIOP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MFileIOP_EntryPointE_ {
+  =
+    <RegisterE_ MFileIOP_FinalizeE_ >;
+}
+

@@ -1,0 +1,343 @@
+$MODULE BE-Refal5::MExeTyper;
+
+$IMPORT FileIO = MFileIO;
+$IMPORT Math = MMath;
+$IMPORT MError;
+
+/*------------------------------------------------------------------------------
+  Внутренний формат
+  [ExeTyper s.Limit s.Free t.FOut e.Converted]
+------------------------------------------------------------------------------*/
+
+$DATA ExeTyper;
+
+/**
+  <Create s.Limit e.OutputName> == t.ExeTyper
+*/
+$ENTRY Create
+  s.Limit e.OutputFileName =
+    [ExeTyper s.Limit s.Limit <FileIO::Open 'w' e.OutputFileName>];
+
+/**
+  <Destroy t.ExeTyper> == empty
+*/
+$ENTRY Destroy
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] =
+    <FileIO::Close
+      <FileIO::WriteLine t.FOut e.Converted>
+    >;
+
+/*
+  <Flush t.ExeTyper> == t.ExeTyper
+*/
+/*$ENTRY Flush {
+  [ExeTyper s.Limit s.Free t.FOut] =
+    [ExeTyper s.Limit s.Limit t.FOut];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] =
+    [ExeTyper
+      s.Limit s.Limit
+      <FileIO::WriteLine t.FOut e.Converted>
+    ];
+}*/
+
+Dec {
+  Limit = Limit;
+  0 = Limit;
+  1 = Limit;
+  s.Other = <Math::Dec s.Other>;
+}
+
+// Уменьшаем на 2 (при переносе экранированного символа в кавычках)
+Dec2 s.Size = <Dec <Dec s.Size>>;
+
+// Средняя длина переименного элемента <= 3: XA2
+Dec3 s.Size = <Dec <Dec2 s.Size>>;
+
+//Dec4 s.Size = <Dec2 <Dec2 s.Size>>;
+
+/*Inc {
+  Limit = Limit;
+  s.Other = <Math::Inc s.Other>;
+}*/
+
+// Перед этими символами пробелы не нужны
+SingleChars = '=<>;(){}';
+
+/**
+  <TypeChar t.ExeTyper s.Char> = t.ExeTyper
+*/
+$ENTRY TypeChar {
+  [ExeTyper s.Limit s.Free t.FOut] ' ' =
+    [ExeTyper s.Limit s.Free t.FOut];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] '\t' =
+    <TypeChar
+      [ExeTyper s.Limit s.Free t.FOut e.Converted] ' '
+    >;
+
+  // ИНВАРИАНТ. Два пробела в e.Converted следовать подряд не могут
+  // (за исключением закавыченного случая).
+  [ExeTyper s.Limit s.Free t.FOut e.Converted ' '] ' ' =
+    [ExeTyper s.Limit s.Free t.FOut e.Converted ' '];
+
+  // Перед символами из SingleChars пробелы не нужны.
+  [ExeTyper s.Limit s.Free t.FOut e.Converted ' '] s.Char =
+    <TypeCharWithSpaceBefore
+      [ExeTyper s.Limit s.Free t.FOut e.Converted]
+      s.Char <SingleChars>
+    >;
+
+  // Можем разрывать строку только на месте пробелов
+  [ExeTyper s.Limit Limit t.FOut e.Converted] ' ' =
+    [ExeTyper s.Limit s.Limit <FileIO::WriteLine t.FOut e.Converted>];
+
+  // После символов из SingleChars и кавычек пробелы не нужны
+  [ExeTyper s.Limit s.Free e.Converted s.Char] ' ' =
+    <TypeCharWithSpaceAfter
+      [ExeTyper s.Limit s.Free e.Converted]
+      s.Char '' '"' <SingleChars>
+    >;
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] s.Char =
+    [ExeTyper s.Limit <Dec s.Free> t.FOut e.Converted s.Char];
+}
+
+TypeCharWithSpaceBefore {
+  [ExeTyper s.Limit s.Free t.FOut e.Converted]
+  s.Char e.?SingleChars-B s.Char e.?SingleChars-E =
+    [ExeTyper s.Limit s.Free t.FOut e.Converted s.Char];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] s.Char e.?SingleChars =
+    [ExeTyper
+      s.Limit <Dec s.Free> t.FOut e.Converted ' ' s.Char
+    ];
+}
+
+TypeCharWithSpaceAfter {
+  [ExeTyper s.Limit s.Free t.FOut e.Converted]
+  s.Char e.?SingleChars-B s.Char e.?SingleChars-E =
+    [ExeTyper s.Limit s.Free t.FOut e.Converted s.Char];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted]
+  s.Char e.?SingleChars =
+    [ExeTyper
+      s.Limit <Dec s.Free> t.FOut e.Converted s.Char ' '
+    ];
+}
+
+/**
+  <TypeSingleQuoted t.ExeTyper e.Text> == t.ExeTyper
+*/
+$ENTRY TypeSingleQuoted {
+  [ExeTyper s.Limit Limit t.FOut e.Converted] e.Text =
+    <TypeSingleQuoted
+      [ExeTyper s.Limit s.Limit <FileIO::WriteLine t.FOut e.Converted>]
+      e.Text
+    >;
+
+  // Склеиваем две соседние строки в кавычках
+  [ExeTyper s.Limit s.Free t.FOut e.Converted '']
+  e.Text =
+    <DoTypeSingleQuoted
+      [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text
+    >;
+
+  // Удаляем пробел перед кавычкой
+  [ExeTyper s.Limit s.Free t.FOut e.Converted ' '] e.Text =
+    <TypeSingleQuoted
+      [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text
+    >;
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text =
+    <DoTypeSingleQuoted
+      [ExeTyper s.Limit <Dec2 s.Free> t.FOut e.Converted '']
+      e.Text
+    >;
+}
+
+DoTypeSingleQuoted {
+  /*
+    Не рассматриваем символ за бэкслешем, а сразу же его переносим,
+    за исключением случая символа x, т.к. нельзя разрывать
+    шестнадцатиричный символ.
+  */
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] '\\x' s.Num1 s.Num2 e.Tail =
+    <DoTypeSingleQuoted
+      [ExeTyper
+        s.Limit
+        <Dec2 s.Free>
+        t.FOut e.Converted '\\x' s.Num1 s.Num2
+      ]
+      e.Tail
+    >;
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] '\\' s.Escaped e.Tail =
+    <DoTypeSingleQuoted
+      [ExeTyper
+        s.Limit
+        <Dec2 s.Free>
+        t.FOut e.Converted '\\' s.Escaped
+      ]
+      e.Tail
+    >;
+
+  /* Обрабатываем $ */
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] '$$' e.Tail =
+    <DoTypeSingleQuoted
+      [ExeTyper s.Limit <Dec s.Free> t.FOut e.Converted '$'] e.Tail
+    >;
+
+  /* Необходимо разрезать текст в кавычках таким образом, чтобы на отдель-
+  ной строке не осталось ''. */
+
+  // Строка заканчивается на \', печатаемый текст закончился -- печатаем \''
+  [ExeTyper s.Limit Limit t.FOut e.Converted '\\' ''] =
+    [ExeTyper
+      s.Limit s.Limit
+      <FileIO::WriteLine t.FOut e.Converted '\\' '' ''>
+    ];
+
+  // Строка заканчивается на \' и осталась ещё длинная строка.
+  // Предыдущую строку заканчиваем \'', а на новой печатаем текст в кавычках.
+  [ExeTyper s.Limit Limit t.FOut e.Converted '\\' ''] e.Text =
+    <TypeSingleQuoted
+      [ExeTyper
+        s.Limit s.Limit
+        <FileIO::WriteLine t.FOut e.Converted '\\' '' ''>
+      ]
+      e.Text
+    >;
+
+  // Неожиданно закончилась строка
+  [ExeTyper s.Limit Limit t.FOut e.Converted ''] =
+    <MError::LinkError
+      'Unexpected quote position ??? `' e.Converted '' '`'
+    >;
+
+  [ExeTyper s.Limit Limit t.FOut e.Converted ''] e.Text =
+    // ВНИМАНИЕ! Не DoTypeSingleQuoted!
+    <TypeSingleQuoted
+      [ExeTyper
+        s.Limit s.Limit
+        <FileIO::WriteLine t.FOut e.Converted>
+      ]
+      e.Text
+    >;
+
+  // Закончилась строка и закончился текст в кавычках
+  [ExeTyper s.Limit Limit t.FOut e.Converted] =
+    [ExeTyper
+      s.Limit s.Limit
+      <FileIO::WriteLine t.FOut e.Converted ''>
+    ];
+
+  // Закончилась строка, текст в кавычках остался
+  [ExeTyper s.Limit Limit t.FOut e.Converted] e.Text =
+    // ВНИМАНИЕ! Не DoTypeSingleQuoted!
+    <TypeSingleQuoted
+      [ExeTyper s.Limit Limit t.FOut e.Converted '']
+      e.Text
+    >;
+
+  /* Штатные случаи */
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] =
+    [ExeTyper s.Limit <Dec s.Free> t.FOut e.Converted ''];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] s.Char e.Text =
+    <DoTypeSingleQuoted
+      [ExeTyper s.Limit <Dec s.Free> t.FOut e.Converted s.Char]
+      e.Text
+    >;
+}
+
+/**
+  <TypeDoubleQuoted t.ExeTyper e.Text> == t.ExeTyper
+*/
+$ENTRY TypeDoubleQuoted {
+  [ExeTyper s.Limit Limit t.FOut e.Converted] e.Text =
+    <TypeDoubleQuoted
+      [ExeTyper s.Limit s.Limit <FileIO::WriteLine t.FOut e.Converted>]
+      e.Text
+    >;
+
+  // Удаляем пробел перед кавычкой
+  [ExeTyper s.Limit s.Free t.FOut e.Converted ' '] e.Text =
+    <TypeDoubleQuoted
+      [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text
+    >;
+
+  // Если нет несброшенной строки — просто выводим в неё текст в кавычках
+  [ExeTyper s.Limit s.Free t.FOut /* пусто */] e.Text =
+    [ExeTyper
+      s.Limit <DoubleQuotedDec s.Free e.Text> t.FOut '"' e.Text '"'
+    ];
+
+  // Иначе имитируем вывод для проверки «влезет ли строка?»
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text =
+    <TypeDoubleQuoted-SwFree
+      <DoubleQuotedDec s.Free e.Text>
+      [ExeTyper s.Limit s.Free t.FOut e.Converted]
+      e.Text
+    >;
+}
+
+TypeDoubleQuoted-SwFree {
+  Limit [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Text =
+    [ExeTyper
+      s.Limit <DoubleQuotedDec s.Limit e.Text>
+      <FileIO::WriteLine t.FOut e.Converted>
+      '"' e.Text '"'
+    ];
+
+  s.NewFree [ExeTyper s.Limit s.OldFree t.FOut e.Converted '"'] e.Text =
+    [ExeTyper
+      s.Limit <Dec s.NewFree> t.FOut e.Converted '" "' e.Text '"'
+    ];
+
+  s.NewFree [ExeTyper s.Limit s.OldFree t.FOut e.Converted] e.Text =
+    [ExeTyper s.Limit s.NewFree t.FOut e.Converted '"' e.Text '"'];
+}
+
+DoubleQuotedDec {
+  s.Free s.Char e.Text = <DoubleQuotedDec <Dec s.Free> e.Text>;
+  s.Free = <Dec2 s.Free>;
+}
+
+/**
+  <TypeRenamed t.ExeTyper e.RenamedName> == t.ExeTyper
+*/
+$ENTRY TypeRenamed {
+  [ExeTyper s.Limit Limit t.FOut e.Converted] e.Name =
+    [ExeTyper
+      s.Limit s.Limit
+      <FileIO::WriteLine t.FOut e.Converted e.Name>
+    ];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Name =
+    [ExeTyper s.Limit <Dec3 <Dec s.Free>> t.FOut e.Converted e.Name ' '];
+}
+
+/**
+  <TypeComment t.ExeTyper e.Comment> == t.ExeTyper
+*/
+$ENTRY TypeComment {
+  [ExeTyper s.Limit s.Free t.FOut] e.Comment =
+    [ExeTyper s.Limit s.Limit
+      <FileIO::WriteLine
+        <FileIO::WriteLine t.FOut> '* ' e.Comment
+      >
+    ];
+
+  [ExeTyper s.Limit s.Free t.FOut e.Converted] e.Comment =
+    [ExeTyper s.Limit s.Limit
+      <FileIO::WriteLine
+        <FileIO::WriteLine
+          <FileIO::WriteLine t.FOut e.Converted>
+        >
+        '* ' e.Comment
+      >
+    ];
+}
+
+$END BE-Refal5::MExeTyper.

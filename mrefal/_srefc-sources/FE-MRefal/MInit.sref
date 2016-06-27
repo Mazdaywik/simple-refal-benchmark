@@ -1,0 +1,19 @@
+$EXTERN ConfigP_MConfigP_RegisterFrontEnd;
+$LABEL MRefalU_FrontEnd;
+$EXTERN FED_MRefalP_MParserU_MRefalP_SrcModule;
+$ENTRY FED_MRefalP_MInitP_Register {
+  t.Config (e.Ext )=
+    <ConfigP_MConfigP_RegisterFrontEnd t.Config #MRefalU_FrontEnd FED_MRefalP_MParserU_MRefalP_SrcModule (e.Ext )>;
+}
+
+FED_MRefalP_MInitP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY FED_MRefalP_MInitP_EntryPointE_ {
+  =
+    <RegisterE_ FED_MRefalP_MInitP_FinalizeE_ >;
+}
+

@@ -1,0 +1,63 @@
+$EXTERN CoreBEP_MathP_Binary;
+$ENTRY MMathP_Add {
+  s.X s.Y =
+    <CoreBEP_MathP_Binary '+' s.X s.Y >;
+}
+
+$ENTRY MMathP_Sub {
+  s.X s.Y =
+    <CoreBEP_MathP_Binary '-' s.X s.Y >;
+}
+
+$ENTRY MMathP_Mul {
+  s.X s.Y =
+    <CoreBEP_MathP_Binary '*' s.X s.Y >;
+}
+
+$ENTRY MMathP_Div {
+  s.X s.Y =
+    <CoreBEP_MathP_Binary '/' s.X s.Y >;
+}
+
+$ENTRY MMathP_Mod {
+  s.X s.Y =
+    <CoreBEP_MathP_Binary '%' s.X s.Y >;
+}
+
+$ENTRY MMathP_Inc {
+  s.Num =
+    <MMathP_Add s.Num 1 >;
+}
+
+$ENTRY MMathP_Dec {
+  s.Num =
+    <MMathP_Sub s.Num 1 >;
+}
+
+$ENTRY MMathP_MaxNum {
+  =
+    4294967295 ;
+}
+
+$EXTERN CoreBEP_MathP_NumberCompare;
+$ENTRY MMathP_Compare {
+  s.Left s.Rigth =
+    <CoreBEP_MathP_NumberCompare s.Left s.Rigth >;
+}
+
+$ENTRY MMathP_CompareD_T {
+  s.Left s.Rigth =
+    <MMathP_Compare s.Left s.Rigth >s.Left s.Rigth ;
+}
+
+MMathP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MMathP_EntryPointE_ {
+  =
+    <RegisterE_ MMathP_FinalizeE_ >;
+}
+

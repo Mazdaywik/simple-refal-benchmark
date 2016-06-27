@@ -1,0 +1,146 @@
+$LABEL GenSwap;
+$EXTERN BED_CppSRP_GeneratorP_GenSwap;
+$LABEL SwitchEnum;
+$LABEL Entry;
+$EXTERN BED_CppSRP_GeneratorP_GenEEnum;
+$LABEL Local;
+$EXTERN BED_CppSRP_GeneratorP_GenEnum;
+$LABEL GenCommonHeaders;
+$EXTERN BED_CppSRP_GeneratorP_GenCommonHeaders;
+$LABEL GenerateLabelForFunction;
+$LABEL Yes;
+$EXTERN BED_CppSRP_GeneratorP_GenIdentD_FuncName;
+$LABEL GenIdent;
+$FORWARD BED_CppSRP_MCompilerP_GenIdent;
+$LABEL GenFunctionD_Decl;
+$FORWARD BED_CppSRP_MCompilerP_GenFunctionD_Decl;
+$LABEL GenerateD_EntryCodeD_Go;
+$FORWARD BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_Go;
+$LABEL GenerateD_EntryCodeD_InitFinal;
+$FORWARD BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_InitFinal;
+$LABEL GenFunctionD_Code;
+$FORWARD BED_CppSRP_MCompilerP_GenFunctionD_Code;
+BED_CppSRP_MCompilerP_GenerateD_Properties {
+  #GenSwap =
+    BED_CppSRP_GeneratorP_GenSwap ;
+  #SwitchEnum #Entry =
+    BED_CppSRP_GeneratorP_GenEEnum ;
+  #SwitchEnum #Local =
+    BED_CppSRP_GeneratorP_GenEnum ;
+  #GenCommonHeaders =
+    <BED_CppSRP_GeneratorP_GenCommonHeaders >;
+  #GenerateLabelForFunction =
+    #Yes BED_CppSRP_GeneratorP_GenIdentD_FuncName ;
+  #GenIdent =
+    BED_CppSRP_MCompilerP_GenIdent ;
+  #GenFunctionD_Decl =
+    BED_CppSRP_MCompilerP_GenFunctionD_Decl ;
+  #GenerateD_EntryCodeD_Go =
+    BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_Go ;
+  #GenerateD_EntryCodeD_InitFinal =
+    BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_InitFinal ;
+  #GenFunctionD_Code =
+    BED_CppSRP_MCompilerP_GenFunctionD_Code ;
+}
+
+$EXTERN BED_CppSRP_GeneratorP_GenIdent;
+$EXTERN MQualifiedNameP_Create;
+BED_CppSRP_MCompilerP_GenIdent {
+  e.Name =
+    <BED_CppSRP_GeneratorP_GenIdent <MQualifiedNameP_Create (e.Name )>>;
+}
+
+$EXTERN BED_CppSRP_GeneratorP_GenExtern;
+$EXTERN BED_CppSRP_GeneratorP_GenForward;
+$LABEL ADT;
+$LABEL Swap;
+BED_CppSRP_MCompilerP_GenFunctionD_Decl {
+  #Entry t.FunctionName =
+    <BED_CppSRP_GeneratorP_GenExtern t.FunctionName >;
+  #Local t.FunctionName =
+    <BED_CppSRP_GeneratorP_GenForward t.FunctionName >;
+  #ADT t.FunctionName =
+    <BED_CppSRP_GeneratorP_GenEnum t.FunctionName >;
+  #Swap t.FunctionName =
+    <BED_CppSRP_GeneratorP_GenForward t.FunctionName >;
+}
+
+$EXTERN BED_CppSRP_GeneratorP_GenFnStart;
+$EXTERN BED_CppSRP_GeneratorP_GenInitCounter;
+$FORWARD BED_CppSRP_MCompilerP_GenSentences;
+$EXTERN BED_CppSRP_GeneratorP_GenFnEnd;
+BED_CppSRP_MCompilerP_GenFunctionD_Code {
+  t.FuncName s.ScopeClass e.Sentences =
+    <BED_CppSRP_GeneratorP_GenFnStart s.ScopeClass t.FuncName ><BED_CppSRP_GeneratorP_GenInitCounter s.ScopeClass ><BED_CppSRP_MCompilerP_GenSentences e.Sentences ><BED_CppSRP_GeneratorP_GenFnEnd >;
+}
+
+$EXTERN BED_CppSRP_GeneratorP_GenSentence;
+$EXTERN BED_CppSRP_AlgorithmP_MakeAlgorithm;
+BED_CppSRP_MCompilerP_GenSentences {
+  e.Sentences =
+    <BED_CppSRP_GeneratorP_GenSentence <BED_CppSRP_AlgorithmP_MakeAlgorithm e.Sentences >>;
+}
+
+$EXTERN MPredeclGeneratorP_GenFunction;
+$LABEL Go;
+$LABEL Pattern;
+$LABEL Result;
+$EXTERN MLambdaP_Map;
+$FORWARD BED_CppSRP_MCompilerP_GenInitImport;
+$LABEL Function;
+$LABEL NoPos;
+$LABEL Macro;
+$LABEL SVar;
+$FORWARD BED_CppSRP_MCompilerP_GenFinalImport;
+$EXTERN MStringsP_Reverse;
+BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_Go {
+  s.FnProperties t.ModuleName (e.Result )e.Imports =
+    <MPredeclGeneratorP_GenFunction s.FnProperties <MQualifiedNameP_Create (#Go )>#Entry ((#Pattern )(#Result <MLambdaP_Map BED_CppSRP_MCompilerP_GenInitImport e.Imports >e.Result (#Function (#Entry #NoPos <MQualifiedNameP_Create ('Exit' #Entry )>)(#Macro 0 ))))><MPredeclGeneratorP_GenFunction s.FnProperties <MQualifiedNameP_Create ('Exit' #Entry )>#Entry ((#Pattern (#SVar 'RetCode' ))(#Result <MLambdaP_Map BED_CppSRP_MCompilerP_GenFinalImport <MStringsP_Reverse e.Imports >>(#Function (#Entry #NoPos <MQualifiedNameP_Create ('Exit' )>)(#SVar 'RetCode' ))))>;
+}
+
+$EXTERN MQualifiedNameP_AddSubName;
+$LABEL InitFinal;
+$LABEL Identifier;
+$LABEL Init;
+$FORWARD BED_CppSRP_MCompilerP_GenEntry;
+$LABEL Final;
+BED_CppSRP_MCompilerP_GenerateD_EntryCodeD_InitFinal {
+  s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports =
+    <MPredeclGeneratorP_GenFunction s.FnProperties <MQualifiedNameP_AddSubName t.ModuleName 'Init' #Entry >#InitFinal ((#Pattern (#Identifier #NoPos 'Init' ))#Init (#Result <MLambdaP_Map BED_CppSRP_MCompilerP_GenInitImport e.Imports ><BED_CppSRP_MCompilerP_GenEntry t.InitSeq >))((#Pattern (#Identifier #NoPos 'Final' ))#Final (#Result <BED_CppSRP_MCompilerP_GenEntry t.FinalSeq ><MLambdaP_Map BED_CppSRP_MCompilerP_GenFinalImport <MStringsP_Reverse e.Imports >>))>;
+}
+
+$LABEL None;
+BED_CppSRP_MCompilerP_GenEntry {
+  #None =
+    ;
+  (#Result e.Result )=
+    e.Result ;
+}
+
+BED_CppSRP_MCompilerP_GenInitImport {
+  t.ImportName =
+    (#Function (#Entry #NoPos <MQualifiedNameP_AddSubName t.ImportName 'Init' #Entry >)(#Identifier #NoPos 'Init' ));
+}
+
+BED_CppSRP_MCompilerP_GenFinalImport {
+  t.ImportName =
+    (#Function (#Entry #NoPos <MQualifiedNameP_AddSubName t.ImportName 'Init' #Entry >)(#Identifier #NoPos 'Final' ));
+}
+
+$EXTERN MPredeclGeneratorP_GenerateD_Generic;
+$ENTRY BED_CppSRP_MCompilerP_Generate {
+  t.hIModule e.OutName =
+    <MPredeclGeneratorP_GenerateD_Generic BED_CppSRP_MCompilerP_GenerateD_Properties t.hIModule e.OutName >;
+}
+
+BED_CppSRP_MCompilerP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_CppSRP_MCompilerP_EntryPointE_ {
+  =
+    <RegisterE_ BED_CppSRP_MCompilerP_FinalizeE_ >;
+}
+

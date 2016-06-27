@@ -1,0 +1,402 @@
+$LABEL ModuleType;
+$LABEL Main;
+$LABEL GoEntry;
+$LABEL None;
+$LABEL Regular;
+$LABEL RegularEntry;
+MIModuleP_InitEntryPoint {
+  e.AttribsD_B (#ModuleType #Main )e.AttribsD_E =
+    (#GoEntry #None );
+  e.AttribsD_B (#ModuleType #Regular )e.AttribsD_E =
+    (#RegularEntry #None #None );
+}
+
+$EXTERN MIModuleP_UpdateModule;
+MIModuleP_CreateD_Aux {
+  t.IModule e.Attribs =
+    <MIModuleP_UpdateModule t.IModule e.Attribs >;
+}
+
+$EXTERN MQualifiedNameP_Append;
+MIModuleP_AbsolutNameD_Aux {
+  t.hIModule t.ModuleName t.RelativeName =
+    t.hIModule <MQualifiedNameP_Append t.ModuleName t.RelativeName >;
+}
+
+$ENUM MIModuleP_IModule;
+$LABEL Name;
+$LABEL Success;
+$EXTERN MQualifiedNameP_Create;
+$LABEL Fails;
+MIModuleP_SwRelativeName {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.hSymTable ]e.ModName e.RelativeName =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.hSymTable ]#Success <MQualifiedNameP_Create e.RelativeName >;
+  [MIModuleP_IModule t.Name t.EntryPoint t.hSymTable ]e.RelativeName =
+    [MIModuleP_IModule t.Name t.EntryPoint t.hSymTable ]#Fails ;
+}
+
+$LABEL InvalidKind;
+$LABEL InvariantError;
+MIModuleP_CheckUpdateModule {
+  t.IModule #InvalidKind =
+    t.IModule #InvariantError ;
+  t.IModule s.OtherFlag =
+    t.IModule s.OtherFlag ;
+}
+
+$LABEL NoName;
+$LABEL ImportName;
+$LABEL ImportAlias;
+MIModuleP_CheckDefinedImport {
+  t.hIModule #NoName #NoName =
+    t.hIModule #Success ;
+  t.hIModule #Success #ImportName #Success #ImportAlias =
+    t.hIModule #Success ;
+  t.hIModule e.Other =
+    t.hIModule #Fails ;
+}
+
+$LABEL Position;
+$LABEL RealName;
+$LABEL AliasName;
+$FORWARD MIModuleP_UpdateImportD_XD_Aux;
+$EXTERN MQualifiedNameP_ParseD_T;
+$EXTERN MQualifiedNameP_Parse;
+MIModuleP_UpdateImportD_XD_CheckDefined {
+  (#Position t.Position )(#RealName t.RealName )(#AliasName t.AliasName )t.hIModule #Success =
+    <MIModuleP_UpdateImportD_XD_Aux t.hIModule (#Position t.Position )(#RealName <MQualifiedNameP_ParseD_T t.RealName >)(#AliasName <MQualifiedNameP_Parse t.AliasName >)>;
+  (#Position t.Position )(#RealName t.RealName )(#AliasName t.AliasName )t.hIModule #Fails =
+    t.hIModule #InvalidKind ;
+}
+
+$FORWARD MIModuleP_UpdateImportD_XD_AuxD_UpdateRealName;
+$FORWARD MIModuleP_UpdateEntity;
+MIModuleP_UpdateImportD_XD_Aux {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ](#Position t.Position )(#RealName t.RealName e.RealNameSegments )(#AliasName e.AliasNameSegments )=
+    <MIModuleP_UpdateImportD_XD_AuxD_UpdateRealName <MIModuleP_UpdateEntity [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#ImportAlias (e.ModName e.AliasNameSegments )(#Position t.Position )(#RealName t.RealName )(#AliasName <MQualifiedNameP_Create e.ModName e.AliasNameSegments >)>(#Position t.Position )(#RealName t.RealName e.RealNameSegments )(#AliasName <MQualifiedNameP_Create e.ModName e.AliasNameSegments >)>;
+}
+
+MIModuleP_UpdateImportD_XD_AuxD_UpdateRealName {
+  t.hIModule #Success (#Position t.Position )(#RealName t.RealName e.RealNameSegments )(#AliasName t.AliasName )=
+    <MIModuleP_UpdateEntity t.hIModule #ImportName (e.RealNameSegments )(#Position t.Position )(#RealName t.RealName )(#AliasName t.AliasName )>;
+  t.hIModule s.Error e.Attributes =
+    t.hIModule s.Error ;
+}
+
+MIModuleP_UpdateEntityD_Relative {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind (e.Name )e.Attribs =
+    <MIModuleP_UpdateEntity [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind (e.ModName e.Name )e.Attribs >;
+}
+
+$FORWARD MIModuleP_SwUpdateEntity;
+$EXTERN MSymTableP_GetAttrib;
+$LABEL Kind;
+$FORWARD MIModuleP_ValidAttribs;
+MIModuleP_UpdateEntity {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind (e.Name )e.Attribs =
+    <MIModuleP_SwUpdateEntity [MIModuleP_IModule (#Name e.ModName )t.EntryPoint ](e.Name )(<MSymTableP_GetAttrib t.SymTable e.Name #Kind >)s.Kind (<MIModuleP_ValidAttribs s.Kind >)e.Attribs >;
+}
+
+$LABEL Function;
+$LABEL ScopeClass;
+$LABEL Body;
+$LABEL ModuleName;
+$LABEL ADT;
+MIModuleP_ValidAttribs {
+  #Function =
+    #ScopeClass #Position #Body ;
+  #ModuleName =
+    #Position #ModuleType ;
+  #ImportName =
+    #Position #RealName #AliasName ;
+  #ImportAlias =
+    #Position #RealName #AliasName ;
+  #ADT =
+    #Position ;
+}
+
+$LABEL Found;
+$FORWARD MIModuleP_UpdateEntityD_Aux;
+$FORWARD MIModuleP_CheckAttribs;
+$LABEL NoAttrib;
+MIModuleP_SwUpdateEntity {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint ](e.Name )(t.SymTable #Found s.Kind )s.Kind (e.ValidAttribs )e.Attribs =
+    <MIModuleP_UpdateEntityD_Aux [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ](e.Name )s.Kind <MIModuleP_CheckAttribs (e.ValidAttribs )e.Attribs >>;
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint ](e.Name )(t.SymTable #Found s.Kind1 )s.Kind2 (e.ValidAttribs )e.Attribs =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#InvalidKind ;
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint ](e.Name )(t.SymTable #NoName )s.Kind (e.ValidAttribs )e.Attribs =
+    <MIModuleP_UpdateEntityD_Aux [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ](e.Name )s.Kind <MIModuleP_CheckAttribs (e.ValidAttribs )e.Attribs >>;
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint ](e.Name )(t.SymTable #NoAttrib )s.Kind (e.ValidAttribs )e.Attribs =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#InvariantError ;
+}
+
+$LABEL ValidAttribs;
+$EXTERN MSymTableP_UpdateAttribSet;
+$LABEL InvalidAttribs;
+$LABEL InvalidAttrib;
+MIModuleP_UpdateEntityD_Aux {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ](e.Name )s.Kind #ValidAttribs e.Attribs =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint <MSymTableP_UpdateAttribSet t.SymTable (e.Name )(#Kind s.Kind )e.Attribs >]#Success ;
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ](e.Name )s.Kind #InvalidAttribs =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#InvalidAttrib ;
+}
+
+$FORWARD MIModuleP_DoCheckValid;
+MIModuleP_CheckAttribs {
+  (e.ValidAttribs )e.Attribs =
+    <MIModuleP_DoCheckValid ()(e.ValidAttribs )e.Attribs >;
+}
+
+MIModuleP_DoCheckValid {
+  (e.Checked )(e.ValidAttribs )(s.Attrib e.Value1 )e.AttribsD_B (s.Attrib e.Value2 )e.AttribsD_E =
+    #InvalidAttribs ;
+  (e.Checked )(e.ValidAttribsD_B s.Attrib e.ValidAttribsD_E )(s.Attrib e.Value )e.Attribs =
+    <MIModuleP_DoCheckValid (e.Checked (s.Attrib e.Value ))(e.ValidAttribsD_B e.ValidAttribsD_E )e.Attribs >;
+  (e.Checked )(e.ValidAttribs )=
+    #ValidAttribs e.Checked ;
+  (e.Checked )(e.ValidAttribs )(s.Attrib e.Value )e.Attribs =
+    #InvalidAttribs ;
+}
+
+MIModuleP_CheckGetAttribModule {
+  t.IModule #InvalidKind =
+    t.IModule #InvariantError ;
+  t.IModule e.Other =
+    t.IModule e.Other ;
+}
+
+$FORWARD MIModuleP_GetEntityAttribute;
+MIModuleP_GetEntityAttributeD_Relative {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind s.Attrib e.Name =
+    <MIModuleP_GetEntityAttribute [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind s.Attrib e.ModName e.Name >;
+}
+
+$FORWARD MIModuleP_SwGetEntityAttribute;
+MIModuleP_GetEntityAttribute {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]s.Kind s.Attrib e.Name =
+    <MIModuleP_SwGetEntityAttribute (#Name e.ModName )t.EntryPoint (e.Name )s.Kind s.Attrib (<MIModuleP_ValidAttribs s.Kind >)<MSymTableP_GetAttrib t.SymTable e.Name #Kind >>;
+}
+
+$FORWARD MIModuleP_GetEntityAttribD_Aux;
+MIModuleP_SwGetEntityAttribute {
+  (#Name e.ModName )t.EntryPoint (e.Name )s.Kind s.Attrib (e.AttribsD_B s.Attrib e.AttribsD_E )t.SymTable #Found s.Kind =
+    <MIModuleP_GetEntityAttribD_Aux (#Name e.ModName )t.EntryPoint (e.Name )<MSymTableP_GetAttrib t.SymTable e.Name s.Attrib >>;
+  (#Name e.ModName )t.EntryPoint (e.Name )s.Kind s.Attrib (e.Attribs )t.SymTable #Found s.Kind =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#InvalidAttrib ;
+  (#Name e.ModName )t.EntryPoint (e.Name )s.Kind1 s.Attrib (e.Attribs )t.SymTable #Found s.Kind2 =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#InvalidKind ;
+  (#Name e.ModName )t.EntryPoint (e.Name )s.Kind1 s.Attrib (e.Attribs )t.SymTable #NoName =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#NoName ;
+}
+
+MIModuleP_GetEntityAttribD_Aux {
+  (#Name e.ModName )t.EntryPoint (e.Name )t.SymTable #Found e.Value =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#Found e.Value ;
+  (#Name e.ModName )t.EntryPoint (e.Name )t.SymTable #NoAttrib =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.SymTable ]#NoAttrib ;
+}
+
+$FORWARD MIModuleP_GetKindD_ReturnIModule;
+MIModuleP_GetKindD_Aux {
+  [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.hSymTable ]e.EntityName =
+    <MIModuleP_GetKindD_ReturnIModule (#Name e.ModName )t.EntryPoint <MSymTableP_GetAttrib t.hSymTable e.EntityName #Kind >>;
+}
+
+MIModuleP_GetKindD_ReturnIModule {
+  (#Name e.ModName )t.EntryPoint t.hSymTable #Found s.Kind =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.hSymTable ]#Success s.Kind ;
+  (#Name e.ModName )t.EntryPoint t.hSymTable #NoName =
+    [MIModuleP_IModule (#Name e.ModName )t.EntryPoint t.hSymTable ]#NoName ;
+}
+
+$FORWARD MIModuleP_SwToEntry;
+$EXTERN MIModuleP_GetFunctionAttribute;
+MIModuleP_ToEntry {
+  t.hIModule t.NextFn =
+    <MIModuleP_SwToEntry t.NextFn <MIModuleP_GetFunctionAttribute t.hIModule #ScopeClass t.NextFn >>;
+}
+
+$LABEL Entry;
+MIModuleP_SwToEntry {
+  t.NextFn t.hIModule #Found #Entry =
+    t.hIModule t.NextFn ;
+  t.NextFn t.hIModule #Found s.OtherScope =
+    t.hIModule ;
+}
+
+$EXTERN MLambdaP_MapReduce;
+$FORWARD MIModuleP_MakeRelativeName;
+$FORWARD MIModuleP_FindEntityByKind;
+MIModuleP_FindEntityByKindD_Relative {
+  t.hIModule s.Kind =
+    <MLambdaP_MapReduce MIModuleP_MakeRelativeName <MIModuleP_FindEntityByKind t.hIModule s.Kind >>;
+}
+
+$FORWARD MIModuleP_MakeRelativeNameD_Aux;
+$EXTERN MIModuleP_RelativeName;
+MIModuleP_MakeRelativeName {
+  t.hIModule t.AbsolutName =
+    <MIModuleP_MakeRelativeNameD_Aux <MIModuleP_RelativeName t.hIModule t.AbsolutName >>;
+}
+
+MIModuleP_MakeRelativeNameD_Aux {
+  t.hIModule #Success t.RelativeName =
+    t.hIModule t.RelativeName ;
+}
+
+$EXTERN MLambdaP_MakeHandled;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_UnBracket;
+$FORWARD MIModuleP_ReturnIModule;
+$EXTERN MSymTableP_FindByKind;
+MIModuleP_FindEntityByKind {
+  [MIModuleP_IModule (#Name e.Name )t.EntryPoint t.SymTable ]s.Kind =
+    <MLambdaP_MapReduce <MLambdaP_MakeHandled <MLambdaP_Composite MLambdaP_UnBracket MQualifiedNameP_Create >><MIModuleP_ReturnIModule (#Name e.Name )t.EntryPoint <MSymTableP_FindByKind t.SymTable s.Kind >>>;
+}
+
+MIModuleP_ReturnIModule {
+  (#Name e.Name )t.EntryPoint t.SymTable e.Entities =
+    [MIModuleP_IModule (#Name e.Name )t.EntryPoint t.SymTable ]e.Entities ;
+}
+
+$EXTERN MSymTableP_Create;
+$ENTRY MIModuleP_Create {
+  t.QualifiedName e.Attribs =
+    <MIModuleP_CreateD_Aux [MIModuleP_IModule (#Name <MQualifiedNameP_Parse t.QualifiedName >)<MIModuleP_InitEntryPoint e.Attribs ><MSymTableP_Create >]e.Attribs >;
+}
+
+$EXTERN MSymTableP_Destroy;
+$ENTRY MIModuleP_Destroy {
+  [MIModuleP_IModule (#Name e.Name )t.EntryPoint t.SymTable ]=
+    <MSymTableP_Destroy t.SymTable >;
+}
+
+$ENTRY MIModuleP_GetModuleName {
+  [MIModuleP_IModule (#Name e.ParsedName )t.EntryPoint t.SymTable ]=
+    [MIModuleP_IModule (#Name e.ParsedName )t.EntryPoint t.SymTable ]<MQualifiedNameP_Create e.ParsedName >;
+}
+
+$ENTRY MIModuleP_AbsolutName {
+  t.hIModule t.RelativeName =
+    <MIModuleP_AbsolutNameD_Aux <MIModuleP_GetModuleName t.hIModule >t.RelativeName >;
+}
+
+$ENTRY MIModuleP_RelativeName {
+  t.hIModule t.AbsolutName =
+    <MIModuleP_SwRelativeName t.hIModule <MQualifiedNameP_Parse t.AbsolutName >>;
+}
+
+$LABEL Go;
+$ENTRY MIModuleP_GetEntryPoint {
+  [MIModuleP_IModule (#Name e.ModName )(#GoEntry t.GoSeq )t.SymTable ]=
+    [MIModuleP_IModule (#Name e.ModName )(#GoEntry t.GoSeq )t.SymTable ]#Go t.GoSeq ;
+  [MIModuleP_IModule (#Name e.ModName )(#RegularEntry t.InitSeq t.FinalSeq )t.SymTable ]=
+    [MIModuleP_IModule (#Name e.ModName )(#RegularEntry t.InitSeq t.FinalSeq )t.SymTable ]#Regular t.InitSeq t.FinalSeq ;
+}
+
+$LABEL Result;
+$ENTRY MIModuleP_SetGoEntryPoint {
+  [MIModuleP_IModule (#Name e.ModName )(#GoEntry t.OldGoSeq )t.SymTable ]e.ResultExpr =
+    [MIModuleP_IModule (#Name e.ModName )(#GoEntry (#Result e.ResultExpr ))t.SymTable ];
+}
+
+$ENTRY MIModuleP_SetInitEntryPoint {
+  [MIModuleP_IModule (#Name e.ModName )(#RegularEntry t.InitSeq t.FinalSeq )t.SymTable ]e.ResultExpr =
+    [MIModuleP_IModule (#Name e.ModName )(#RegularEntry (#Result e.ResultExpr )t.FinalSeq )t.SymTable ];
+}
+
+$ENTRY MIModuleP_SetFinalEntryPoint {
+  [MIModuleP_IModule (#Name e.ModName )(#RegularEntry t.InitSeq t.FinalSeq )t.SymTable ]e.ResultExpr =
+    [MIModuleP_IModule (#Name e.ModName )(#RegularEntry t.InitSeq (#Result e.ResultExpr ))t.SymTable ];
+}
+
+$ENTRY MIModuleP_UpdateModule {
+  [MIModuleP_IModule (#Name e.ParsedName )t.EntryPoint t.SymTable ]e.Attribs =
+    <MIModuleP_CheckUpdateModule <MIModuleP_UpdateEntity [MIModuleP_IModule (#Name e.ParsedName )t.EntryPoint t.SymTable ]#ModuleName (e.ParsedName )e.Attribs >>;
+}
+
+$ENTRY MIModuleP_UpdateFunction {
+  t.hIModule t.FunctionName e.Attribs =
+    <MIModuleP_UpdateEntityD_Relative t.hIModule #Function (<MQualifiedNameP_Parse t.FunctionName >)e.Attribs >;
+}
+
+$EXTERN MLambdaP_Apply;
+$EXTERN MLambdaP_ParallelD_H;
+$EXTERN MLambdaP_BindLeftD_H;
+$EXTERN MIModuleP_GetKind;
+$ENTRY MIModuleP_UpdateImportD_X {
+  t.hIModule (#Position t.Position )(#RealName t.RealName )(#AliasName t.AliasName )=
+    <MIModuleP_UpdateImportD_XD_CheckDefined (#Position t.Position )(#RealName t.RealName )(#AliasName t.AliasName )<MIModuleP_CheckDefinedImport <MLambdaP_Apply <MLambdaP_ParallelD_H <MLambdaP_BindLeftD_H MIModuleP_GetKind t.RealName ><MLambdaP_BindLeftD_H MIModuleP_GetKind t.AliasName >>t.hIModule >>>;
+}
+
+$ENTRY MIModuleP_UpdateADT {
+  t.IModule t.Name e.Attribs =
+    <MIModuleP_UpdateEntityD_Relative t.IModule #ADT (<MQualifiedNameP_Parse t.Name >)e.Attribs >;
+}
+
+$ENTRY MIModuleP_GetModuleAttribute {
+  [MIModuleP_IModule (#Name e.Name )t.EntryPoint t.SymTable ]s.Attrib =
+    <MIModuleP_CheckGetAttribModule <MIModuleP_GetEntityAttribute [MIModuleP_IModule (#Name e.Name )t.EntryPoint t.SymTable ]#ModuleName s.Attrib e.Name >>;
+}
+
+$ENTRY MIModuleP_GetFunctionAttribute {
+  t.hIModule s.Attrib t.FnName =
+    <MIModuleP_GetEntityAttributeD_Relative t.hIModule #Function s.Attrib <MQualifiedNameP_Parse t.FnName >>;
+}
+
+$ENTRY MIModuleP_GetImportAttributeD_RealName {
+  t.hIModule s.Attrib t.RealName =
+    <MIModuleP_GetEntityAttribute t.hIModule #ImportName s.Attrib <MQualifiedNameP_Parse t.RealName >>;
+}
+
+$ENTRY MIModuleP_GetImportAttributeD_AliasName {
+  t.hIModule s.Attrib t.AliasName =
+    <MIModuleP_GetEntityAttribute t.hIModule #ImportAlias s.Attrib <MQualifiedNameP_Parse t.AliasName >>;
+}
+
+$ENTRY MIModuleP_GetADTAttribute {
+  t.IModule s.Attrib t.Name =
+    <MIModuleP_GetEntityAttributeD_Relative t.IModule #ADT s.Attrib <MQualifiedNameP_Parse t.Name >>;
+}
+
+$ENTRY MIModuleP_GetKind {
+  t.hIModule t.EntityName =
+    <MIModuleP_GetKindD_Aux t.hIModule <MQualifiedNameP_Parse t.EntityName >>;
+}
+
+$ENTRY MIModuleP_GetFunctionList {
+  t.hIModule =
+    <MIModuleP_FindEntityByKindD_Relative t.hIModule #Function >;
+}
+
+$ENTRY MIModuleP_GetFunctionListD_EntryOnly {
+  t.hIModule =
+    <MLambdaP_MapReduce MIModuleP_ToEntry <MIModuleP_GetFunctionList t.hIModule >>;
+}
+
+$ENTRY MIModuleP_GetImportListD_RealNames {
+  t.hIModule =
+    <MIModuleP_FindEntityByKind t.hIModule #ImportName >;
+}
+
+$ENTRY MIModuleP_GetImportListD_Aliases {
+  t.hIModule =
+    <MIModuleP_FindEntityByKind t.hIModule #ImportAlias >;
+}
+
+$ENTRY MIModuleP_GetADTList {
+  t.IModule =
+    <MIModuleP_FindEntityByKindD_Relative t.IModule #ADT >;
+}
+
+MIModuleP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MIModuleP_EntryPointE_ {
+  =
+    <RegisterE_ MIModuleP_FinalizeE_ >;
+}
+

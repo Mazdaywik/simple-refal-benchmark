@@ -1,0 +1,177 @@
+$LABEL BackEnd;
+$LABEL Generator;
+$LABEL Linker;
+ConfigP_MConfigP_ExtendedEntry {
+  (#BackEnd s.Name (#Generator t.FnGenerator )(#Linker t.FnLinker )e.OtherOptions )=
+    (s.Name t.FnGenerator t.FnLinker );
+  t.OtherOption =
+    ;
+}
+
+ConfigP_MConfigP_BackEnds {
+  (s.Name t.FnGenerator t.FnLinker )=
+    s.Name ;
+  t.OtherOption =
+    ;
+}
+
+$LABEL Folder;
+$LABEL Ext;
+ConfigP_MConfigP_GetFolderExt {
+  (#BackEnd s.BackEnd e.Options (#Folder e.PtFolder )(#Ext e.Ext ))=
+    (s.BackEnd (e.PtFolder )e.Ext );
+  t.OtherOption =
+    ;
+}
+
+$FORWARD ConfigP_MConfigP_Concat3;
+$LABEL Fails;
+ConfigP_MConfigP_GetBEPathD_TD_Aux {
+  (e.PtRelativePath )(e.PtBaseFolder )s.BackEnd e.BackEndsD_B (s.BackEnd (e.PtFolder )e.Ext )e.BackEndsD_E =
+    <ConfigP_MConfigP_Concat3 (e.PtBaseFolder )(e.PtFolder )(e.PtRelativePath )e.Ext >;
+  (e.RelativePath )(e.BaseFolder )s.BackEnd e.BackEnds =
+    #Fails ;
+}
+
+$FORWARD ConfigP_MConfigP_Concat3D_Aux1;
+$EXTERN MFileSystemP_ConcatPath;
+ConfigP_MConfigP_Concat3 {
+  (e.PtBaseFolder )(e.PtFolder )(e.PtRelativePath )e.Ext =
+    <ConfigP_MConfigP_Concat3D_Aux1 (<MFileSystemP_ConcatPath (e.PtBaseFolder )e.PtFolder >)(e.PtRelativePath )e.Ext >;
+}
+
+$LABEL Success;
+$FORWARD ConfigP_MConfigP_Concat3D_Aux2;
+ConfigP_MConfigP_Concat3D_Aux1 {
+  (#Success e.PtFolder )(e.PtRelativePath )e.Ext =
+    <ConfigP_MConfigP_Concat3D_Aux2 (<MFileSystemP_ConcatPath (e.PtFolder )e.PtRelativePath >)e.Ext >;
+  (#Fails )(e.PtRelativePath )e.Ext =
+    #Fails ;
+}
+
+$EXTERN MFileSystemP_StrFromPath;
+ConfigP_MConfigP_Concat3D_Aux2 {
+  (#Success e.PtFullPath )e.Ext =
+    #Success <MFileSystemP_StrFromPath e.PtFullPath >'.' e.Ext ;
+  (#Fails )e.Ext =
+    #Fails ;
+}
+
+$FORWARD ConfigP_MConfigP_GetFEPathD_TD_Aux2;
+ConfigP_MConfigP_GetFEPathD_TD_Aux1 {
+  (e.PtRelative )(e.Ext )e.PtBaseFolder =
+    <ConfigP_MConfigP_GetFEPathD_TD_Aux2 (e.Ext )<MFileSystemP_ConcatPath (e.PtBaseFolder )e.PtRelative >>;
+}
+
+ConfigP_MConfigP_GetFEPathD_TD_Aux2 {
+  (e.Ext )#Success e.PtFullPath =
+    #Success <MFileSystemP_StrFromPath e.PtFullPath >'.' e.Ext ;
+  (e.Ext )#Fails =
+    #Fails ;
+}
+
+$LABEL FrontEnd;
+ConfigP_MConfigP_FED_Name {
+  (#FrontEnd s.Name e.Options )=
+    s.Name ;
+  t.OtherOption =
+    ;
+}
+
+$ENUM ConfigP_MConfigP_Config;
+$LABEL ModulePath;
+$ENTRY ConfigP_MConfigP_Create {
+  e.PtModulePath =
+    [ConfigP_MConfigP_Config (#ModulePath e.PtModulePath )];
+}
+
+$ENTRY ConfigP_MConfigP_GetModulePath {
+  [ConfigP_MConfigP_Config e.OptD_B (#ModulePath e.PtModulePath )e.OptD_E ]=
+    e.PtModulePath ;
+}
+
+$LABEL Make;
+$LABEL Mode;
+$LABEL Build;
+$LABEL LinkOnly;
+$ENTRY ConfigP_MConfigP_SetMakeMode {
+  [ConfigP_MConfigP_Config e.Options ]#Make =
+    [ConfigP_MConfigP_Config e.Options (#Mode #Make )];
+  [ConfigP_MConfigP_Config e.Options ]#Build =
+    [ConfigP_MConfigP_Config e.Options (#Mode #Build )];
+  [ConfigP_MConfigP_Config e.Options ]#LinkOnly =
+    [ConfigP_MConfigP_Config e.Options (#Mode #LinkOnly )];
+}
+
+$ENTRY ConfigP_MConfigP_GetMakeMode {
+  [ConfigP_MConfigP_Config e.OptinonsD_B (#Mode s.Mode )e.OptionsD_E ]=
+    s.Mode ;
+}
+
+$ENTRY ConfigP_MConfigP_RegisterBackEnd {
+  [ConfigP_MConfigP_Config e.OptionsD_B (#BackEnd s.Name e.Options )e.OptionsD_E ]s.Name t.FnGenerator t.FnLinker (e.PtFolder )(e.Ext )=
+    [ConfigP_MConfigP_Config e.OptionsD_B (#BackEnd s.Name (#Generator t.FnGenerator )(#Linker t.FnLinker )(#Folder e.PtFolder )(#Ext e.Ext ))e.OptionsD_E ];
+  [ConfigP_MConfigP_Config e.Options ]s.Name t.FnGenerator t.FnLinker (e.PtFolder )(e.Ext )=
+    [ConfigP_MConfigP_Config e.Options (#BackEnd s.Name (#Generator t.FnGenerator )(#Linker t.FnLinker )(#Folder e.PtFolder )(#Ext e.Ext ))];
+}
+
+$EXTERN MLambdaP_Map;
+$ENTRY ConfigP_MConfigP_GetExtendedBackEndList {
+  [ConfigP_MConfigP_Config e.Options ]=
+    <MLambdaP_Map ConfigP_MConfigP_ExtendedEntry e.Options >;
+}
+
+$ENTRY ConfigP_MConfigP_GetBackEndList {
+  t.Config =
+    <MLambdaP_Map ConfigP_MConfigP_BackEnds <ConfigP_MConfigP_GetExtendedBackEndList t.Config >>;
+}
+
+$EXTERN MQualifiedNameP_ToRelativeFSPathD_Pt;
+$ENTRY ConfigP_MConfigP_GetBEPathD_T {
+  [ConfigP_MConfigP_Config e.Options ]s.BEName t.ModuleName e.PtBaseFolder =
+    <ConfigP_MConfigP_GetBEPathD_TD_Aux (<MQualifiedNameP_ToRelativeFSPathD_Pt t.ModuleName >)(e.PtBaseFolder )s.BEName <MLambdaP_Map ConfigP_MConfigP_GetFolderExt e.Options >>;
+}
+
+$LABEL FnParser;
+$ENTRY ConfigP_MConfigP_RegisterFrontEnd {
+  [ConfigP_MConfigP_Config e.OptionsD_B (#FrontEnd s.Name e.Options )e.OptionsD_E ]s.Name t.FnParser (e.Ext )=
+    [ConfigP_MConfigP_Config e.OptionsD_B (#FrontEnd s.Name (#FnParser t.FnParser )(#Ext e.Ext ))e.OptionsD_E ];
+  [ConfigP_MConfigP_Config e.Options ]s.Name t.FnParser (e.Ext )=
+    [ConfigP_MConfigP_Config e.Options (#FrontEnd s.Name (#FnParser t.FnParser )(#Ext e.Ext ))];
+}
+
+$ENTRY ConfigP_MConfigP_GetFEPathD_T {
+  [ConfigP_MConfigP_Config e.OptionsD_B (#FrontEnd s.Name (#FnParser t.Parser )(#Ext e.Ext ))e.OptionsD_E ]s.Name t.ModuleName e.PtBaseFolder =
+    <ConfigP_MConfigP_GetFEPathD_TD_Aux1 (<MQualifiedNameP_ToRelativeFSPathD_Pt t.ModuleName >)(e.Ext )e.PtBaseFolder >;
+  [ConfigP_MConfigP_Config e.Options ]s.Name t.ModuleName e.BaseFolder =
+    #Fails ;
+}
+
+$ENTRY ConfigP_MConfigP_GetParser {
+  [ConfigP_MConfigP_Config e.OptionsD_B (#FrontEnd s.Name (#FnParser t.FnParser )t.Ext )e.OptionsD_E ]s.Name =
+    #Success t.FnParser ;
+  [ConfigP_MConfigP_Config e.Options ]s.Name =
+    #Fails ;
+}
+
+$ENTRY ConfigP_MConfigP_GetFrontEndList {
+  [ConfigP_MConfigP_Config e.Options ]=
+    <MLambdaP_Map ConfigP_MConfigP_FED_Name e.Options >;
+}
+
+$ENTRY ConfigP_MConfigP_GetFrontEndExt {
+  [ConfigP_MConfigP_Config e.OptionsD_B (#FrontEnd s.Name t.FnParser (#Ext e.Ext ))e.OptionsD_E ]s.Name =
+    e.Ext ;
+}
+
+ConfigP_MConfigP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY ConfigP_MConfigP_EntryPointE_ {
+  =
+    <RegisterE_ ConfigP_MConfigP_FinalizeE_ >;
+}
+

@@ -1,0 +1,164 @@
+$LABEL Limit;
+$EXTERN MMathP_Dec;
+BED_Refal5P_MExeTyperP_Dec {
+  #Limit =
+    #Limit ;
+  0 =
+    #Limit ;
+  1 =
+    #Limit ;
+  s.Other =
+    <MMathP_Dec s.Other >;
+}
+
+BED_Refal5P_MExeTyperP_Dec2 {
+  s.Size =
+    <BED_Refal5P_MExeTyperP_Dec <BED_Refal5P_MExeTyperP_Dec s.Size >>;
+}
+
+BED_Refal5P_MExeTyperP_Dec3 {
+  s.Size =
+    <BED_Refal5P_MExeTyperP_Dec <BED_Refal5P_MExeTyperP_Dec2 s.Size >>;
+}
+
+BED_Refal5P_MExeTyperP_SingleChars {
+  =
+    '=<>;(){}' ;
+}
+
+$ENUM BED_Refal5P_MExeTyperP_ExeTyper;
+BED_Refal5P_MExeTyperP_TypeCharWithSpaceBefore {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char e.Q_SingleCharsD_B s.Char e.Q_SingleCharsD_E =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted s.Char ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char e.Q_SingleChars =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted ' ' s.Char ];
+}
+
+BED_Refal5P_MExeTyperP_TypeCharWithSpaceAfter {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char e.Q_SingleCharsD_B s.Char e.Q_SingleCharsD_E =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted s.Char ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char e.Q_SingleChars =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted s.Char ' ' ];
+}
+
+$EXTERN MFileIOP_WriteLine;
+$EXTERN BED_Refal5P_MExeTyperP_TypeSingleQuoted;
+$EXTERN MErrorP_LinkError;
+BED_Refal5P_MExeTyperP_DoTypeSingleQuoted {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]'\\x' s.Num1 s.Num2 e.Tail =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec2 s.Free >t.FOut e.Converted '\\x' s.Num1 s.Num2 ]e.Tail >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]'\\' s.Escaped e.Tail =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec2 s.Free >t.FOut e.Converted '\\' s.Escaped ]e.Tail >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]'$$' e.Tail =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted '$' ]e.Tail >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted '\\' '\'' ]=
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted '\\' '\'' '\'' >];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted '\\' '\'' ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted '\\' '\'' '\'' >]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted '\'' ]=
+    <MErrorP_LinkError 'Unexpected quote position ??? `' e.Converted '\'' '`' >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted '\'' ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted >]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]=
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted '\'' >];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted '\'' ]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]=
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted '\'' ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char e.Text =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted s.Char ]e.Text >;
+}
+
+$FORWARD BED_Refal5P_MExeTyperP_DoubleQuotedDec;
+BED_Refal5P_MExeTyperP_TypeDoubleQuotedD_SwFree {
+  #Limit [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_DoubleQuotedDec s.Limit e.Text ><MFileIOP_WriteLine t.FOut e.Converted >'\"' e.Text '\"' ];
+  s.NewFree [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.OldFree t.FOut e.Converted '\"' ]e.Text =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.NewFree >t.FOut e.Converted '\" \"' e.Text '\"' ];
+  s.NewFree [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.OldFree t.FOut e.Converted ]e.Text =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.NewFree t.FOut e.Converted '\"' e.Text '\"' ];
+}
+
+BED_Refal5P_MExeTyperP_DoubleQuotedDec {
+  s.Free s.Char e.Text =
+    <BED_Refal5P_MExeTyperP_DoubleQuotedDec <BED_Refal5P_MExeTyperP_Dec s.Free >e.Text >;
+  s.Free =
+    <BED_Refal5P_MExeTyperP_Dec2 s.Free >;
+}
+
+$EXTERN MFileIOP_Open;
+$ENTRY BED_Refal5P_MExeTyperP_Create {
+  s.Limit e.OutputFileName =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_Open 'w' e.OutputFileName >];
+}
+
+$EXTERN MFileIOP_Close;
+$ENTRY BED_Refal5P_MExeTyperP_Destroy {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]=
+    <MFileIOP_Close <MFileIOP_WriteLine t.FOut e.Converted >>;
+}
+
+$ENTRY BED_Refal5P_MExeTyperP_TypeChar {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut ]' ' =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]'\t' =
+    <BED_Refal5P_MExeTyperP_TypeChar [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]' ' >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ' ' ]' ' =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ' ' ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ' ' ]s.Char =
+    <BED_Refal5P_MExeTyperP_TypeCharWithSpaceBefore [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char <BED_Refal5P_MExeTyperP_SingleChars >>;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]' ' =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted >];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free e.Converted s.Char ]' ' =
+    <BED_Refal5P_MExeTyperP_TypeCharWithSpaceAfter [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free e.Converted ]s.Char '\'' '\"' <BED_Refal5P_MExeTyperP_SingleChars >>;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]s.Char =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec s.Free >t.FOut e.Converted s.Char ];
+}
+
+$ENTRY BED_Refal5P_MExeTyperP_TypeSingleQuoted {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted >]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted '\'' ]e.Text =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ' ' ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text =
+    <BED_Refal5P_MExeTyperP_DoTypeSingleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec2 s.Free >t.FOut e.Converted '\'' ]e.Text >;
+}
+
+$ENTRY BED_Refal5P_MExeTyperP_TypeDoubleQuoted {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeDoubleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted >]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ' ' ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeDoubleQuoted [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text >;
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut ]e.Text =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_DoubleQuotedDec s.Free e.Text >t.FOut '\"' e.Text '\"' ];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text =
+    <BED_Refal5P_MExeTyperP_TypeDoubleQuotedD_SwFree <BED_Refal5P_MExeTyperP_DoubleQuotedDec s.Free e.Text >[BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Text >;
+}
+
+$ENTRY BED_Refal5P_MExeTyperP_TypeRenamed {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit #Limit t.FOut e.Converted ]e.Name =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine t.FOut e.Converted e.Name >];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Name =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit <BED_Refal5P_MExeTyperP_Dec3 <BED_Refal5P_MExeTyperP_Dec s.Free >>t.FOut e.Converted e.Name ' ' ];
+}
+
+$ENTRY BED_Refal5P_MExeTyperP_TypeComment {
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut ]e.Comment =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine <MFileIOP_WriteLine t.FOut >'* ' e.Comment >];
+  [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Free t.FOut e.Converted ]e.Comment =
+    [BED_Refal5P_MExeTyperP_ExeTyper s.Limit s.Limit <MFileIOP_WriteLine <MFileIOP_WriteLine <MFileIOP_WriteLine t.FOut e.Converted >>'* ' e.Comment >];
+}
+
+BED_Refal5P_MExeTyperP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_Refal5P_MExeTyperP_EntryPointE_ {
+  =
+    <RegisterE_ BED_Refal5P_MExeTyperP_FinalizeE_ >;
+}
+

@@ -1,0 +1,144 @@
+$LABEL Single;
+$LABEL Param;
+$EXTERN MLambdaP_BindLeft;
+$FORWARD ConfigP_MHelpersP_HandlerD_Single;
+$LABEL Optional;
+$LABEL OneTime;
+$LABEL SinglePath;
+$FORWARD ConfigP_MHelpersP_HandlerD_SinglePath;
+$LABEL FileList;
+$LABEL Naked;
+$FORWARD ConfigP_MHelpersP_HandlerD_FilePathList;
+$LABEL Required;
+$FORWARD ConfigP_MHelpersP_FileListD_GroupHandler;
+$LABEL PathList;
+$FORWARD ConfigP_MHelpersP_PathListD_GroupHandler;
+ConfigP_MHelpersP_GenExtentEntry {
+  (#Single s.OptionId (e.OptionName )e.DefaultValue )=
+    ((#Param (e.OptionName ))<MLambdaP_BindLeft ConfigP_MHelpersP_HandlerD_Single s.OptionId (e.OptionName )>(#Optional )#OneTime );
+  (#SinglePath s.OptionId (e.OptionName )e.DefaultValue )=
+    ((#Param (e.OptionName ))<MLambdaP_BindLeft ConfigP_MHelpersP_HandlerD_SinglePath s.OptionId (e.OptionName )>(#Optional )#OneTime );
+  (#FileList s.OptionId (e.OptionName )e.DefaultValue )=
+    ((#Naked (e.OptionName ))<MLambdaP_BindLeft ConfigP_MHelpersP_HandlerD_FilePathList s.OptionId (e.OptionName )>(#Optional )#OneTime #Required ConfigP_MHelpersP_FileListD_GroupHandler );
+  (#PathList s.OptionId (e.OptionName )e.DefaultValue )=
+    ((#Naked (e.OptionName ))<MLambdaP_BindLeft ConfigP_MHelpersP_HandlerD_FilePathList s.OptionId (e.OptionName )>(#Optional )#OneTime #Required ConfigP_MHelpersP_PathListD_GroupHandler );
+}
+
+$LABEL NoGroup;
+ConfigP_MHelpersP_HandlerD_Single {
+  s.OptionName (e.OptionText )t.hErrorList (e.TunerConfig )t.SrcPos (e.Option )#NoGroup =
+    t.hErrorList (e.TunerConfig (s.OptionName (e.OptionText )t.SrcPos e.Option ));
+}
+
+$FORWARD ConfigP_MHelpersP_FixupPathD_Str;
+ConfigP_MHelpersP_HandlerD_SinglePath {
+  s.OptionName (e.OptionText )t.hErrorList (e.TunerConfig )t.SrcPos (e.StrPath )#NoGroup =
+    t.hErrorList (e.TunerConfig (s.OptionName (e.OptionText )t.SrcPos <ConfigP_MHelpersP_FixupPathD_Str t.SrcPos e.StrPath >));
+}
+
+$EXTERN CmdLineP_MParserP_FixupPathD_Str;
+ConfigP_MHelpersP_FixupPathD_Str {
+  t.SrcPos e.StrPath =
+    <CmdLineP_MParserP_FixupPathD_Str t.SrcPos e.StrPath >;
+}
+
+$LABEL NoParam;
+ConfigP_MHelpersP_HandlerD_FilePathList {
+  s.OptionName (e.OptionText )t.hErrorList (e.TunerConfig )t.SrcPos #NoParam (e.FileList )=
+    t.hErrorList (e.TunerConfig (s.OptionName (e.OptionText )t.SrcPos e.FileList ));
+}
+
+$FORWARD ConfigP_MHelpersP_FilePathListD_Config;
+$LABEL File;
+$FORWARD ConfigP_MHelpersP_FileListD_FileHandler;
+$LABEL Multiply;
+$LABEL EOG;
+$FORWARD ConfigP_MHelpersP_FilePathListD_EOGHandler;
+ConfigP_MHelpersP_FileListD_GroupHandler {
+  =
+    (ConfigP_MHelpersP_FilePathListD_Config ((#Param (#File ))ConfigP_MHelpersP_FileListD_FileHandler (#Optional )#Multiply )((#Naked (#EOG ))ConfigP_MHelpersP_FilePathListD_EOGHandler (#Required )#OneTime ));
+}
+
+ConfigP_MHelpersP_FilePathListD_Config {
+  =
+    ();
+}
+
+ConfigP_MHelpersP_FileListD_FileHandler {
+  t.hErrorList (e.FileList )t.SrcPos (e.PtFileName )#NoGroup =
+    t.hErrorList (e.FileList (e.PtFileName ));
+}
+
+ConfigP_MHelpersP_FilePathListD_EOGHandler {
+  t.hErrorList (e.FileList )t.SrcPos #NoParam #NoGroup =
+    t.hErrorList (e.FileList );
+}
+
+$FORWARD ConfigP_MHelpersP_PathListD_FileHandler;
+ConfigP_MHelpersP_PathListD_GroupHandler {
+  =
+    (ConfigP_MHelpersP_FilePathListD_Config ((#Param (#File ))ConfigP_MHelpersP_PathListD_FileHandler (#Optional )#Multiply )((#Naked (#EOG ))ConfigP_MHelpersP_FilePathListD_EOGHandler (#Required )#OneTime ));
+}
+
+$FORWARD ConfigP_MHelpersP_FixupPathD_Pt;
+ConfigP_MHelpersP_PathListD_FileHandler {
+  t.hErrorList (e.FileList )t.SrcPos (e.PtFileName )#NoGroup =
+    t.hErrorList (e.FileList (<ConfigP_MHelpersP_FixupPathD_Pt t.SrcPos e.PtFileName >));
+}
+
+$EXTERN CmdLineP_MParserP_FixupPathD_Pt;
+ConfigP_MHelpersP_FixupPathD_Pt {
+  t.SrcPos e.PtFileName =
+    <CmdLineP_MParserP_FixupPathD_Pt t.SrcPos e.PtFileName >;
+}
+
+$FORWARD ConfigP_MHelpersP_GetTuning;
+ConfigP_MHelpersP_InitTuning {
+  e.Tunings (s.OptionType s.OptionId (e.OptionName )e.Default )=
+    (<ConfigP_MHelpersP_GetTuning s.OptionId e.Tunings (e.Default )>);
+}
+
+$FORWARD ConfigP_MHelpersP_GetTuningD_Aux;
+$LABEL Default;
+ConfigP_MHelpersP_GetTuning {
+  s.Tuning e.Tunings (e.Default )=
+    <ConfigP_MHelpersP_GetTuningD_Aux s.Tuning e.Tunings (s.Tuning ('default' )#Default e.Default )>;
+}
+
+ConfigP_MHelpersP_GetTuningD_Aux {
+  s.Tuning e.TuningsD_B (s.Tuning (e.Name )t.SrcPos e.Value )e.TunigsD_E =
+    s.Tuning e.Value ;
+}
+
+$ENTRY ConfigP_MHelpersP_TuneEndConfig {
+  =
+    ();
+}
+
+$EXTERN MLambdaP_Map;
+$ENTRY ConfigP_MHelpersP_GenExtent {
+  e.ExtentDescription =
+    (ConfigP_MHelpersP_TuneEndConfig <MLambdaP_Map ConfigP_MHelpersP_GenExtentEntry e.ExtentDescription >);
+}
+
+$ENTRY ConfigP_MHelpersP_InitConfig {
+  s.FnDescription e.Tunings =
+    (<MLambdaP_Map <MLambdaP_BindLeft ConfigP_MHelpersP_InitTuning e.Tunings ><s.FnDescription >>);
+}
+
+$ENTRY ConfigP_MHelpersP_ConfigExtract {
+  (e.ConfigD_B (s.Option e.Value )e.ConfigD_E )s.Option =
+    e.Value ;
+}
+
+ConfigP_MHelpersP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY ConfigP_MHelpersP_EntryPointE_ {
+  =
+    <RegisterE_ ConfigP_MHelpersP_FinalizeE_ >;
+}
+

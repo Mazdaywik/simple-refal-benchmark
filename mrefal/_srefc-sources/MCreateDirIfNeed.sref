@@ -1,0 +1,44 @@
+$SWAP MCreateDirIfNeedP_GU_Dirs;
+
+$EXTERN MFileSystemP_MakeDir;
+MCreateDirIfNeedP_CheckCreated {
+  (e.DirsD_B (e.DirName )e.DirsD_E )e.DirName (e.ForMkDir )=
+    <MCreateDirIfNeedP_GU_Dirs e.DirsD_B (e.DirName )e.DirsD_E >e.ForMkDir ;
+  (e.Dirs )e.DirName (e.ForMkDir )=
+    <MCreateDirIfNeedP_GU_Dirs e.Dirs (e.DirName )><MFileSystemP_MakeDir e.ForMkDir >e.ForMkDir ;
+}
+
+$EXTERN MCreateDirIfNeedP_CreateD_T;
+MCreateDirIfNeedP_DoCreateCatalogs {
+  (e.Path )'/' e.FileName =
+    <MCreateDirIfNeedP_DoCreateCatalogs (<MCreateDirIfNeedP_CreateD_T e.Path >'\\' )e.FileName >;
+  (e.Path )'\\' e.FileName =
+    <MCreateDirIfNeedP_DoCreateCatalogs (<MCreateDirIfNeedP_CreateD_T e.Path >'\\' )e.FileName >;
+  (e.Path )s.NextChar e.FileName =
+    <MCreateDirIfNeedP_DoCreateCatalogs (e.Path s.NextChar )e.FileName >;
+  (e.Path )=
+    e.Path ;
+}
+
+$EXTERN MFileSystemP_CanonicalPathD_Str;
+$ENTRY MCreateDirIfNeedP_CreateD_T {
+  e.DirName =
+    <MCreateDirIfNeedP_CheckCreated (<MCreateDirIfNeedP_GU_Dirs >)<MFileSystemP_CanonicalPathD_Str e.DirName >(e.DirName )>;
+}
+
+$ENTRY MCreateDirIfNeedP_CreatePathToFile {
+  e.FileName =
+    <MCreateDirIfNeedP_DoCreateCatalogs ()e.FileName >;
+}
+
+MCreateDirIfNeedP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MCreateDirIfNeedP_EntryPointE_ {
+  =
+    <RegisterE_ MCreateDirIfNeedP_FinalizeE_ >;
+}
+

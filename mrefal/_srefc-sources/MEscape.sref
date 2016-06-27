@@ -1,0 +1,122 @@
+$FORWARD MEscapeP_EscapeCharD_SwCode;
+$EXTERN MMathP_CompareD_T;
+MEscapeP_EscapeCharD_Aux {
+  s.Base s.Char s.Code =
+    <MEscapeP_EscapeCharD_SwCode s.Base s.Char <MMathP_CompareD_T s.Code 32 >>;
+}
+
+$LABEL Oct;
+$FORWARD MEscapeP_OctTxt;
+$EXTERN MMathP_Div;
+$EXTERN MMathP_Mod;
+$LABEL Hex;
+$FORWARD MEscapeP_HexTxt;
+MEscapeP_EscapeCharD_SwCode {
+  #Oct s.Char '<' s.Code 32 =
+    '\\' <MEscapeP_OctTxt <MMathP_Div s.Code 64 >><MEscapeP_OctTxt <MMathP_Mod <MMathP_Div s.Code 8 >8 >><MEscapeP_OctTxt <MMathP_Mod s.Code 8 >>;
+  #Hex s.Char '<' s.Code 32 =
+    '\\x' <MEscapeP_HexTxt <MMathP_Div s.Code 16 >><MEscapeP_HexTxt <MMathP_Mod s.Code 16 >>;
+  s.Base s.Char s.Compare s.Code 32 =
+    s.Char ;
+}
+
+MEscapeP_OctTxt {
+  0 =
+    '0' ;
+  1 =
+    '1' ;
+  2 =
+    '2' ;
+  3 =
+    '3' ;
+  4 =
+    '4' ;
+  5 =
+    '5' ;
+  6 =
+    '6' ;
+  7 =
+    '7' ;
+}
+
+MEscapeP_HexTxt {
+  0 =
+    '0' ;
+  1 =
+    '1' ;
+  2 =
+    '2' ;
+  3 =
+    '3' ;
+  4 =
+    '4' ;
+  5 =
+    '5' ;
+  6 =
+    '6' ;
+  7 =
+    '7' ;
+  8 =
+    '8' ;
+  9 =
+    '9' ;
+  10 =
+    'A' ;
+  11 =
+    'B' ;
+  12 =
+    'C' ;
+  13 =
+    'D' ;
+  14 =
+    'E' ;
+  15 =
+    'F' ;
+}
+
+$EXTERN MStringsP_Ord;
+$ENTRY MEscapeP_EscapeCharD_Oct {
+  '\n' =
+    '\\n' ;
+  '\r' =
+    '\\r' ;
+  '\t' =
+    '\\t' ;
+  '\\' =
+    '\\\\' ;
+  '\'' =
+    '\\\'' ;
+  '\"' =
+    '\\\"' ;
+  s.Other =
+    <MEscapeP_EscapeCharD_Aux #Oct s.Other <MStringsP_Ord s.Other >>;
+}
+
+$ENTRY MEscapeP_EscapeCharD_Hex {
+  '\n' =
+    '\\n' ;
+  '\r' =
+    '\\r' ;
+  '\t' =
+    '\\t' ;
+  '\\' =
+    '\\\\' ;
+  '\'' =
+    '\\\'' ;
+  '\"' =
+    '\\\"' ;
+  s.Other =
+    <MEscapeP_EscapeCharD_Aux #Hex s.Other <MStringsP_Ord s.Other >>;
+}
+
+MEscapeP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MEscapeP_EntryPointE_ {
+  =
+    <RegisterE_ MEscapeP_FinalizeE_ >;
+}
+

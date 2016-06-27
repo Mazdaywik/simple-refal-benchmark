@@ -1,0 +1,788 @@
+$MODULE Driver::MClusters;
+/**=============================================================================
+  Функции модуля обрабатывают "гроздь" модулей -- набор прямо или косвенно зави-
+сящих модулей от некоторого модуля. Две основные фукции модуля: CheckNeedCompile
+для проверки необходимости перекомпиляции данного модуля и ListForLinking для
+получения списка модулей (упорядоченных в топологическом порядке), подлежащих
+компоновке.
+==============================================================================*/
+
+$IMPORT Driver::MModuleFinder;
+$IMPORT Driver::MModuleIF;
+$IMPORT MContext = Driver::MContext;
+$IMPORT MFileSystem;
+$IMPORT MLambda;
+$IMPORT MOrder;
+$IMPORT MStrings;
+
+//==============================================================================
+
+/*
+  <DependencesList-Cached t.hContext t.ModuleName>
+    == t.hContext Avail t.ImportedModules*
+    == t.hContext NotAvail
+    == t.hContext Fails
+*/
+DependencesList-Cached
+  t.hContext t.ModuleName =
+    <DependencesList-Cached-SwAvail
+      t.ModuleName
+      <MContext::GetStatusType
+        t.hContext t.ModuleName
+      >
+    >;
+
+DependencesList-Cached-SwAvail {
+  t.ModuleName t.hContext Success s.Status Updated =
+    <DependencesList-Cached-OnAvail
+      t.hContext t.ModuleName
+    >;
+
+  t.ModuleName t.hContext Success s.Status Library =
+    <DependencesList-Cached-OnAvail
+      t.hContext t.ModuleName
+    >;
+
+  t.ModuleName t.hContext Success Ready Recompile =
+    <DependencesList-Cached-OnAvail
+      t.hContext t.ModuleName
+    >;
+
+  t.ModuleName t.hContext Success s.OtherStatus s.OtherType =
+    t.hContext Fails;
+
+  t.ModuleName t.hContext Fails ModuleNotFound =
+    t.hContext NotAvail;
+
+  t.ModuleName t.hContext Fails MismatchCase =
+    t.hContext NotAvail;
+}
+
+DependencesList-Cached-OnAvail {
+  t.hContext t.ModuleName =
+    <DependencesList-Cached-OnAvail-Aux
+      <MContext::GetCachedModuleIF t.hContext t.ModuleName>
+    >;
+}
+
+DependencesList-Cached-OnAvail-Aux {
+  t.hContext Success NotCached = t.hContext Fails;
+
+  t.hContext Success t.ModuleIF =
+    t.hContext Avail
+    <MLambda::Map
+      & Driver.MModuleIF.GetName
+      <Driver.MModuleIF.GetImports t.ModuleIF>
+    >;
+
+  t.hContext Fails s.Error = t.hContext Fails;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+  <DependencesList-Real t.hErrorList t.hContext t.ModuleName>
+    == t.hErrorList t.hContext Avail t.ImportedModules*
+    == t.hErrorList t.hContext NotAvail
+    == t.hErrorList t.hContext Fails
+*/
+DependencesList-Real
+  t.hErrorList t.hContext t.ModuleName =
+    <DependencesList-Real-SwAvail
+      t.ModuleName t.hErrorList
+      <MContext::GetStatusType
+        t.hContext t.ModuleName
+      >
+    >;
+
+DependencesList-Real-SwAvail {
+  t.ModuleName t.hErrorList t.hContext
+  Success s.Status Updated =
+    <DependencesList-Real-OnAvail
+      t.hContext t.hErrorList t.ModuleName
+    >;
+
+  t.ModuleName t.hErrorList t.hContext
+  Success s.Status Library =
+    <DependencesList-Real-OnAvail
+      t.hContext t.hErrorList t.ModuleName
+    >;
+
+  t.ModuleName t.hErrorList t.hContext
+  Success Ready Recompile =
+    <DependencesList-Real-OnAvail
+      t.hContext t.hErrorList t.ModuleName
+    >;
+
+  t.ModuleName t.hErrorList t.hContext
+  Success s.OtherStatus s.OtherType =
+    t.hErrorList t.hContext Fails;
+
+  t.ModuleName t.hErrorList t.hContext
+  Fails ModuleNotFound =
+    t.hErrorList t.hContext NotAvail;
+
+  t.ModuleName t.hErrorList t.hContext
+  Fails MismatchCase =
+    t.hErrorList t.hContext NotAvail;
+}
+
+DependencesList-Real-OnAvail {
+  t.hTables t.hErrorList t.ModuleName =
+    <DependencesList-Real-OnAvail-Aux
+      <Driver::MModuleIF::Load
+        t.hTables t.hErrorList t.ModuleName
+      >
+    >;
+}
+
+DependencesList-Real-OnAvail-Aux {
+  t.hTables t.hErrorList Success t.ModuleIF =
+    t.hErrorList t.hTables Avail
+    <MLambda::Map
+      & Driver.MModuleIF.GetName
+      <Driver.MModuleIF.GetImports t.ModuleIF>
+    >;
+
+  t.hTables t.hErrorList Fails =
+    t.hErrorList t.hTables Fails;
+}
+
+//------------------------------------------------------------------------------
+
+/**
+  <CheckNeedCompile-LinkOnly
+    t.hErrorList t.hContext t.Config t.ModuleName
+  >
+    == t.hErrorList t.hContext Success s.Status s.Type
+    == t.hErrorList t.hContext Fails MismatchCase
+*/
+$ENTRY CheckNeedCompile-LinkOnly
+   t.hErrorList t.hContext t.Config t.ModuleName =
+     <CheckNeedCompile-Generic-Start
+       & LinkOnly-SwStatusType
+       t.hErrorList t.hContext t.Config t.ModuleName
+     >;
+
+CheckNeedCompile-Generic-Start {
+  s.FnSelector t.hErrorList t.hContext t.Config t.ModuleName =
+    <CheckNeedCompile-Root
+      s.FnSelector
+      (/* стек */) t.Config t.ModuleName t.hErrorList
+      <Driver::MModuleFinder::LookupImportModule
+        t.hContext t.Config t.ModuleName
+      >
+    >;
+}
+
+LinkOnly-SwStatusType {
+  Ready   s.Type    = AsIs Ready   s.Type;
+  Cluster s.Type    = AsIs Cluster s.Type;
+  Found   Errors    = UpdateStatusType Errors;
+  Found   Recompile = UpdateStatusType Errors;
+  Found   Updated   = UpdateStatusType Updated;
+  Found   Library   = UpdateStatusType Library;
+}
+
+//------------------------------------------------------------------------------
+
+/**
+  <CheckNeedCompile-Build
+    t.hErrorList t.hContext t.Config t.ModuleName
+  >
+    == t.hErrorList t.hContext Success s.Status s.Type
+    == t.hErrorList t.hContext Fails MismatchCase
+*/
+$ENTRY CheckNeedCompile-Build
+   t.hErrorList t.hContext t.Config t.ModuleName =
+     <CheckNeedCompile-Generic-Start
+       & Build-SwStatusType
+       t.hErrorList t.hContext t.Config t.ModuleName
+     >;
+
+Build-SwStatusType {
+  Ready   s.Type    = AsIs Ready   s.Type;
+  Cluster s.Type    = AsIs Cluster s.Type;
+  Found   Errors    = UpdateStatusType Errors;
+  Found   Recompile = UpdateStatusType Recompile;
+  Found   Updated   = UpdateStatusType Recompile;
+  Found   Library   = UpdateStatusType Library;
+}
+
+//------------------------------------------------------------------------------
+
+/**
+  <CheckNeedCompile-Make
+    t.hErrorList t.hContext t.Config t.ModuleName
+  >
+    == t.hErrorList t.hContext Success s.Status s.Type
+    == t.hErrorList t.hContext Fails MismatchCase
+*/
+$ENTRY CheckNeedCompile-Make
+  t.hErrorList t.hContext t.Config t.ModuleName =
+    <CheckNeedCompile-Generic-Start
+      & Make-SwStatusType
+      t.hErrorList t.hContext t.Config t.ModuleName
+    >;
+
+/*
+  Для защиты от зацикливания вследствие рекурсии будем вести
+  отсчёт просматриваемых модулей в стеке.
+*/
+CheckNeedCompile-R
+  (e.Stack)
+  t.hErrorList t.hContext t.Config t.ModuleName =
+    <CheckNeedCompile-Root
+      & Make-SwStatusType
+      (e.Stack) t.Config t.ModuleName t.hErrorList
+      <Driver::MModuleFinder::LookupImportModule
+        t.hContext t.Config t.ModuleName
+      >
+    >;
+
+Make-SwStatusType {
+  Ready   s.Type    = AsIs Ready   s.Type;
+  Cluster s.Type    = AsIs Cluster s.Type;
+  Found   Errors    = UpdateStatusType Errors;
+  Found   Recompile = UpdateStatusType Recompile;
+  Found   Updated   = DepthAnalysis;
+  Found   Library   = UpdateStatusType Library;
+}
+
+CheckNeedCompile-Root {
+  s.FnSelector
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext Success s.Status s.Type =
+    <CheckNeedCompile-SwRoot
+      (e.Stack) t.Config t.ModuleName t.hErrorList
+      t.hContext <s.FnSelector s.Status s.Type>
+    >;
+
+  s.FnSelector
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext Fails MismatchCase =
+    t.hErrorList t.hContext Fails MismatchCase;
+}
+
+CheckNeedCompile-SwRoot {
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext AsIs s.Status s.Type =
+    t.hErrorList t.hContext Success s.Status s.Type;
+
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext UpdateStatusType s.NewType =
+    <CheckNeedCompile-UpdateStatusType
+      t.hErrorList t.hContext t.ModuleName s.NewType
+    >;
+
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext DepthAnalysis =
+    <CheckNeedCompile-SwOne
+      (e.Stack) t.Config
+      <CheckNeedCompileOne
+        t.hErrorList t.hContext t.Config t.ModuleName
+      >
+    >;
+}
+
+CheckNeedCompile-UpdateStatusType
+  t.hErrorList t.hContext t.ModuleName s.NewType =
+    <CheckNeedCompile-UpdateStatusType-Aux
+      t.hErrorList
+      <MContext::SetClusterType t.hContext t.ModuleName s.NewType>
+      t.ModuleName s.NewType
+    >;
+
+CheckNeedCompile-UpdateStatusType-Aux {
+  t.hErrorList t.hContext Success t.ModuleName s.NewType =
+    t.hErrorList t.hContext Success Cluster s.NewType;
+
+  t.hErrorList t.hContext Fails MismatchCase t.ModuleName s.NewType =
+    t.hErrorList t.hContext Fails MismatchCase;
+}
+
+CheckNeedCompile-SwOne {
+  (e.Stack) t.Config
+  t.hErrorList t.hContext t.ModuleName Success Found Updated =
+    <CheckNeedCompile-UpdateContext
+      <CheckNeedCompile-ScanImports
+        (e.Stack) t.Config t.ModuleName
+        <DependencesList-Real t.hErrorList t.hContext t.ModuleName>
+      >
+    >;
+
+  (e.Stack) t.Config
+  t.hErrorList t.hContext t.ModuleName Success Found Recompile =
+    <CheckNeedCompile-UpdateStatusType
+      t.hErrorList t.hContext t.ModuleName Recompile
+    >;
+
+  (e.Stack) t.Config
+  t.hErrorList t.hContext t.ModuleName Success Cluster s.Type =
+    t.hErrorList t.hContext Success Cluster s.Type;
+
+  (e.Stack) t.Config
+  t.hErrorList t.hContext t.ModuleName Success Ready s.Type =
+    t.hErrorList t.hContext Success Ready s.Type;
+
+  (e.Stack) t.Config
+  t.hErrorList t.hContext t.ModuleName Fails MismatchCase =
+    t.hErrorList t.hContext Fails MismatchCase;
+}
+
+CheckNeedCompile-UpdateContext
+  t.hErrorList t.hContext t.ModuleName Success s.Type =
+    <CheckNeedCompile-UpdateStatusType
+      t.hErrorList t.hContext t.ModuleName s.Type
+    >;
+
+GuardUpdateContext
+  t.hContext Success = t.hContext;
+
+CheckNeedCompile-ScanImports {
+  /*
+    На стадии компиляции (MCompiler) тажке производится
+    анализ рекурсивных ссылок и при этом ошибка добавляется
+    в t.hErrorList. Анализ рекурсивных ссылок проводится
+    не только для режима быстрой перекомпиляции,
+    но и для режима только компоновки и полной перекомпиляции.
+
+    Добавление сведений о циклических связях на этом этапе
+    приведёт только к дублированию сообщения об ошибке,
+    поэтому эту проверку лучше здесь проигнорировать и оставить
+    уровню выше.
+  */
+  (e.Stack-B t.RecursiveModule e.Stack-E )
+  t.Config t.ModuleName t.hErrorList
+  t.hContext Avail
+  e.Imports-B t.RecursiveModule e.Imports-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext Avail e.Imports =
+    <CheckNeedCompile-ScanResults
+      t.ModuleName
+      <MLambda::MapReduce
+        <MLambda::BindLeft-H
+          <MLambda::BindLeft & CheckNeedCompile-R-Format ( e.Stack t.ModuleName )>
+          t.Config
+        >
+        (t.hErrorList t.hContext) e.Imports
+      >
+    >;
+
+  /*
+    Реакция на ошибки, возможно, неразумная.
+  */
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext NotAvail =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  (e.Stack) t.Config t.ModuleName t.hErrorList
+  t.hContext Fails =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+}
+
+CheckNeedCompile-R-Format {
+  (e.Stack) (t.hErrorList t.hContext) t.Config t.ImportName =
+    <CheckNeedCompile-R-Format-Aux
+      t.ImportName
+      <CheckNeedCompile-R
+        (e.Stack) t.hErrorList t.hContext t.Config t.ImportName
+      >
+    >;
+}
+
+CheckNeedCompile-R-Format-Aux {
+  t.ImportName t.hErrorList t.hContext Success s.Status s.Type =
+    (t.hErrorList t.hContext) (t.ImportName Success s.Status s.Type);
+
+  t.ImportName t.hErrorList t.hContext Fails s.Error =
+    (t.hErrorList t.hContext) (t.ImportName Fails s.Error);
+}
+
+CheckNeedCompile-ScanResults {
+  t.ModuleName (t.hErrorList t.hContext)
+  e.Results-B (t.ImportName Success s.Status Recompile) e.Results-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName (t.hErrorList t.hContext)
+  e.Results-B (t.ImportName Success s.Status Errors) e.Results-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName (t.hErrorList t.hContext)
+  e.Results-B (t.ImportName Fails e.FailsReason) e.Results-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+  /*
+    Оставшийся случай
+    e.Results ::= (t.ImportName Success s.Status Library | Updated)*
+  */
+  t.ModuleName (t.hErrorList t.hContext) e.Results =
+    <CheckNeedCompile-CompareTimes
+      t.ModuleName t.hErrorList
+      <MLambda::MapReduce
+        <MLambda::Composite
+          & GetTime
+          & MLambda.Bracket-H
+        >
+        t.hContext
+        t.ModuleName
+        <MLambda::Map
+          <MLambda::Composite
+            & MLambda.UnBracket
+            <MLambda::BindLeft & MStrings.First 1>
+          >
+          e.Results
+        >
+      >
+    >;
+}
+
+CheckNeedCompile-CompareTimes {
+  t.ModuleName t.hErrorList t.hContext
+  e.Times-B ( Fails MismatchCase ) e.Times-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName t.hErrorList t.hContext
+  e.Times-B ( Success s.Status Recompile e.Time ) e.Times-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName t.hErrorList t.hContext
+  ( Success s.Status Updated (e.MinSrcTime) (e.MaxSrcTime) )
+  e.DependedTimes =
+    <CheckNeedCompile-SwCompareTimes
+      t.ModuleName t.hErrorList t.hContext
+      <MLambda::Map
+        <MLambda::Composite
+          & MLambda.UnBracket
+          <MLambda::BindLeft & MStrings.Skip 4>
+          <MLambda::BindLeft & MOrder.Compare (e.MaxSrcTime)>
+        >
+        e.DependedTimes
+      >
+    >;
+}
+
+CheckNeedCompile-SwCompareTimes {
+  t.ModuleName t.hErrorList t.hContext e.Compares-B '<' e.Compares-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName t.hErrorList t.hContext e.Compares-B '=' e.Compares-E =
+    t.hErrorList t.hContext t.ModuleName Success Recompile;
+
+  t.ModuleName t.hErrorList t.hContext e.Compares =
+    t.hErrorList t.hContext t.ModuleName Success Updated;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+  <CheckNeedCompileOne
+    t.hErrorList t.hContext t.Config t.ModuleName
+  >
+    == t.hErrorList t.hContext t.ModuleName Success s.Status s.Type
+    == t.hErrorList t.hContext t.ModuleName Fails MismatchCase
+*/
+CheckNeedCompileOne
+  t.hErrorList t.hContext t.Config t.ModuleName =
+    <CheckNeedCompileOne-SwGetLastTime
+      t.ModuleName t.hErrorList
+      <GetTime t.hContext t.ModuleName>
+    >;
+
+CheckNeedCompileOne-SwGetLastTime {
+  t.ModuleName t.hErrorList t.hContext
+  Success s.Status s.Type Unknown =
+    t.hErrorList t.hContext t.ModuleName Success s.Status s.Type;
+
+  t.ModuleName t.hErrorList t.hContext
+  Success s.Status s.Type (e.MinTime) (e.MaxTime) =
+    t.hErrorList t.hContext t.ModuleName Success s.Status s.Type;
+
+  t.ModuleName t.hErrorList t.hContext Fails MismatchCase =
+    t.hErrorList t.hContext t.ModuleName Fails MismatchCase;
+}
+
+//------------------------------------------------------------------------------
+
+/*
+  Вызывается только если s.Type == Updated | Library.
+
+  <GetTime t.hContext t.ModuleName>
+    == t.hContext Success s.Status s.Type (e.MinTime) (e.MaxTime)
+    == t.hContext Fails MismatchCase
+*/
+GetTime
+  t.hContext t.ModuleName =
+    <GetLastTime-SwKnown
+      t.ModuleName
+      <MLambda::Apply
+        <MLambda::Parallel-H
+          <MLambda::Composite
+            <MLambda::BindRight & MContext.GetStatusType t.ModuleName>
+            & MLambda.Bracket-H
+          >
+          <MLambda::Composite
+            <MLambda::BindRight & MContext.GetMinMaxTime t.ModuleName>
+            & MLambda.Bracket-H
+          >
+        >
+        t.hContext
+      >
+    >;
+
+GetLastTime-SwKnown {
+  t.ModuleName t.hContext ( Fails MismatchCase ) ( Fails MismatchCase ) =
+    t.hContext Fails MismatchCase;
+
+  t.ModuleName t.hContext
+  ( Success s.Status Updated ) ( Success (e.MinTime) (e.MaxTime) ) =
+    t.hContext Success s.Status Updated (e.MinTime) (e.MaxTime);
+
+  t.ModuleName t.hContext
+  ( Success s.Status Library ) ( Success (e.MinTime) (e.MaxTime) ) =
+    t.hContext Success s.Status Library (e.MinTime) (e.MaxTime);
+
+  t.ModuleName t.hContext ( Success s.Status s.Type ) ( Success Unknown ) =
+    <GetLastTime-CalcTime
+      t.ModuleName s.Type
+      <MLambda::Apply
+        <MLambda::Parallel-H
+          <MLambda::Composite
+            <MLambda::BindRight & MContext.GetBackEndList t.ModuleName>
+            & MLambda.Bracket-H
+          >
+          <MLambda::Composite
+            <MLambda::BindRight & MContext.GetFrontEnd t.ModuleName>
+            & MLambda.Bracket-H
+          >
+        >
+        t.hContext
+      >
+    >;
+}
+
+GetLastTime-CalcTime {
+  t.ModuleName s.ModuleType t.hContext
+  ( Fails MismatchCase ) ( Fails MismatchCase ) =
+    t.hContext Fails MismatchCase;
+
+  t.ModuleName Library t.hContext
+  ( Success e.BackEnds ) ( Success None ) =
+    /*
+      Наличие не проверяем -- для библиотеки все файлы должны быть найдены.
+    */
+    <GetLastTime-MakeResult-Library
+      t.ModuleName Library t.hContext
+      <MOrder::Sort
+        <MLambda::Map
+          <MLambda::Composite
+            & MLambda.UnBracket
+            <MLambda::BindLeft & MStrings.Skip 1>
+            <MLambda::BindLeft & GetDateTime>
+          >
+          e.BackEnds
+        >
+      >
+    >;
+
+  t.ModuleName Updated t.hContext
+  ( Success e.BackEnds ) ( Success s.FEName s.Init e.FrontEndName ) =
+    /*
+      Наличие не проверяем, т.к. функция Driver::MModuleFinder::LookupImportModule
+      проверяет наличие входных файлов и возвращает Updated только когда
+      все выходные файлы присутствуют.
+    */
+    <GetLastTime-OutTime
+      t.ModuleName t.hContext
+      <GetDateTime s.Init e.FrontEndName>
+      <MOrder::Sort
+        <MLambda::Map
+          <MLambda::Composite
+            & MLambda.UnBracket
+            <MLambda::BindLeft & MStrings.Skip 1>
+            <MLambda::BindLeft & GetDateTime>
+          >
+          e.BackEnds
+        >
+      >
+    >;
+}
+
+GetDateTime {
+  e.FileName =
+    /*
+      Оптимизация: файл e.FileName должен быть файлом, а не каталогом,
+      и он должен существовать. Поэтому целесообразно сначала убедиться
+      в его существовании, а потом вызвать медленную функцию
+      MFileSystem::FileAttribute
+    */
+    <GetDateTime-SwExist
+      <MFileSystem::ExistFile-T e.FileName>
+    >;
+}
+
+GetDateTime-SwExist {
+  True e.FileName = <MFileSystem::FileAttribute DateTime e.FileName>;
+
+  False e.FileName = FileNotFound;
+}
+
+GetLastTime-MakeResult-Library
+  t.ModuleName Library t.hContext (e.MinTime) e.Times (e.MaxTime) =
+    <GuardUpdateContext
+      <MContext::SetMinMaxTime
+        t.hContext t.ModuleName (e.MinTime) (e.MaxTime)
+      >
+    >
+    Success Found Library (e.MinTime) (e.MaxTime);
+
+GetLastTime-OutTime
+  t.ModuleName t.hContext (e.SrcTime) (e.MinTime) e.Times (e.MaxTime) =
+    <GetLastTime-Compare
+      t.ModuleName t.hContext (e.MaxTime)
+      <MOrder::Compare-T (e.SrcTime) (e.MinTime)>
+    >;
+
+GetLastTime-Compare {
+  t.ModuleName t.hContext (e.MaxTime) '<' (e.SrcTime) (e.MinTime) =
+    <GuardUpdateContext
+      <MContext::SetMinMaxTime
+        t.hContext t.ModuleName (e.SrcTime) (e.MaxTime)
+      >
+    >
+    Success Found Updated (e.SrcTime) (e.MaxTime);
+
+  t.ModuleName t.hContext (e.MaxTime) s.OtherOrder (e.SrcTime) (e.MinTime) =
+    <GuardUpdateContext
+      <MContext::SetMinMaxTime
+        t.hContext t.ModuleName (e.SrcTime) (e.MaxTime)
+      >
+    >
+    Success Found Recompile (e.MinTime) (e.MaxTime);
+}
+
+//==============================================================================
+
+/**
+  <ListForLinking t.hContext t.RootModuleName>
+    == t.hContext Success t.ModuleName*
+    == t.hContext Fails
+*/
+$ENTRY ListForLinking
+  t.hContext t.RootModuleName =
+    <LoadDependences
+      t.hContext () t.RootModuleName
+    >;
+
+/*
+  <LoadDependences t.hContext (e.Loaded) e.NotLoaded>
+
+  e.Loaded ::= ( t.Head e.Dependend )
+  e.NotLoaded ::= t.ModuleName
+*/
+LoadDependences {
+  t.hContext ( e.Loaded ) =
+    t.hContext
+    <TopologicalSort e.Loaded>;
+
+  t.hContext ( e.Loaded ) t.Next e.NotLoaded =
+    <LoadDependences-UpdateLoaded
+      ( e.Loaded ) t.Next <DependencesList-Cached t.hContext t.Next> ( e.NotLoaded )
+    >;
+}
+
+LoadDependences-UpdateLoaded {
+  ( e.Loaded ) t.Next t.hContext Avail e.List ( e.NotLoaded ) =
+    <LoadDependences
+      t.hContext
+      <DeleteDetected
+        ( e.Loaded (t.Next e.List) ) <Unique e.List e.NotLoaded>
+      >
+    >;
+
+  ( e.Loaded ) t.Next t.hContext NotAvail ( e.NotLinked ) =
+    t.hContext Fails;
+
+  ( e.Loaded ) t.Next t.hContext Fails ( e.NotLinked ) =
+    t.hContext Fails;
+}
+
+DeleteDetected {
+  ( e.Loaded-B (t.Master e.Slaves) e.Loaded-E )
+  e.NotLoaded-B t.Master e.NotLoaded-E =
+    <DeleteDetected
+      ( e.Loaded-B (t.Master e.Slaves) e.Loaded-E )
+      e.NotLoaded-B e.NotLoaded-E
+    >;
+
+  ( e.Loaded ) e.NotLoaded = ( e.Loaded ) e.NotLoaded;
+}
+
+Unique {
+  e.Set-B t.Double e.Set-M t.Double e.Set-E =
+    e.Set-B <Unique t.Double e.Set-M e.Set-E>;
+
+  e.Set = e.Set;
+}
+
+/*
+    Топологическая сортировка.
+    Для некоторого набора элементов определено отношение t.X << t.Y (для неко-
+  торых не определено), причём выполняются следующие условия:
+    (1) t.X << t.Y && t.Y << t.Z => t.X << t.Z
+    (2) t.X << t.Y => not( t.Y << t.X )
+    как то так.
+
+    Описание алгоритма. На входе имеем информацию: для каждого t.X из множества
+  { t.X } заданы такие { t.Y } из { t.X }, для которых верно t.X << t.Y.
+    Алгоритм имеет итеративную природу
+    На каждой итерации:
+    (1) Выбираем t.Head из { t.X } такой, что t.Head не принадлежит не одному
+  { t.Y } для какого-либо t.X. Если t.Head найти не удаётся, значит в графе
+  зависмостей есть циклы. Алгоритм не применим по определению.
+    (2) t.Head добавляем в конец результата, удаляем t.Head из { t.X }
+    (3) Алгоритм завершается, когда в { t.X } не остаётся элементов.
+*/
+TopologicalSort
+  e.Loaded =
+    <DoTopologicalSort
+      ( /* Результат */ )
+      ( <FindSlaves e.Loaded> )
+      ( /* Неголовные */ )
+      e.Loaded
+    >;
+
+FindSlaves
+  e.Loaded = <Unique <MLambda::Map & Slaves e.Loaded>>;
+
+Slaves
+  (t.Master e.Slaves) = e.Slaves;
+
+DoTopologicalSort {
+  ( e.Result ) ( e.AllSlaves-B t.Master e.AllSlaves-E ) ( e.NotHead )
+  ( t.Master e.Slaves ) e.Tail =
+    <DoTopologicalSort
+      ( e.Result )
+      ( e.AllSlaves-B t.Master e.AllSlaves-E )
+      ( e.NotHead (t.Master e.Slaves) )
+      e.Tail
+    >;
+
+  ( e.Result ) ( e.AllSlaves ) ( e.NotHead )
+  (t.Head e.Slaves) e.Tail =
+    <DoTopologicalSort
+      ( e.Result t.Head )
+      ( <FindSlaves e.Tail e.NotHead> )
+      ( /* Неголовные */ )
+      e.Tail e.NotHead
+    >;
+
+  // Завершение итераций
+  ( e.Result ) ( ) ( ) = Success e.Result;
+
+  // Случай циклических связей
+  ( e.Result ) ( e.AllSlaves ) ( e.NotHead ) = Fails;
+}
+
+$END Driver::MClusters.

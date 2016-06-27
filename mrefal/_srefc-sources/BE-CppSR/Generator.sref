@@ -1,0 +1,493 @@
+$FORWARD BED_CppSRP_GeneratorP_DoQNameCode;
+$EXTERN MQualifiedNameP_Parse;
+BED_CppSRP_GeneratorP_QNameCode {
+  t.Name =
+    <BED_CppSRP_GeneratorP_DoQNameCode <MQualifiedNameP_Parse t.Name >>;
+}
+
+$FORWARD BED_CppSRP_GeneratorP_NameCode;
+BED_CppSRP_GeneratorP_DoQNameCode {
+  (e.First )=
+    <BED_CppSRP_GeneratorP_NameCode e.First >;
+  (e.First )(e.Second )=
+    <BED_CppSRP_GeneratorP_NameCode e.First >'P_' <BED_CppSRP_GeneratorP_NameCode e.Second >;
+  (e.First )(e.Second )e.Tail =
+    <BED_CppSRP_GeneratorP_NameCode e.First >'P_' <BED_CppSRP_GeneratorP_DoQNameCode (e.Second )e.Tail >;
+}
+
+$EXTERN MLambdaP_Map;
+$FORWARD BED_CppSRP_GeneratorP_NameCodeChar;
+BED_CppSRP_GeneratorP_NameCode {
+  e.Name =
+    <MLambdaP_Map BED_CppSRP_GeneratorP_NameCodeChar e.Name >;
+}
+
+$LABEL Entry;
+$LABEL FuncName;
+$LABEL Go;
+BED_CppSRP_GeneratorP_NameCodeChar {
+  '!' =
+    'B_' ;
+  '?' =
+    'Q_' ;
+  '_' =
+    'U_' ;
+  '-' =
+    'D_' ;
+  #Entry =
+    'E_' ;
+  #FuncName =
+    'N_' ;
+  #Go =
+    'Entry_Go' ;
+  s.Other =
+    s.Other ;
+}
+
+BED_CppSRP_GeneratorP_FuncArguments {
+  =
+    'refalrts::Iter arg_begin, refalrts::Iter arg_end' ;
+}
+
+BED_CppSRP_GeneratorP_NakedArguments {
+  =
+    'refalrts::Iter, refalrts::Iter' ;
+}
+
+$LABEL Local;
+$LABEL InitFinal;
+BED_CppSRP_GeneratorP_TextFromMemoryClass {
+  #Local =
+    'static ' ;
+  #Entry =
+    ;
+  #InitFinal =
+    ;
+}
+
+BED_CppSRP_GeneratorP_SwGenFnStart {
+  s.MemoryClass s.FnArguments t.Name =
+    (<BED_CppSRP_GeneratorP_TextFromMemoryClass s.MemoryClass >'refalrts::FnResult ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'(' <s.FnArguments >') {' )('  refalrts::this_is_generated_function();' );
+}
+
+$EXTERN BED_CppSRP_GeneratorP_GenFnStart;
+BED_CppSRP_GeneratorP_GenSwapD_Aux {
+  s.MemoryClass t.Name =
+    <BED_CppSRP_GeneratorP_GenFnStart s.MemoryClass t.Name >('  refalrts::Iter func_name = arg_begin;' )()('  refalrts::move_left( func_name, arg_end );' )()('  refalrts::Iter info_b = func_name;' )('  refalrts::Iter info_e = arg_end;' )()('  refalrts::move_left( info_b, info_e );' )('  refalrts::move_right( info_b, info_e );' )()('  static refalrts::Iter s_head = ' 'refalrts::initialize_swap_head( func_name );' )()('  refalrts::Iter saved_b;' )('  refalrts::Iter saved_e;' )()('  refalrts::swap_info_bounds( saved_b, saved_e, s_head );' )('  refalrts::splice_evar( arg_begin, saved_b, saved_e );' )('  refalrts::swap_save( s_head, info_b, info_e );' )('  refalrts::splice_to_freelist( arg_begin, arg_end );' )()('  return refalrts::cSuccess;' )('}' )();
+}
+
+$FORWARD BED_CppSRP_GeneratorP_MakeExternalNameD_Aux;
+$EXTERN MQualifiedNameP_ToPrintableD_Dot;
+BED_CppSRP_GeneratorP_MakeExternalName {
+  t.Name =
+    <BED_CppSRP_GeneratorP_MakeExternalNameD_Aux <MQualifiedNameP_ToPrintableD_Dot t.Name >>;
+}
+
+BED_CppSRP_GeneratorP_MakeExternalNameD_Aux {
+  e.Name #Entry =
+    e.Name '#ENTRY' ;
+  e.Name =
+    e.Name ;
+}
+
+BED_CppSRP_GeneratorP_GenIdentD_Aux {
+  (e.ExternalName )e.InternalName =
+    ('#ifndef ' e.InternalName 'DEFINED_R_' )('#define ' e.InternalName 'DEFINED_R_' )()('//$LABEL ' e.ExternalName )('template <typename refal_param_int>' )('struct ' e.InternalName ' {' )('  static const char *name() {' )('    return \"' e.ExternalName '\";' )('  }' )('};' )()('#endif // ' e.InternalName 'DEFINED_R_' )();
+}
+
+BED_CppSRP_GeneratorP_GenSentenceD_TerminateAccumulator {
+  (e.Indent )e.Generated =
+    e.Generated ;
+}
+
+$EXTERN MStringsP_Symb;
+BED_CppSRP_GeneratorP_BracketsVarD_B {
+  s.BracketNum s.Nested =
+    'bb_' <MStringsP_Symb s.BracketNum >'_' <MStringsP_Symb s.Nested >;
+}
+
+BED_CppSRP_GeneratorP_BracketsVarD_E {
+  s.BracketNum s.Nested =
+    'be_' <MStringsP_Symb s.BracketNum >'_' <MStringsP_Symb s.Nested >;
+}
+
+$EXTERN MMathP_Inc;
+BED_CppSRP_GeneratorP_PrintStkBracket {
+  e.Indent (s.StkBracket s.Nested )=
+    (e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.StkBracket <MMathP_Inc s.Nested >>' = ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.StkBracket s.Nested >';' )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.StkBracket <MMathP_Inc s.Nested >>' = ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.StkBracket s.Nested >';' );
+}
+
+BED_CppSRP_GeneratorP_Indent {
+  (e.Indent )=
+    e.Indent ;
+}
+
+$LABEL CmdStartSentence;
+$LABEL CmdComment;
+$LABEL CmdDeclareEVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintEVarD_B;
+$FORWARD BED_CppSRP_GeneratorP_PrintEVarD_E;
+$LABEL CmdDeclareVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintVar;
+$LABEL CmdChar;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchChar;
+$LABEL CmdNumber;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchNumber;
+$LABEL CmdName;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchName;
+$LABEL CmdIdent;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchIdent;
+$LABEL CmdBrackets;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchBrackets;
+$LABEL CmdADT;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchADT;
+$LABEL CmdEmpty;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchEmpty;
+$LABEL CmdVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchSTVar;
+$LABEL CmdRepeated;
+$FORWARD BED_CppSRP_GeneratorP_PrintMatchRepeated;
+$LABEL CmdClosedE;
+$LABEL AlgLeft;
+$LABEL CmdOpenedE;
+$EXTERN MLambdaP_BindLeft;
+$LABEL CmdEmptyResult;
+$LABEL CmdCopyVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintAllocateCopyVar;
+$LABEL CmdAllocateElem;
+$FORWARD BED_CppSRP_GeneratorP_PrintElemVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintAllocateElem;
+$LABEL CmdAllocateString;
+$EXTERN MEscapeP_EscapeCharD_Oct;
+$LABEL CmdCorrectAllocCopyEVar;
+$FORWARD BED_CppSRP_GeneratorP_PrintPrev;
+$LABEL CmdLinkBrackets;
+$LABEL CmdPushStack;
+$LABEL CmdInsertEVarBefore;
+$LABEL CmdInsertSTVarBefore;
+$LABEL CmdSpliceFromFreeList;
+$LABEL CmdReturnResult;
+$LABEL CmdStartEntryCode;
+$FORWARD BED_CppSRP_GeneratorP_EntryCondition;
+$LABEL CmdEndEntryCode;
+$LABEL CmdOpenedED_EndCycle;
+$LABEL CmdEndSentence;
+BED_CppSRP_GeneratorP_GenCommand {
+  (e.Indent )(#CmdStartSentence )=
+    (e.Indent '  ' )(e.Indent 'do {' )(e.Indent '  refalrts::start_sentence();' )(e.Indent '  refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_B 0 0 >' = arg_begin;' )(e.Indent '  refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_E 0 0 >' = arg_end;' )(e.Indent '  refalrts::move_left( ' <BED_CppSRP_GeneratorP_BracketsVarD_B 0 0 >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E 0 0 >' );' )(e.Indent '  refalrts::move_left( ' <BED_CppSRP_GeneratorP_BracketsVarD_B 0 0 >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E 0 0 >' );' )(e.Indent '  refalrts::move_right( ' <BED_CppSRP_GeneratorP_BracketsVarD_B 0 0 >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E 0 0 >' );' );
+  (e.Indent )(#CmdComment e.Text )=
+    (e.Indent )(e.Indent '//' e.Text );
+  (e.Indent )(#CmdDeclareEVar e.VarInfo )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintEVarD_B e.VarInfo >';' )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintEVarD_E e.VarInfo >';' );
+  (e.Indent )(#CmdDeclareVar e.VarInfo )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintVar e.VarInfo >';' );
+  (e.Indent )(#CmdChar s.Direction s.BracketNum s.Nested s.Char )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchChar (e.Indent )s.Direction s.BracketNum s.Nested s.Char >;
+  (e.Indent )(#CmdNumber s.Direction s.BracketNum s.Nested s.Number )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchNumber (e.Indent )s.Direction s.BracketNum s.Nested s.Number >;
+  (e.Indent )(#CmdName s.Direction s.BracketNum s.Nested t.Name )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchName (e.Indent )s.Direction s.BracketNum s.Nested t.Name >;
+  (e.Indent )(#CmdIdent s.Direction s.BracketNum s.Nested t.Name )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchIdent (e.Indent )s.Direction s.BracketNum s.Nested t.Name >;
+  (e.Indent )(#CmdBrackets s.Direction s.BracketNum s.Nested s.InnerBrackets )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.InnerBrackets 0 >' = 0;' )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.InnerBrackets 0 >' = 0;' )<BED_CppSRP_GeneratorP_PrintMatchBrackets (e.Indent )s.Direction s.BracketNum s.Nested s.InnerBrackets >;
+  (e.Indent )(#CmdADT s.Direction s.BracketNum s.Nested s.InnerBrackets e.Name )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.InnerBrackets 0 >' = 0;' )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.InnerBrackets 0 >' = 0;' )<BED_CppSRP_GeneratorP_PrintMatchADT (e.Indent )s.Direction s.BracketNum s.Nested s.InnerBrackets e.Name >;
+  (e.Indent )(#CmdEmpty s.BracketNum s.Nested )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchEmpty (e.Indent )s.BracketNum s.Nested >;
+  (e.Indent )(#CmdVar s.Direction s.BracketNum s.Nested s.Mode e.Info )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchSTVar (e.Indent )s.Direction s.BracketNum s.Nested s.Mode e.Info >;
+  (e.Indent )(#CmdRepeated s.Direction s.BracketNum s.Nested e.VarInfo )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintMatchRepeated (e.Indent )s.Direction s.BracketNum s.Nested e.VarInfo >;
+  (e.Indent )(#CmdClosedE #AlgLeft s.BracketNum s.Nested 'e' e.Index )=
+    (e.Indent )(e.Indent <BED_CppSRP_GeneratorP_PrintEVarD_B 1 'e' e.Index >' = ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.BracketNum s.Nested >';' )(e.Indent 'refalrts::use( ' <BED_CppSRP_GeneratorP_PrintEVarD_B 1 'e' e.Index >' );' )(e.Indent <BED_CppSRP_GeneratorP_PrintEVarD_E 1 'e' e.Index >' = ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.BracketNum s.Nested >';' )(e.Indent 'refalrts::use( ' <BED_CppSRP_GeneratorP_PrintEVarD_E 1 'e' e.Index >' );' );
+  (e.Indent )(#CmdOpenedE #AlgLeft s.BracketNum s.Nested 'e' e.Index (e.BracketsForSave ))=
+    (e.Indent '  ' )(e.Indent 'refalrts::start_e_loop();' )(e.Indent <BED_CppSRP_GeneratorP_PrintEVarD_B 1 'e' e.Index >' = 0;' )(e.Indent <BED_CppSRP_GeneratorP_PrintEVarD_E 1 'e' e.Index >' = 0;' )(e.Indent 'do {' )<MLambdaP_Map <MLambdaP_BindLeft BED_CppSRP_GeneratorP_PrintStkBracket e.Indent '  ' >e.BracketsForSave >;
+  (e.Indent )(#CmdEmptyResult )=
+    (e.Indent )()(e.Indent 'refalrts::reset_allocator();' );
+  (e.Indent )(#CmdCopyVar s.ElemNumber s.Mode e.Index )=
+    (e.Indent )<BED_CppSRP_GeneratorP_PrintAllocateCopyVar (e.Indent )s.ElemNumber s.Mode e.Index >;
+  (e.Indent )(#CmdAllocateElem s.ElemNumber e.ElemInfo )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' = 0;' )<BED_CppSRP_GeneratorP_PrintAllocateElem (e.Indent )s.ElemNumber e.ElemInfo >;
+  (e.Indent )(#CmdAllocateString s.BeginNumber s.EndNumber s.Len e.String )=
+    (e.Indent )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintElemVar s.BeginNumber >' = 0;' )(e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintElemVar s.EndNumber >' = 0;' )(e.Indent 'if( ! refalrts::alloc_chars( ' <BED_CppSRP_GeneratorP_PrintElemVar s.BeginNumber >', ' <BED_CppSRP_GeneratorP_PrintElemVar s.EndNumber >', ' '\"' <MLambdaP_Map MEscapeP_EscapeCharD_Oct e.String >'\", ' <MStringsP_Symb s.Len >' ) )' )(e.Indent '  return refalrts::cNoMemory;' );
+  (e.Indent )(#CmdCorrectAllocCopyEVar s.ElemNumber s.AltPrev )=
+    (e.Indent )(e.Indent 'if ( ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' == 0 )' ' ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' =' ' ' <BED_CppSRP_GeneratorP_PrintPrev s.AltPrev >'; // CORRECT' );
+  (e.Indent )(#CmdLinkBrackets s.Left s.Right )=
+    (e.Indent )(e.Indent 'refalrts::link_brackets( ' <BED_CppSRP_GeneratorP_PrintElemVar s.Left >', ' <BED_CppSRP_GeneratorP_PrintElemVar s.Right >' );' );
+  (e.Indent )(#CmdPushStack s.ElemNumber )=
+    (e.Indent )(e.Indent 'refalrts::push_stack( ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' );' );
+  (e.Indent )(#CmdInsertEVarBefore s.Prev s.Usings 'e' e.Index )=
+    (e.Indent )(e.Indent 'refalrts::splice_evar( ' <BED_CppSRP_GeneratorP_PrintPrev s.Prev >', ' <BED_CppSRP_GeneratorP_PrintEVarD_B s.Usings 'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_E s.Usings 'e' e.Index >' );' );
+  (e.Indent )(#CmdInsertSTVarBefore s.Prev s.Usings s.Mode e.Index )=
+    (e.Indent )(e.Indent 'refalrts::splice_stvar( ' <BED_CppSRP_GeneratorP_PrintPrev s.Prev >', ' <BED_CppSRP_GeneratorP_PrintVar s.Usings s.Mode e.Index >' );' );
+  (e.Indent )(#CmdSpliceFromFreeList )=
+    (e.Indent )(e.Indent 'refalrts::splice_from_freelist( arg_begin );' );
+  (e.Indent )(#CmdReturnResult )=
+    (e.Indent )(e.Indent 'refalrts::splice_to_freelist( arg_begin, arg_end );' )(e.Indent 'return refalrts::cSuccess;' );
+  (e.Indent )(#CmdStartEntryCode s.EntryType )=
+    (e.Indent '  ' )(e.Indent 'if( ' <BED_CppSRP_GeneratorP_EntryCondition s.EntryType >' ) {' );
+  (e.Indent '  ' )(#CmdEndEntryCode )=
+    (e.Indent )(e.Indent '}' );
+  (e.Indent '  ' )(#CmdOpenedED_EndCycle s.BracketNum s.Nested 'e' e.Index )=
+    (e.Indent )(e.Indent '} while ( refalrts::open_evar_advance( ' <BED_CppSRP_GeneratorP_PrintEVarD_B 1 'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_E 1 'e' e.Index >', ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.BracketNum s.Nested >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.BracketNum s.Nested >' ) );' );
+  (e.Indent '  ' )(#CmdEndSentence )=
+    (e.Indent )(e.Indent '} while ( 0 );' )();
+}
+
+$LABEL Init;
+$LABEL Final;
+BED_CppSRP_GeneratorP_EntryCondition {
+  #Init =
+    '(s_counter ++) == 0' ;
+  #Final =
+    '(-- s_counter) == 0' ;
+}
+
+BED_CppSRP_GeneratorP_PrintVar {
+  s.Usings s.Mode e.Index =
+    s.Mode <BED_CppSRP_GeneratorP_NameCode e.Index >'_' <MStringsP_Symb s.Usings >;
+}
+
+BED_CppSRP_GeneratorP_PrintEVarD_B {
+  s.Usings s.Mode e.Index =
+    s.Mode <BED_CppSRP_GeneratorP_NameCode e.Index >'_b_' <MStringsP_Symb s.Usings >;
+}
+
+BED_CppSRP_GeneratorP_PrintEVarD_E {
+  s.Usings s.Mode e.Index =
+    s.Mode <BED_CppSRP_GeneratorP_NameCode e.Index >'_e_' <MStringsP_Symb s.Usings >;
+}
+
+$FORWARD BED_CppSRP_GeneratorP_PrintMatch;
+$EXTERN MEscapeP_EscapeCharD_Hex;
+BED_CppSRP_GeneratorP_PrintMatchChar {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.Char =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('char' )'\'' <MEscapeP_EscapeCharD_Hex s.Char >'\'' >;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchNumber {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.Number =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('number' )<MStringsP_Symb s.Number >'UL' >;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchName {
+  (e.Indent )s.Direction s.BracketNum s.Nested t.Name =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('function' )'& ' <BED_CppSRP_GeneratorP_QNameCode t.Name >>;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchIdent {
+  (e.Indent )s.Direction s.BracketNum s.Nested t.Name =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('ident' )' & ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'<int>::name' >;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchBrackets {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.InnerNum =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('brackets' )<BED_CppSRP_GeneratorP_BracketsVarD_B s.InnerNum 0 >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.InnerNum 0 >>;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchADT {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.InnerNum t.Name =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('adt' )<BED_CppSRP_GeneratorP_BracketsVarD_B s.InnerNum 0 >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.InnerNum 0 >', ' '& ' <BED_CppSRP_GeneratorP_QNameCode t.Name >>;
+}
+
+BED_CppSRP_GeneratorP_BreakerFromIndent {
+  '  ' =
+    ('    return refalrts::cRecognitionImpossible;' );
+  '    ' =
+    ('      break;' );
+  e.Indent =
+    (e.Indent '  continue;' );
+}
+
+BED_CppSRP_GeneratorP_PrintMatchEmpty {
+  (e.Indent )s.BracketNum s.Nested =
+    (e.Indent 'if( ! refalrts::empty_seq( ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.BracketNum s.Nested >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.BracketNum s.Nested >' ) )' )<BED_CppSRP_GeneratorP_BreakerFromIndent e.Indent >;
+}
+
+$LABEL AlgRight;
+BED_CppSRP_GeneratorP_StrFromDirection {
+  #AlgLeft =
+    'left' ;
+  #AlgRight =
+    'right' ;
+}
+
+BED_CppSRP_GeneratorP_VarMatchFunction {
+  's' =
+    'svar' ;
+  't' =
+    'tvar' ;
+}
+
+BED_CppSRP_GeneratorP_PrintMatchSTVar {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.Mode e.Index =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested (<BED_CppSRP_GeneratorP_VarMatchFunction s.Mode >)<BED_CppSRP_GeneratorP_PrintVar 1 s.Mode e.Index >>;
+}
+
+$EXTERN MMathP_Dec;
+BED_CppSRP_GeneratorP_PrintMatchRepeated {
+  (e.Indent )s.Direction s.BracketNum s.Nested s.Usings 'e' e.Index =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('repeated_evar' )<BED_CppSRP_GeneratorP_PrintEVarD_B s.Usings 'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_E s.Usings 'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_B <MMathP_Dec s.Usings >'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_E <MMathP_Dec s.Usings >'e' e.Index >>;
+  (e.Indent )s.Direction s.BracketNum s.Nested s.Usings s.Mode e.Index =
+    <BED_CppSRP_GeneratorP_PrintMatch (e.Indent )s.Direction s.BracketNum s.Nested ('repeated_stvar' )<BED_CppSRP_GeneratorP_PrintVar s.Usings s.Mode e.Index >', ' <BED_CppSRP_GeneratorP_PrintVar <MMathP_Dec s.Usings >s.Mode e.Index >>;
+}
+
+BED_CppSRP_GeneratorP_PrintMatch {
+  (e.Indent )s.Direction s.BracketNum s.Nested (e.Function )e.TextRep =
+    (e.Indent 'if( ! refalrts::' e.Function '_' <BED_CppSRP_GeneratorP_StrFromDirection s.Direction >'( ' e.TextRep ', ' <BED_CppSRP_GeneratorP_BracketsVarD_B s.BracketNum s.Nested >', ' <BED_CppSRP_GeneratorP_BracketsVarD_E s.BracketNum s.Nested >' ) )' )<BED_CppSRP_GeneratorP_BreakerFromIndent e.Indent >;
+}
+
+BED_CppSRP_GeneratorP_PrintElemVar {
+  s.Number =
+    'n' <MStringsP_Symb s.Number >;
+}
+
+$LABEL BEGIN;
+BED_CppSRP_GeneratorP_PrintPrev {
+  #BEGIN =
+    'arg_begin' ;
+  s.Counter =
+    <BED_CppSRP_GeneratorP_PrintElemVar s.Counter >;
+}
+
+BED_CppSRP_GeneratorP_PrintAllocateCopyVar {
+  (e.Indent )s.ElemNumber 'e' e.Index =
+    (e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' = 0;' )(e.Indent 'if( ! refalrts::alloc_copy_evar( ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >', ' <BED_CppSRP_GeneratorP_PrintEVarD_B 1 'e' e.Index >', ' <BED_CppSRP_GeneratorP_PrintEVarD_E 1 'e' e.Index >' ) )' )(e.Indent '  return refalrts::cNoMemory;' );
+  (e.Indent )s.ElemNumber s.Mode e.Index =
+    (e.Indent 'refalrts::Iter ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >' = 0;' )(e.Indent 'if( ! refalrts::alloc_copy_' s.Mode 'var( ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >', ' <BED_CppSRP_GeneratorP_PrintVar 1 s.Mode e.Index >' ) )' )(e.Indent '  return refalrts::cNoMemory;' );
+}
+
+$FORWARD BED_CppSRP_GeneratorP_PrintAllocateU_Aux;
+$FORWARD BED_CppSRP_GeneratorP_SwAllocator;
+$FORWARD BED_CppSRP_GeneratorP_SwInfo;
+BED_CppSRP_GeneratorP_PrintAllocateElem {
+  (e.Indent )s.ElemNumber s.ElementType e.Info =
+    <BED_CppSRP_GeneratorP_PrintAllocateU_Aux (e.Indent )s.ElemNumber (<BED_CppSRP_GeneratorP_SwAllocator s.ElementType >)(<BED_CppSRP_GeneratorP_SwInfo s.ElementType e.Info >)>(e.Indent '  return refalrts::cNoMemory;' );
+}
+
+BED_CppSRP_GeneratorP_PrintAllocateU_Aux {
+  (e.Indent )s.ElemNumber (e.Constructor )(e.Value )=
+    (e.Indent 'if( ! refalrts::' e.Constructor '( ' <BED_CppSRP_GeneratorP_PrintElemVar s.ElemNumber >e.Value ' ) )' );
+}
+
+$LABEL ElChar;
+$LABEL ElName;
+$LABEL ElNumber;
+$LABEL ElIdent;
+$LABEL ElOpenADT;
+$LABEL ElCloseADT;
+$LABEL ElOpenBracket;
+$LABEL ElCloseBracket;
+$LABEL ElOpenCall;
+$LABEL ElCloseCall;
+BED_CppSRP_GeneratorP_SwAllocator {
+  #ElChar =
+    'alloc_char' ;
+  #ElName =
+    'alloc_name' ;
+  #ElNumber =
+    'alloc_number' ;
+  #ElIdent =
+    'alloc_ident' ;
+  #ElOpenADT =
+    'alloc_open_adt' ;
+  #ElCloseADT =
+    'alloc_close_adt' ;
+  #ElOpenBracket =
+    'alloc_open_bracket' ;
+  #ElCloseBracket =
+    'alloc_close_bracket' ;
+  #ElOpenCall =
+    'alloc_open_call' ;
+  #ElCloseCall =
+    'alloc_close_call' ;
+}
+
+BED_CppSRP_GeneratorP_SwInfo {
+  #ElChar s.Char =
+    ', ' '\'' <MEscapeP_EscapeCharD_Hex s.Char >'\'' ;
+  #ElName t.Name =
+    ', & ' <BED_CppSRP_GeneratorP_QNameCode t.Name >', & ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'N_<int>::name' ;
+  #ElNumber s.Number =
+    ', ' <MStringsP_Symb s.Number >'UL' ;
+  #ElIdent t.Name =
+    ', & ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'<int>::name' ;
+  s.Other =
+    ;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenInitCounter {
+  #InitFinal =
+    ('  static unsigned s_counter = 0;' )('  refalrts::use_counter(s_counter);' );
+  s.Other =
+    ;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenFnStart {
+  s.MemoryClass t.Name =
+    <BED_CppSRP_GeneratorP_SwGenFnStart s.MemoryClass BED_CppSRP_GeneratorP_FuncArguments t.Name >;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenFnEnd {
+  =
+    ('  return refalrts::cRecognitionImpossible;' )('}' )();
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenEEnum {
+  t.Name =
+    <BED_CppSRP_GeneratorP_SwGenFnStart #Entry BED_CppSRP_GeneratorP_NakedArguments t.Name ><BED_CppSRP_GeneratorP_GenFnEnd >;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenEnum {
+  t.Name =
+    <BED_CppSRP_GeneratorP_SwGenFnStart #Local BED_CppSRP_GeneratorP_NakedArguments t.Name ><BED_CppSRP_GeneratorP_GenFnEnd >;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenExtern {
+  t.Name =
+    ('extern refalrts::FnResult ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'(' <BED_CppSRP_GeneratorP_FuncArguments >');' )();
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenForward {
+  t.Name =
+    ('static refalrts::FnResult ' <BED_CppSRP_GeneratorP_QNameCode t.Name >'(' <BED_CppSRP_GeneratorP_FuncArguments >');' )();
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenSwap {
+  t.Name =
+    <BED_CppSRP_GeneratorP_GenSwapD_Aux #Local t.Name >;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenIdent {
+  t.Name =
+    <BED_CppSRP_GeneratorP_GenIdentD_Aux (<BED_CppSRP_GeneratorP_MakeExternalName t.Name >)<BED_CppSRP_GeneratorP_QNameCode t.Name >>;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenIdentD_FuncName {
+  t.Name =
+    <BED_CppSRP_GeneratorP_GenIdentD_Aux (<BED_CppSRP_GeneratorP_MakeExternalName t.Name >)<BED_CppSRP_GeneratorP_QNameCode t.Name >'N_' >;
+}
+
+$ENTRY BED_CppSRP_GeneratorP_GenCommonHeaders {
+  =
+    ('// Automatically generated file. Don\'t edit!' )('#include \"refalrts.h\"' )()();
+}
+
+$EXTERN MLambdaP_MapReduce;
+$ENTRY BED_CppSRP_GeneratorP_GenSentence {
+  e.Algorithm =
+    <BED_CppSRP_GeneratorP_GenSentenceD_TerminateAccumulator <MLambdaP_MapReduce BED_CppSRP_GeneratorP_GenCommand ('  ' )e.Algorithm >>;
+}
+
+BED_CppSRP_GeneratorP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_CppSRP_GeneratorP_EntryPointE_ {
+  =
+    <RegisterE_ BED_CppSRP_GeneratorP_FinalizeE_ >;
+}
+

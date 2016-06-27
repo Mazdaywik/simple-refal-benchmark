@@ -1,0 +1,133 @@
+$EXTERN MFileIOP_Save;
+BED_ModuleIFP_MCompilerP_SaveToFile {
+  (e.FileName )t.IModule e.Lines =
+    t.IModule <MFileIOP_Save (e.FileName )e.Lines >;
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateBorders;
+$EXTERN MIModuleP_GetModuleName;
+BED_ModuleIFP_MCompilerP_GenerateLines {
+  t.IModule =
+    <BED_ModuleIFP_MCompilerP_GenerateBorders <MIModuleP_GetModuleName t.IModule >>;
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateBordersD_Aux;
+$EXTERN MIModuleP_GetModuleAttribute;
+$LABEL ModuleType;
+BED_ModuleIFP_MCompilerP_GenerateBorders {
+  t.hIModule t.ModuleName =
+    <BED_ModuleIFP_MCompilerP_GenerateBordersD_Aux t.ModuleName <MIModuleP_GetModuleAttribute t.hIModule #ModuleType >>;
+}
+
+$LABEL Found;
+$LABEL Main;
+$FORWARD BED_ModuleIFP_MCompilerP_MoveFirstLineToFront;
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateFunctions;
+$EXTERN MIModuleP_GetFunctionListD_EntryOnly;
+$EXTERN MQualifiedNameP_ToPrintableD_Quad;
+$LABEL Regular;
+BED_ModuleIFP_MCompilerP_GenerateBordersD_Aux {
+  t.ModuleName t.hIModule #Found #Main =
+    <BED_ModuleIFP_MCompilerP_MoveFirstLineToFront <BED_ModuleIFP_MCompilerP_GenerateFunctions <MIModuleP_GetFunctionListD_EntryOnly t.hIModule >>('$program ' <MQualifiedNameP_ToPrintableD_Quad t.ModuleName >';' )('$end ' <MQualifiedNameP_ToPrintableD_Quad t.ModuleName >'.' )>;
+  t.ModuleName t.hIModule #Found #Regular =
+    <BED_ModuleIFP_MCompilerP_MoveFirstLineToFront <BED_ModuleIFP_MCompilerP_GenerateFunctions <MIModuleP_GetFunctionListD_EntryOnly t.hIModule >>('$module ' <MQualifiedNameP_ToPrintableD_Quad t.ModuleName >';' )('$end ' <MQualifiedNameP_ToPrintableD_Quad t.ModuleName >'.' )>;
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_StringFromQualifiedD_Aux;
+$EXTERN MQualifiedNameP_Parse;
+BED_ModuleIFP_MCompilerP_StringFromQualified {
+  t.QualifiedName =
+    <BED_ModuleIFP_MCompilerP_StringFromQualifiedD_Aux <MQualifiedNameP_Parse t.QualifiedName >>;
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_UnBracket;
+$EXTERN MLambdaP_Reduce;
+$FORWARD BED_ModuleIFP_MCompilerP_AddSegment;
+BED_ModuleIFP_MCompilerP_StringFromQualifiedD_Aux {
+  (e.FirstSegment )e.Other =
+    <BED_ModuleIFP_MCompilerP_UnBracket <MLambdaP_Reduce BED_ModuleIFP_MCompilerP_AddSegment (e.FirstSegment )e.Other >>;
+}
+
+BED_ModuleIFP_MCompilerP_AddSegment {
+  (e.Segments )(e.NextSegment )=
+    (e.Segments '::' e.NextSegment );
+}
+
+BED_ModuleIFP_MCompilerP_UnBracket {
+  (e.Expr )=
+    e.Expr ;
+}
+
+BED_ModuleIFP_MCompilerP_MoveFirstLineToFront {
+  t.IModule e.Lines t.FirstLine t.LastLine =
+    t.IModule t.FirstLine ()e.Lines t.LastLine ;
+}
+
+$EXTERN MLambdaP_MapReduce;
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateImport;
+$EXTERN MIModuleP_GetImportListD_Aliases;
+$EXTERN MLambdaP_Map;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_UnBracket;
+$EXTERN MQualifiedNameP_Create;
+$FORWARD BED_ModuleIFP_MCompilerP_TypeFunction;
+$EXTERN MOrderP_Sort;
+$EXTERN MLambdaP_Bracket;
+BED_ModuleIFP_MCompilerP_GenerateFunctions {
+  t.IModule e.Functions =
+    <MLambdaP_MapReduce BED_ModuleIFP_MCompilerP_GenerateImport <MIModuleP_GetImportListD_Aliases t.IModule >>()<MLambdaP_Map <MLambdaP_Composite MLambdaP_UnBracket MQualifiedNameP_Create BED_ModuleIFP_MCompilerP_TypeFunction ><MOrderP_Sort <MLambdaP_Map <MLambdaP_Composite MQualifiedNameP_Parse MLambdaP_Bracket >e.Functions >>>();
+}
+
+BED_ModuleIFP_MCompilerP_TypeFunction {
+  t.FnName =
+    ('$entry ' <MQualifiedNameP_ToPrintableD_Quad t.FnName >';' );
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateImportD_Aux;
+$EXTERN MIModuleP_GetImportAttributeD_AliasName;
+$LABEL RealName;
+BED_ModuleIFP_MCompilerP_GenerateImport {
+  t.IModule t.NextImport =
+    <BED_ModuleIFP_MCompilerP_GenerateImportD_Aux t.NextImport <MIModuleP_GetImportAttributeD_AliasName t.IModule #RealName t.NextImport >>;
+}
+
+$FORWARD BED_ModuleIFP_MCompilerP_GenerateImportD_ShortAlias;
+$EXTERN MIModuleP_RelativeName;
+BED_ModuleIFP_MCompilerP_GenerateImportD_Aux {
+  t.LongAlias t.hIModule #Found t.RealName =
+    <BED_ModuleIFP_MCompilerP_GenerateImportD_ShortAlias t.RealName <MIModuleP_RelativeName t.hIModule t.LongAlias >>;
+}
+
+$LABEL Success;
+$FORWARD BED_ModuleIFP_MCompilerP_SwGenerateImportD_Aux;
+$EXTERN MQualifiedNameP_EqualsD_T;
+BED_ModuleIFP_MCompilerP_GenerateImportD_ShortAlias {
+  t.RealName t.hIModule #Success t.ShortAlias =
+    t.hIModule <BED_ModuleIFP_MCompilerP_SwGenerateImportD_Aux <MQualifiedNameP_EqualsD_T t.ShortAlias t.RealName >>;
+}
+
+$LABEL True;
+$LABEL False;
+BED_ModuleIFP_MCompilerP_SwGenerateImportD_Aux {
+  #True t.Alias t.RealName =
+    ('$import ' <BED_ModuleIFP_MCompilerP_StringFromQualified t.Alias >';' );
+  #False t.Alias t.RealName =
+    ('$import ' <BED_ModuleIFP_MCompilerP_StringFromQualified t.Alias >' = ' <BED_ModuleIFP_MCompilerP_StringFromQualified t.RealName >';' );
+}
+
+$ENTRY BED_ModuleIFP_MCompilerP_Generate {
+  t.IModule e.FileName =
+    <BED_ModuleIFP_MCompilerP_SaveToFile (e.FileName )<BED_ModuleIFP_MCompilerP_GenerateLines t.IModule >>;
+}
+
+BED_ModuleIFP_MCompilerP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_ModuleIFP_MCompilerP_EntryPointE_ {
+  =
+    <RegisterE_ BED_ModuleIFP_MCompilerP_FinalizeE_ >;
+}
+

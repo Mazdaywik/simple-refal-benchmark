@@ -1,0 +1,298 @@
+$EXTERN MPredeclGeneratorP_GenerateD_Generic;
+$FORWARD BED_SimRefP_MCompilerP_GenerateD_Properties;
+BED_SimRefP_MCompilerP_ProfilingD_Generate {
+  t.hIModule e.OutName =
+    <MPredeclGeneratorP_GenerateD_Generic BED_SimRefP_MCompilerP_GenerateD_Properties t.hIModule e.OutName >;
+}
+
+$LABEL GenSwap;
+$FORWARD BED_SimRefP_MCompilerP_GenSwap;
+$LABEL SwitchEnum;
+$LABEL Entry;
+$FORWARD BED_SimRefP_MCompilerP_GenEnumD_Entry;
+$LABEL Local;
+$FORWARD BED_SimRefP_MCompilerP_GenEnumD_Local;
+$LABEL GenCommonHeaders;
+$LABEL GenerateLabelForFunction;
+$LABEL No;
+$LABEL GenIdent;
+$FORWARD BED_SimRefP_MCompilerP_GenIdent;
+$LABEL GenFunctionD_Decl;
+$FORWARD BED_SimRefP_MCompilerP_GenFunctionD_Decl;
+$LABEL GenerateD_EntryCodeD_Go;
+$FORWARD BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_Go;
+$LABEL GenerateD_EntryCodeD_InitFinal;
+$FORWARD BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinal;
+$LABEL GenFunctionD_Code;
+$FORWARD BED_SimRefP_MCompilerP_GenFunctionD_Code;
+BED_SimRefP_MCompilerP_GenerateD_Properties {
+  #GenSwap =
+    BED_SimRefP_MCompilerP_GenSwap ;
+  #SwitchEnum #Entry =
+    BED_SimRefP_MCompilerP_GenEnumD_Entry ;
+  #SwitchEnum #Local =
+    BED_SimRefP_MCompilerP_GenEnumD_Local ;
+  #GenCommonHeaders =
+    ;
+  #GenerateLabelForFunction =
+    #No ;
+  #GenIdent =
+    BED_SimRefP_MCompilerP_GenIdent ;
+  #GenFunctionD_Decl =
+    BED_SimRefP_MCompilerP_GenFunctionD_Decl ;
+  #GenerateD_EntryCodeD_Go =
+    BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_Go ;
+  #GenerateD_EntryCodeD_InitFinal =
+    BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinal ;
+  #GenFunctionD_Code =
+    BED_SimRefP_MCompilerP_GenFunctionD_Code ;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_QNameCode;
+BED_SimRefP_MCompilerP_GenSwap {
+  t.AbsolutName =
+    ('$SWAP ' <BED_SimRefP_MCompilerP_QNameCode t.AbsolutName >';' )();
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenEnum;
+BED_SimRefP_MCompilerP_GenEnumD_Entry {
+  t.AbsolutName =
+    <BED_SimRefP_MCompilerP_GenEnum '$EENUM' t.AbsolutName >;
+}
+
+BED_SimRefP_MCompilerP_GenEnumD_Local {
+  t.AbsolutName =
+    <BED_SimRefP_MCompilerP_GenEnum '$ENUM' t.AbsolutName >;
+}
+
+BED_SimRefP_MCompilerP_GenEnum {
+  e.ScopeClass t.AbsolutName =
+    (e.ScopeClass ' ' <BED_SimRefP_MCompilerP_QNameCode t.AbsolutName >';' )();
+}
+
+$FORWARD BED_SimRefP_MCompilerP_NameCode;
+BED_SimRefP_MCompilerP_GenIdent {
+  e.Name =
+    ('$LABEL ' <BED_SimRefP_MCompilerP_NameCode e.Name >';' );
+}
+
+$FORWARD BED_SimRefP_MCompilerP_DeclarationsD_ScopeClass;
+BED_SimRefP_MCompilerP_GenFunctionD_Decl {
+  s.ScopeClass t.Name =
+    (<BED_SimRefP_MCompilerP_DeclarationsD_ScopeClass s.ScopeClass >' ' <BED_SimRefP_MCompilerP_QNameCode t.Name >';' );
+}
+
+$LABEL Swap;
+$LABEL ADT;
+BED_SimRefP_MCompilerP_DeclarationsD_ScopeClass {
+  #Entry =
+    '$EXTERN' ;
+  #Local =
+    '$FORWARD' ;
+  #Swap =
+    '$FORWARD' ;
+  #ADT =
+    '$ENUM' ;
+}
+
+$EXTERN MQualifiedNameP_AddSubName;
+BED_SimRefP_MCompilerP_ModuleEntryPointName {
+  t.ModuleName =
+    <MQualifiedNameP_AddSubName t.ModuleName 'EntryPoint' #Entry >;
+}
+
+$EXTERN MPredeclGeneratorP_GenFunction;
+$FORWARD BED_SimRefP_MCompilerP_OneSentenceD_EmptyPatternD_FunctionBody;
+$LABEL Function;
+$FORWARD BED_SimRefP_MCompilerP_CreateCallable;
+$EXTERN MQualifiedNameP_Create;
+$LABEL Macro;
+BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_Go {
+  s.FnProperties t.ModuleName (e.Result )e.Imports =
+    <MPredeclGeneratorP_GenFunction s.FnProperties <BED_SimRefP_MCompilerP_ModuleEntryPointName t.ModuleName >#Entry <BED_SimRefP_MCompilerP_OneSentenceD_EmptyPatternD_FunctionBody e.Result (#Function <BED_SimRefP_MCompilerP_CreateCallable <MQualifiedNameP_Create ('Exit' #Entry )>>(#Macro 0 ))>>;
+}
+
+$LABEL Pattern;
+$LABEL Result;
+BED_SimRefP_MCompilerP_OneSentenceD_EmptyPatternD_FunctionBody {
+  e.Result =
+    ((#Pattern )(#Result e.Result ));
+}
+
+$LABEL SrcPos;
+BED_SimRefP_MCompilerP_CreateCallable {
+  t.FunctionName =
+    (#Entry #SrcPos t.FunctionName );
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinalD_Aux;
+BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinal {
+  s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports =
+    <BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinalD_Aux s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports <MQualifiedNameP_AddSubName t.ModuleName 'Finalize' #Entry >>;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenEntry;
+$LABEL FnPtr;
+BED_SimRefP_MCompilerP_GenerateD_EntryCodeD_InitFinalD_Aux {
+  s.FnProperties t.ModuleName t.InitSeq t.FinalSeq e.Imports t.FinalizeFunction =
+    <MPredeclGeneratorP_GenFunction s.FnProperties t.FinalizeFunction #Local <BED_SimRefP_MCompilerP_OneSentenceD_EmptyPatternD_FunctionBody <BED_SimRefP_MCompilerP_GenEntry t.FinalSeq >>><MPredeclGeneratorP_GenFunction s.FnProperties <BED_SimRefP_MCompilerP_ModuleEntryPointName t.ModuleName >#Entry <BED_SimRefP_MCompilerP_OneSentenceD_EmptyPatternD_FunctionBody <BED_SimRefP_MCompilerP_GenEntry t.InitSeq >(#Function <BED_SimRefP_MCompilerP_CreateCallable <MQualifiedNameP_Create ('Register' #Entry )>>(#FnPtr <BED_SimRefP_MCompilerP_CreateCallable t.FinalizeFunction >))>>;
+}
+
+$LABEL None;
+BED_SimRefP_MCompilerP_GenEntry {
+  #None =
+    ;
+  (#Result e.Result )=
+    e.Result ;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenD_FnScopeClass;
+$EXTERN MLambdaP_Map;
+$FORWARD BED_SimRefP_MCompilerP_GenD_Sentence;
+BED_SimRefP_MCompilerP_GenFunctionD_Code {
+  t.AbsolutName s.ScopeClass e.Sentences =
+    (<BED_SimRefP_MCompilerP_GenD_FnScopeClass s.ScopeClass ><BED_SimRefP_MCompilerP_QNameCode t.AbsolutName >' {' )<MLambdaP_Map BED_SimRefP_MCompilerP_GenD_Sentence e.Sentences >('}' )();
+}
+
+BED_SimRefP_MCompilerP_GenD_FnScopeClass {
+  #Entry =
+    '$ENTRY ' ;
+  #Local =
+    ;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenD_Pattern;
+$FORWARD BED_SimRefP_MCompilerP_GenD_Result;
+BED_SimRefP_MCompilerP_GenD_Sentence {
+  ((#Pattern e.Pattern )(#Result e.Result ))=
+    ('  ' <BED_SimRefP_MCompilerP_GenD_Pattern e.Pattern >'=' )('    ' <BED_SimRefP_MCompilerP_GenD_Result e.Result >';' );
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenD_PatternD_Term;
+BED_SimRefP_MCompilerP_GenD_Pattern {
+  e.Pattern =
+    <MLambdaP_Map BED_SimRefP_MCompilerP_GenD_PatternD_Term e.Pattern >;
+}
+
+$LABEL Structure;
+$LABEL Abstract;
+$FORWARD BED_SimRefP_MCompilerP_GenD_Callable;
+$FORWARD BED_SimRefP_MCompilerP_GenD_CommonD_Term;
+BED_SimRefP_MCompilerP_GenD_PatternD_Term {
+  (#Structure e.Pattern )=
+    '(' <BED_SimRefP_MCompilerP_GenD_Pattern e.Pattern >')' ;
+  (#Abstract t.Callable e.Pattern )=
+    '[' <BED_SimRefP_MCompilerP_GenD_Callable t.Callable ><BED_SimRefP_MCompilerP_GenD_Pattern e.Pattern >']' ;
+  t.Common =
+    <BED_SimRefP_MCompilerP_GenD_CommonD_Term t.Common >;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_GenD_ResultD_Term;
+BED_SimRefP_MCompilerP_GenD_Result {
+  e.Result =
+    <MLambdaP_Map BED_SimRefP_MCompilerP_GenD_ResultD_Term e.Result >;
+}
+
+$LABEL IndirectCall;
+$LABEL SVar;
+BED_SimRefP_MCompilerP_GenD_ResultD_Term {
+  (#Structure e.Result )=
+    '(' <BED_SimRefP_MCompilerP_GenD_Result e.Result >')' ;
+  (#Abstract t.Callable e.Result )=
+    '[' <BED_SimRefP_MCompilerP_GenD_Callable t.Callable ><BED_SimRefP_MCompilerP_GenD_Result e.Result >']' ;
+  (#Function t.Callable e.Argument )=
+    '<' <BED_SimRefP_MCompilerP_GenD_Callable t.Callable ><BED_SimRefP_MCompilerP_GenD_Result e.Argument >'>' ;
+  (#IndirectCall (#SVar e.Index )e.Argument )=
+    '<s.' <BED_SimRefP_MCompilerP_NameCode e.Index >' ' <BED_SimRefP_MCompilerP_GenD_Result e.Argument >'>' ;
+  t.Common =
+    <BED_SimRefP_MCompilerP_GenD_CommonD_Term t.Common >;
+}
+
+$LABEL Identifier;
+$LABEL EVar;
+$LABEL TVar;
+$LABEL Literal;
+$FORWARD BED_SimRefP_MCompilerP_Escape;
+$EXTERN MStringsP_Symb;
+BED_SimRefP_MCompilerP_GenD_CommonD_Term {
+  (#Identifier t.SrcPos e.Name )=
+    '#' <BED_SimRefP_MCompilerP_NameCode e.Name >' ' ;
+  (#EVar e.Index )=
+    'e.' <BED_SimRefP_MCompilerP_NameCode e.Index >' ' ;
+  (#SVar e.Index )=
+    's.' <BED_SimRefP_MCompilerP_NameCode e.Index >' ' ;
+  (#TVar e.Index )=
+    't.' <BED_SimRefP_MCompilerP_NameCode e.Index >' ' ;
+  (#Literal e.Content )=
+    '\'' <BED_SimRefP_MCompilerP_Escape e.Content >'\' ' ;
+  (#Macro s.Value )=
+    <MStringsP_Symb s.Value >' ' ;
+  (#FnPtr t.Callable )=
+    <BED_SimRefP_MCompilerP_GenD_Callable t.Callable >;
+}
+
+$EXTERN MEscapeP_EscapeCharD_Oct;
+BED_SimRefP_MCompilerP_Escape {
+  e.Text =
+    <MLambdaP_Map MEscapeP_EscapeCharD_Oct e.Text >;
+}
+
+BED_SimRefP_MCompilerP_GenD_Callable {
+  (s.ScopeClass t.SrcPos t.Name )=
+    <BED_SimRefP_MCompilerP_QNameCode t.Name >' ' ;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_DoQNameCode;
+$EXTERN MQualifiedNameP_Parse;
+BED_SimRefP_MCompilerP_QNameCode {
+  t.Name =
+    <BED_SimRefP_MCompilerP_DoQNameCode <MQualifiedNameP_Parse t.Name >>;
+}
+
+BED_SimRefP_MCompilerP_DoQNameCode {
+  (e.First )=
+    <BED_SimRefP_MCompilerP_NameCode e.First >;
+  (e.First )(e.Second )=
+    <BED_SimRefP_MCompilerP_NameCode e.First >'P_' <BED_SimRefP_MCompilerP_NameCode e.Second >;
+  (e.First )(e.Second )e.Tail =
+    <BED_SimRefP_MCompilerP_NameCode e.First >'P_' <BED_SimRefP_MCompilerP_DoQNameCode (e.Second )e.Tail >;
+}
+
+$FORWARD BED_SimRefP_MCompilerP_NameCodeChar;
+BED_SimRefP_MCompilerP_NameCode {
+  e.Name =
+    <MLambdaP_Map BED_SimRefP_MCompilerP_NameCodeChar e.Name >;
+}
+
+BED_SimRefP_MCompilerP_NameCodeChar {
+  '!' =
+    'B_' ;
+  '?' =
+    'Q_' ;
+  '_' =
+    'U_' ;
+  '-' =
+    'D_' ;
+  #Entry =
+    'E_' ;
+  s.Other =
+    s.Other ;
+}
+
+$EXTERN MProfilerP_Quantify;
+$ENTRY BED_SimRefP_MCompilerP_Generate {
+  t.hIModule e.OutName =
+    <MProfilerP_Quantify BED_SimRefP_MCompilerP_ProfilingD_Generate t.hIModule e.OutName >;
+}
+
+BED_SimRefP_MCompilerP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_SimRefP_MCompilerP_EntryPointE_ {
+  =
+    <RegisterE_ BED_SimRefP_MCompilerP_FinalizeE_ >;
+}
+

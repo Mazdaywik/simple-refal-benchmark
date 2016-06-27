@@ -1,0 +1,704 @@
+$LABEL Success;
+$FORWARD CmdLineP_MParserP_ParseD_SwErrorsD_SwEmpty;
+$EXTERN MErrorP_ContentLevel;
+$LABEL Fails;
+$EXTERN MErrorP_MergeLists;
+CmdLineP_MParserP_ParseD_SwErrors {
+  t.MainErrorList t.SubErrorList #Success t.Collected =
+    <CmdLineP_MParserP_ParseD_SwErrorsD_SwEmpty t.MainErrorList <MErrorP_ContentLevel t.SubErrorList >t.Collected >;
+  t.MainErrorList t.SubErrorList #Fails =
+    <MErrorP_MergeLists t.MainErrorList t.SubErrorList >#Fails ;
+}
+
+$LABEL Errors;
+CmdLineP_MParserP_ParseD_SwErrorsD_SwEmpty {
+  t.MainErrorList t.SubErrorList #Errors t.Collected =
+    <MErrorP_MergeLists t.MainErrorList t.SubErrorList >#Fails ;
+  t.MainErrorList t.SubErrorList s.Other t.Collected =
+    <MErrorP_MergeLists t.MainErrorList t.SubErrorList >#Success t.Collected ;
+}
+
+$FORWARD CmdLineP_MParserP_LexerD_AnalyzeErrors;
+$EXTERN MLambdaP_Map;
+$FORWARD CmdLineP_MParserP_FileD_PtFromStr;
+$FORWARD CmdLineP_MParserP_PreScan;
+$FORWARD CmdLineP_MParserP_Renumerate;
+CmdLineP_MParserP_Lexer {
+  t.hErrorList e.CmdLine =
+    <CmdLineP_MParserP_LexerD_AnalyzeErrors t.hErrorList <MLambdaP_Map CmdLineP_MParserP_FileD_PtFromStr <CmdLineP_MParserP_PreScan ()<CmdLineP_MParserP_Renumerate e.CmdLine >>>>;
+}
+
+$LABEL File;
+$FORWARD CmdLineP_MParserP_SwFileD_PtFromStr;
+$EXTERN MFileSystemP_PathFromStr;
+CmdLineP_MParserP_FileD_PtFromStr {
+  (#File t.SrcPos e.StrFileName )=
+    <CmdLineP_MParserP_SwFileD_PtFromStr t.SrcPos (e.StrFileName )<MFileSystemP_PathFromStr e.StrFileName >>;
+  t.OtherOption =
+    t.OtherOption ;
+}
+
+$LABEL Option;
+$LABEL Param;
+$LABEL Error;
+CmdLineP_MParserP_SwFileD_PtFromStr {
+  t.SrcPos (e.StrFileName )#Success e.PtFileName =
+    (#Option t.SrcPos (#File )#Param e.PtFileName );
+  t.SrcPos (e.StrFileName )#Fails =
+    (#Error t.SrcPos 'Invalid file name \'' e.StrFileName '\'' );
+}
+
+$EXTERN MLambdaP_MapReduce;
+$FORWARD CmdLineP_MParserP_AddLexerError;
+CmdLineP_MParserP_LexerD_AnalyzeErrors {
+  t.hErrorList e.Options =
+    <MLambdaP_MapReduce CmdLineP_MParserP_AddLexerError t.hErrorList e.Options >;
+}
+
+$EXTERN MErrorP_AddCmdLineError;
+CmdLineP_MParserP_AddLexerError {
+  t.hErrorList (#Error t.SrcPos e.Message )=
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos e.Message >;
+  t.hErrorList t.OtherOption =
+    t.hErrorList t.OtherOption ;
+}
+
+$EXTERN MStringsP_Skip;
+$FORWARD CmdLineP_MParserP_RenumerateOption;
+CmdLineP_MParserP_Renumerate {
+  e.Options =
+    <MStringsP_Skip 1 <MLambdaP_MapReduce CmdLineP_MParserP_RenumerateOption 0 e.Options >>;
+}
+
+$EXTERN MMathP_Inc;
+$EXTERN MSrcPosP_CreateD_CmdLine;
+CmdLineP_MParserP_RenumerateOption {
+  s.Number (e.Option )=
+    <MMathP_Inc s.Number >(<MSrcPosP_CreateD_CmdLine s.Number >e.Option );
+}
+
+$FORWARD CmdLineP_MParserP_PreScanD_Option;
+$EXTERN MStringsP_Trim;
+$LABEL OpenBracket;
+$LABEL CloseBracket;
+$LABEL PopStackFile;
+CmdLineP_MParserP_PreScan {
+  t.FileStack (t.SrcPos '+' e.Option )e.Tail =
+    <CmdLineP_MParserP_PreScanD_Option t.FileStack (t.SrcPos <MStringsP_Trim e.Option >)e.Tail >;
+  t.FileStack (t.SrcPos '-' e.Option )e.Tail =
+    <CmdLineP_MParserP_PreScanD_Option t.FileStack (t.SrcPos <MStringsP_Trim e.Option >)e.Tail >;
+  t.FileStack (t.SrcPos '(' )e.Tail =
+    (#OpenBracket t.SrcPos )<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+  t.FileStack (t.SrcPos ')' )e.Tail =
+    (#CloseBracket t.SrcPos )<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+  t.FileStack (t.SrcPos e.StrFileName )e.Tail =
+    (#File t.SrcPos e.StrFileName )<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+  (e.Stack (e.LastConfigFile ))#PopStackFile e.Tail =
+    <CmdLineP_MParserP_PreScan (e.Stack )e.Tail >;
+  ()=
+    ;
+}
+
+$FORWARD CmdLineP_MParserP_PreScanD_OptionD_Param;
+$LABEL NoParam;
+CmdLineP_MParserP_PreScanD_Option {
+  t.FileStack (t.SrcPos e.Name ':' e.Option )e.Tail =
+    <CmdLineP_MParserP_PreScanD_OptionD_Param t.FileStack t.SrcPos (<MStringsP_Trim e.Name >)(<MStringsP_Trim e.Option >)e.Tail >;
+  t.FileStack (t.SrcPos e.Option )e.Tail =
+    (#Option t.SrcPos (e.Option )#NoParam )<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+}
+
+$FORWARD CmdLineP_MParserP_PreScanD_OptionD_ParamD_LoadFile;
+$EXTERN CmdLineP_MParserP_FixupPathD_Str;
+CmdLineP_MParserP_PreScanD_OptionD_Param {
+  (e.StackD_B (e.ConfigFile )e.StackD_E )t.SrcPos ('cfg' )(e.ConfigFile )e.Tail =
+    (#Error t.SrcPos 'Cyclic loading configuration file \'' e.ConfigFile '\'' )<CmdLineP_MParserP_PreScan (e.StackD_B (e.ConfigFile )e.StackD_E )e.Tail >;
+  (e.Stack )t.SrcPos ('cfg' )(e.ConfigFile )e.Tail =
+    <CmdLineP_MParserP_PreScanD_OptionD_ParamD_LoadFile (e.Stack )t.SrcPos (<CmdLineP_MParserP_FixupPathD_Str t.SrcPos e.ConfigFile >)e.Tail >;
+  t.FileStack t.SrcPos ('file' )(e.StrFileName )e.Tail =
+    (#File t.SrcPos e.StrFileName )<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+  t.FileStack t.SrcPos (e.Name )(e.Value )e.Tail =
+    (#Option t.SrcPos (<MStringsP_Trim e.Name >)#Param <MStringsP_Trim e.Value >)<CmdLineP_MParserP_PreScan t.FileStack e.Tail >;
+}
+
+$FORWARD CmdLineP_MParserP_ErrorIfNotExist;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_MakeHandled;
+$EXTERN MLambdaP_UnBracket;
+$EXTERN MLambdaP_BindLeft;
+$FORWARD CmdLineP_MParserP_MakeConfigOption;
+$FORWARD CmdLineP_MParserP_LoadConfigFile;
+CmdLineP_MParserP_PreScanD_OptionD_ParamD_LoadFile {
+  (e.Stack )t.SrcPos (e.ConfigFile )e.Tail =
+    <CmdLineP_MParserP_ErrorIfNotExist t.SrcPos e.ConfigFile ><CmdLineP_MParserP_PreScan (e.Stack (e.ConfigFile ))<MStringsP_Skip 1 <MLambdaP_MapReduce <MLambdaP_Composite <MLambdaP_MakeHandled <MLambdaP_Composite MLambdaP_UnBracket MStringsP_Trim >><MLambdaP_BindLeft CmdLineP_MParserP_MakeConfigOption (e.ConfigFile )>>1 <CmdLineP_MParserP_LoadConfigFile e.ConfigFile >>>#PopStackFile e.Tail >;
+}
+
+$FORWARD CmdLineP_MParserP_ErrorIfNotExistD_SwExist;
+$EXTERN MFileSystemP_ExistFileD_T;
+CmdLineP_MParserP_ErrorIfNotExist {
+  t.SrcPos e.ConfigFile =
+    <CmdLineP_MParserP_ErrorIfNotExistD_SwExist t.SrcPos <MFileSystemP_ExistFileD_T e.ConfigFile >>;
+}
+
+$LABEL True;
+$LABEL False;
+CmdLineP_MParserP_ErrorIfNotExistD_SwExist {
+  t.SrcPos #True e.FileName =
+    ;
+  t.SrcPos #False e.FileName =
+    (#Error t.SrcPos 'Configuration file \'' e.FileName '\' not found' );
+}
+
+$FORWARD CmdLineP_MParserP_LoadConfigFileD_SwExist;
+CmdLineP_MParserP_LoadConfigFile {
+  e.FileName =
+    <CmdLineP_MParserP_LoadConfigFileD_SwExist <MFileSystemP_ExistFileD_T e.FileName >>;
+}
+
+$EXTERN MFileIOP_Load;
+CmdLineP_MParserP_LoadConfigFileD_SwExist {
+  #True e.FileName =
+    <MFileIOP_Load e.FileName >;
+  #False e.FileName =
+    ;
+}
+
+$EXTERN MSrcPosP_CreateD_FilePos;
+CmdLineP_MParserP_MakeConfigOption {
+  (e.ConfigFile )s.LineNumber '#' e.Comment =
+    <MMathP_Inc s.LineNumber >;
+  (e.ConfigFile )s.LineNumber =
+    <MMathP_Inc s.LineNumber >;
+  (e.ConfigFile )s.LineNumber e.Option =
+    <MMathP_Inc s.LineNumber >(<MSrcPosP_CreateD_FilePos s.LineNumber e.ConfigFile >e.Option );
+}
+
+$FORWARD CmdLineP_MParserP_SyntaxD_BindWithOptions;
+$FORWARD CmdLineP_MParserP_SyntaxD_BalanceBrackets;
+CmdLineP_MParserP_Syntax {
+  t.hErrorList e.Elements =
+    <CmdLineP_MParserP_SyntaxD_BindWithOptions <CmdLineP_MParserP_SyntaxD_BalanceBrackets t.hErrorList e.Elements >>;
+}
+
+$FORWARD CmdLineP_MParserP_DoSyntaxD_BalanceBrackets;
+CmdLineP_MParserP_SyntaxD_BalanceBrackets {
+  t.hErrorList e.Elements =
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets t.hErrorList ()()e.Elements >;
+}
+
+$LABEL Group;
+$LABEL EOG;
+$FORWARD CmdLineP_MParserP_GenD_EOGD_SrcPos;
+$LABEL Dummy;
+$FORWARD CmdLineP_MParserP_GenD_GroupD_SrcPos;
+CmdLineP_MParserP_DoSyntaxD_BalanceBrackets {
+  t.hErrorList (e.MultiBrackets )(e.Scanned )(#Option t.SrcPos (e.Name )e.Param )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets t.hErrorList (e.MultiBrackets )(e.Scanned (#Option t.SrcPos (e.Name )e.Param ))e.Tail >;
+  t.hErrorList (e.MultiBrackets )(e.Scanned )(#OpenBracket t.SrcPos )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets t.hErrorList (e.MultiBrackets (e.Scanned t.SrcPos ))()e.Tail >;
+  t.hErrorList (e.MultiBrackets (e.Scanned t.OpenSrcPos ))(e.Inner )(#CloseBracket t.SrcPos )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets t.hErrorList (e.MultiBrackets )(e.Scanned (#Group t.OpenSrcPos e.Inner (#Option t.SrcPos (#EOG )#NoParam )))e.Tail >;
+  t.hErrorList ()(e.Scanned )=
+    t.hErrorList e.Scanned (#Option <CmdLineP_MParserP_GenD_EOGD_SrcPos #Dummy e.Scanned >(#EOG )#NoParam );
+  t.hErrorList (e.MultiBrackets (e.Scanned t.OpenSrcPos ))(e.Inner )=
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets <MErrorP_AddCmdLineError t.hErrorList t.OpenSrcPos 'Unbalanced \"(\"' >(e.MultiBrackets )(e.Scanned (#Group t.OpenSrcPos e.Inner (#Option <CmdLineP_MParserP_GenD_EOGD_SrcPos t.OpenSrcPos e.Inner >(#EOG )#NoParam )))>;
+  t.hErrorList ()(e.Scanned )(#CloseBracket t.SrcPos )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BalanceBrackets <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Unbalanced \")\"' >()((#Group <CmdLineP_MParserP_GenD_GroupD_SrcPos e.Scanned t.SrcPos >e.Scanned ))e.Tail >;
+}
+
+CmdLineP_MParserP_GenD_EOGD_SrcPos {
+  t.OpenSrcPos e.Options (#Option t.SrcPos (e.Name )e.Param )=
+    t.SrcPos ;
+  t.OpenSrcPos e.Options (#Group t.InnerSrcPos e.Inner )=
+    <CmdLineP_MParserP_GenD_EOGD_SrcPos t.InnerSrcPos e.Options e.Inner >;
+  t.OpenSrcPos =
+    t.OpenSrcPos ;
+}
+
+CmdLineP_MParserP_GenD_GroupD_SrcPos {
+  (#Option t.SrcPos (e.Name )e.Param )e.Options t.CloseSrcPos =
+    t.SrcPos ;
+  (#Group t.InnerSrcPos e.Inner )e.Options t.CloseSrcPos =
+    t.InnerSrcPos ;
+  t.CloseSrcPos =
+    t.CloseSrcPos ;
+}
+
+$FORWARD CmdLineP_MParserP_DoSyntaxD_BindWithOptions;
+CmdLineP_MParserP_SyntaxD_BindWithOptions {
+  t.hErrorList e.Options =
+    <CmdLineP_MParserP_DoSyntaxD_BindWithOptions t.hErrorList ()e.Options >;
+}
+
+$FORWARD CmdLineP_MParserP_DoSyntaxD_BindWithOptionsD_InBrackets;
+CmdLineP_MParserP_DoSyntaxD_BindWithOptions {
+  t.hErrorList (e.Scanned )(#Option t.OptionSrcPos (e.Name )e.Param )(#Group t.GroupSrcPos e.Inner )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BindWithOptionsD_InBrackets (e.Scanned )(t.OptionSrcPos (e.Name )e.Param )<CmdLineP_MParserP_SyntaxD_BindWithOptions t.hErrorList e.Inner >(e.Tail )>;
+  t.hErrorList (e.Scanned )(#Option t.SrcPos (e.Name )e.Param )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BindWithOptions t.hErrorList (e.Scanned ((t.SrcPos (e.Name )e.Param )))e.Tail >;
+  t.hErrorList (e.Scanned )(#Group t.SrcPos e.Inner )e.Tail =
+    <CmdLineP_MParserP_DoSyntaxD_BindWithOptions <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Widow group' >(e.Scanned )e.Inner e.Tail >;
+  t.hErrorList (e.Scanned )=
+    t.hErrorList e.Scanned ;
+}
+
+CmdLineP_MParserP_DoSyntaxD_BindWithOptionsD_InBrackets {
+  (e.Scanned )(t.SrcPos (e.Name )e.Param )t.hErrorList e.Inner (e.Tail )=
+    <CmdLineP_MParserP_DoSyntaxD_BindWithOptions t.hErrorList (e.Scanned ((t.SrcPos (e.Name )e.Param )#Group e.Inner ))e.Tail >;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_Loop;
+$EXTERN MErrorP_CmdLineD_DontExpectGroup;
+CmdLineP_MParserP_Semantics {
+  t.hErrorList ((t.SrcPos (#File )#Param e.ProgName ))e.ExCmdLine t.FnDescription =
+    <CmdLineP_MParserP_SemanticsD_Loop t.hErrorList t.SrcPos e.ExCmdLine t.FnDescription >;
+  t.hErrorList ((t.SrcPos (#File )#Param e.ProgName )#Group e.Group )e.ExCmdLine t.FnDescription =
+    <CmdLineP_MParserP_SemanticsD_Loop <MErrorP_CmdLineD_DontExpectGroup t.hErrorList t.SrcPos 'Program name' >t.SrcPos e.ExCmdLine t.FnDescription >;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_Init;
+$EXTERN MLambdaP_Apply;
+CmdLineP_MParserP_SemanticsD_Loop {
+  t.hErrorList t.SrcPosD_Group e.ExCmdLine t.FnDescription =
+    <CmdLineP_MParserP_SemanticsD_Init t.hErrorList t.SrcPosD_Group (e.ExCmdLine )<MLambdaP_Apply t.FnDescription >>;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_Analyze;
+$FORWARD CmdLineP_MParserP_SemanticsD_InitD_Aux;
+$FORWARD CmdLineP_MParserP_CreateSetsMarkers;
+CmdLineP_MParserP_SemanticsD_Init {
+  t.hErrorList t.SrcPosD_Group (t.EOG )(t.DefaultInitializer e.Options )e.Descriptions =
+    <CmdLineP_MParserP_SemanticsD_Analyze t.hErrorList (t.DefaultInitializer e.Options )t.EOG >;
+  t.hErrorList t.SrcPosD_Group (e.Options )e.Description =
+    <CmdLineP_MParserP_SemanticsD_InitD_Aux t.hErrorList t.SrcPosD_Group (e.Options )<MLambdaP_Map CmdLineP_MParserP_CreateSetsMarkers e.Description >>;
+}
+
+$EXTERN MStringsP_Unique;
+$FORWARD CmdLineP_MParserP_CreateSetsMarkersD_Aux;
+CmdLineP_MParserP_CreateSetsMarkers {
+  (t.Initializer e.OptionDescrs )=
+    (<MStringsP_Unique <MLambdaP_Map CmdLineP_MParserP_CreateSetsMarkersD_Aux e.OptionDescrs >>(t.Initializer e.OptionDescrs ));
+}
+
+$FORWARD CmdLineP_MParserP_CreateSetsMarkersD_AuxD_ScanDescr;
+CmdLineP_MParserP_CreateSetsMarkersD_Aux {
+  ((e.OptionDescr )e.OtherParams )=
+    <CmdLineP_MParserP_CreateSetsMarkersD_AuxD_ScanDescr e.OptionDescr >;
+}
+
+$LABEL Naked;
+$LABEL ParamOpt;
+$LABEL Switch;
+CmdLineP_MParserP_CreateSetsMarkersD_AuxD_ScanDescr {
+  #Naked e.Names =
+    e.Names ;
+  #Param e.Names =
+    e.Names ;
+  #ParamOpt e.Names =
+    e.Names ;
+  #Switch e.GroupNames =
+    <MLambdaP_Map MLambdaP_UnBracket e.GroupNames >;
+}
+
+$EXTERN MErrorP_IllegalCmdLineArgument;
+CmdLineP_MParserP_SemanticsD_InitD_Aux {
+  t.hErrorList t.SrcPosD_Group (((t.SrcPos (e.Name )e.Param )e.Group )e.Options )e.DescriptionsD_B (e.MarkersD_B (e.Name )e.MarkersD_E t.Description )e.DescriptionsD_E =
+    <CmdLineP_MParserP_SemanticsD_Analyze t.hErrorList t.Description ((t.SrcPos (e.Name )e.Param )e.Group )e.Options >;
+  t.hErrorList t.SrcPosD_Group (((t.SrcPos (e.Name )e.Param )e.Group )e.Options )e.Descriptions =
+    <CmdLineP_MParserP_SemanticsD_InitD_Aux <MErrorP_IllegalCmdLineArgument t.hErrorList t.SrcPos e.Name >t.SrcPosD_Group (e.Options )e.Descriptions >;
+  t.hErrorList t.SrcPosD_Group ()e.Descriptions =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPosD_Group 'All arguments in command line/group is invalid' >#Fails ;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_AnalyzeD_PrepareNames;
+$FORWARD CmdLineP_MParserP_NumerateDescrs;
+CmdLineP_MParserP_SemanticsD_Analyze {
+  t.hErrorList (t.FnInitCollected e.OptionDescrs )e.Options =
+    <CmdLineP_MParserP_SemanticsD_AnalyzeD_PrepareNames (<CmdLineP_MParserP_NumerateDescrs e.OptionDescrs >)t.hErrorList <MLambdaP_Apply t.FnInitCollected >e.Options >;
+}
+
+$FORWARD CmdLineP_MParserP_DoNumerateDescrs;
+CmdLineP_MParserP_NumerateDescrs {
+  e.Descrs =
+    <CmdLineP_MParserP_DoNumerateDescrs 0 e.Descrs >;
+}
+
+CmdLineP_MParserP_DoNumerateDescrs {
+  s.NextNum ((s.DescrType (#EOG ))e.Tweaks )e.Tail =
+    (#EOG (s.DescrType (#EOG ))e.Tweaks )<CmdLineP_MParserP_DoNumerateDescrs <MMathP_Inc s.NextNum >e.Tail >;
+  s.NextNum ((s.DescrType e.NamesD_B (#EOG )e.NamesD_E )e.Tweaks )e.Tail =
+    (s.NextNum (s.DescrType e.NamesD_B e.NamesD_E )e.Tweaks )(#EOG (s.DescrType (#EOG ))e.Tweaks )<CmdLineP_MParserP_DoNumerateDescrs <MMathP_Inc s.NextNum >e.Tail >;
+  s.NextNum ((e.Descr )e.Tweaks )e.Tail =
+    (s.NextNum (e.Descr )e.Tweaks )<CmdLineP_MParserP_DoNumerateDescrs <MMathP_Inc s.NextNum >e.Tail >;
+  s.NextNum =
+    ;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_AnalyzeD_FindUndefinedNames;
+$EXTERN MLambdaP_Reduce;
+$FORWARD CmdLineP_MParserP_PrepareOptionName;
+CmdLineP_MParserP_SemanticsD_AnalyzeD_PrepareNames {
+  (e.OptionDescrs )t.hErrorList t.Collected e.Options =
+    <CmdLineP_MParserP_SemanticsD_AnalyzeD_FindUndefinedNames (e.OptionDescrs )t.hErrorList t.Collected <MLambdaP_UnBracket <MLambdaP_Reduce CmdLineP_MParserP_PrepareOptionName (e.Options )e.OptionDescrs >>>;
+}
+
+$FORWARD CmdLineP_MParserP_PrepareArgumentName;
+CmdLineP_MParserP_PrepareOptionName {
+  (e.Options )(#EOG (#EOG )e.Tweaks )=
+    (e.Options );
+  (e.Options )(s.Num (e.Descr )e.Tweaks )=
+    (<MLambdaP_Map <MLambdaP_BindLeft CmdLineP_MParserP_PrepareArgumentName s.Num e.Descr >e.Options >);
+}
+
+$LABEL Prepared;
+$LABEL NoGroup;
+CmdLineP_MParserP_PrepareArgumentName {
+  s.Num e.Descr (#Prepared t.Simple e.Group )=
+    (#Prepared t.Simple e.Group );
+  s.Num e.Descr ((t.SrcPos (#EOG )#NoParam )#NoGroup )=
+    (#Prepared (t.SrcPos #EOG #NoParam )#NoGroup );
+  s.Num #Switch e.SwitchesD_B (e.NamesD_B (e.Name )e.NamesD_E )e.SwitchesD_E ((t.SrcPos (e.Name )#NoParam )e.Group )=
+    (#Prepared (t.SrcPos s.Num #Param e.Name )e.Group );
+  s.Num #Switch e.SwitchesD_B (e.NamesD_B (e.Name )e.NamesD_E )e.SwitchesD_E ((t.SrcPos (e.Name )#Param e.Param )e.Group )=
+    (#Error MErrorP_CmdLineD_DontExpectGroup t.SrcPos e.Name );
+  s.Num s.Type e.NamesD_B (e.Name )e.NamesD_E ((t.SrcPos (e.Name )e.Param )e.Group )=
+    (#Prepared (t.SrcPos s.Num e.Param )e.Group );
+  s.Num e.Description t.Option =
+    t.Option ;
+}
+
+$FORWARD CmdLineP_MParserP_DoSemanticsD_Analyze;
+$FORWARD CmdLineP_MParserP_GetEOGHandler;
+$FORWARD CmdLineP_MParserP_RemoveName;
+$FORWARD CmdLineP_MParserP_InitOneTime;
+$FORWARD CmdLineP_MParserP_InitRequired;
+$FORWARD CmdLineP_MParserP_SemanticsD_AnalyzeD_Unbracket;
+$FORWARD CmdLineP_MParserP_AddUndefinedNames;
+CmdLineP_MParserP_SemanticsD_AnalyzeD_FindUndefinedNames {
+  (e.OptionDescrs )t.hErrorList t.Collected e.Options =
+    <CmdLineP_MParserP_DoSemanticsD_Analyze <CmdLineP_MParserP_GetEOGHandler e.OptionDescrs >(<MLambdaP_Map CmdLineP_MParserP_RemoveName e.OptionDescrs >)(<MLambdaP_Map CmdLineP_MParserP_InitOneTime e.OptionDescrs >)(<MLambdaP_Map CmdLineP_MParserP_InitRequired e.OptionDescrs >)<CmdLineP_MParserP_SemanticsD_AnalyzeD_Unbracket <MLambdaP_MapReduce CmdLineP_MParserP_AddUndefinedNames (t.hErrorList t.Collected )e.Options >>>;
+}
+
+CmdLineP_MParserP_GetEOGHandler {
+  (#EOG (s.Type (#EOG ))t.Handler e.Tweaks )e.Other =
+    t.Handler ;
+  t.Other e.Tail =
+    <CmdLineP_MParserP_GetEOGHandler e.Tail >;
+}
+
+$LABEL OneTime;
+$LABEL OneTimeD_NotUsed;
+$FORWARD CmdLineP_MParserP_OptionName;
+$LABEL Multiply;
+CmdLineP_MParserP_InitOneTime {
+  (#EOG (s.Type (#EOG ))e.Tweaks )=
+    ;
+  (s.Num (e.Descrs )t.Handler t.Optional #OneTime e.GroupInfo )=
+    (s.Num #OneTimeD_NotUsed <CmdLineP_MParserP_OptionName e.Descrs >);
+  (s.Num (e.Descrs )t.Handler t.Optional #Multiply e.GroupInfo )=
+    (s.Num #Multiply <CmdLineP_MParserP_OptionName e.Descrs >);
+}
+
+$LABEL Required;
+$LABEL RequiredD_NotUsed;
+$LABEL Optional;
+CmdLineP_MParserP_InitRequired {
+  (#EOG (s.Type (#EOG ))e.Tweaks )=
+    ;
+  (s.Num (e.Descrs )t.Handler #Required t.Multiply e.GroupInfo )=
+    (s.Num #RequiredD_NotUsed <CmdLineP_MParserP_OptionName e.Descrs >);
+  (s.Num (e.Descrs )t.Handler (#Optional )t.Multiply e.GroupInfo )=
+    (s.Num (#Optional )<CmdLineP_MParserP_OptionName e.Descrs >);
+  (s.Num (e.Descrs )t.Handler (#Optional t.OptHandler )t.Multiply e.GroupInfo )=
+    (s.Num (#Optional t.OptHandler )<CmdLineP_MParserP_OptionName e.Descrs >);
+}
+
+$FORWARD CmdLineP_MParserP_DoOptionName;
+CmdLineP_MParserP_OptionName {
+  #Switch e.NameSets =
+    <CmdLineP_MParserP_DoOptionName <MLambdaP_Map MLambdaP_UnBracket e.NameSets >>;
+  s.NoSwitch e.Names =
+    <CmdLineP_MParserP_DoOptionName e.Names >;
+}
+
+$FORWARD CmdLineP_MParserP_OptionNameD_Aux;
+CmdLineP_MParserP_DoOptionName {
+  (e.First )=
+    <CmdLineP_MParserP_OptionNameD_Aux e.First >;
+  (e.First1 )(e.First2 )=
+    <CmdLineP_MParserP_OptionNameD_Aux e.First1 >' or ' <CmdLineP_MParserP_OptionNameD_Aux e.First2 >;
+  (e.First )e.Names =
+    <CmdLineP_MParserP_OptionNameD_Aux e.First >', ' <CmdLineP_MParserP_DoOptionName e.Names >;
+}
+
+CmdLineP_MParserP_OptionNameD_Aux {
+  #File =
+    '<filename>' ;
+  e.OptionName =
+    '+' e.OptionName ;
+}
+
+CmdLineP_MParserP_RemoveName {
+  (#EOG (s.Type (#EOG ))e.Tweaks )=
+    ;
+  (s.Num (s.Type e.Descrs )t.Handler t.Optional t.Multiply e.Group )=
+    (s.Num s.Type t.Handler e.Group );
+}
+
+CmdLineP_MParserP_SemanticsD_AnalyzeD_Unbracket {
+  (t.hErrorList t.Collected )e.Options =
+    t.hErrorList t.Collected e.Options ;
+}
+
+CmdLineP_MParserP_AddUndefinedNames {
+  (t.hErrorList t.Collected )(#Prepared (t.SrcPos s.Num e.Param )e.Group )=
+    (t.hErrorList t.Collected )((t.SrcPos s.Num e.Param )e.Group );
+  (t.hErrorList t.Collected )((t.SrcPos (e.Name )e.Param )e.Group )=
+    (<MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Unknown option \"' e.Name '\"' >t.Collected );
+  (t.hErrorList t.Collected )(#Error s.ErrorFunc e.Args )=
+    (<s.ErrorFunc t.hErrorList e.Args >t.Collected );
+}
+
+$FORWARD CmdLineP_MParserP_ProcessOptionalFinalizers;
+$LABEL NoMissedRequireds;
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOption;
+CmdLineP_MParserP_DoSemanticsD_Analyze {
+  t.EOGD_Handler (e.OptionDescrs )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.EOGD_SrcPos #EOG #NoParam ))=
+    <CmdLineP_MParserP_ProcessOptionalFinalizers #NoMissedRequireds t.hErrorList t.Collected e.Requireds t.EOGD_Handler t.EOGD_SrcPos >;
+  t.EOGD_Handler (e.OptionDescrs )(e.Counters )(e.Requireds )t.hErrorList t.Collected t.NextOption e.Tail =
+    <CmdLineP_MParserP_DoSemanticsD_Analyze t.EOGD_Handler (e.OptionDescrs )<CmdLineP_MParserP_SemanticsD_NextOption (e.OptionDescrs )(e.Counters )(e.Requireds )t.hErrorList t.Collected t.NextOption >e.Tail >;
+  (e.OptionDescrs )(e.Counters )(e.Requireds )t.hErrorList t.Collected =
+    t.hErrorList #Success t.Collected ;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_Counters;
+CmdLineP_MParserP_SemanticsD_NextOption {
+  (e.OptionDescrsD_B (s.Num s.Type t.FnHandler e.GroupInfo )e.OptionDescrsD_E )(e.CountersD_B (s.Num s.Multiply e.Name )e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Counters s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B )(s.Num s.Multiply e.Name )(e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_Requireds;
+$LABEL OneTimeD_Used;
+$EXTERN MErrorP_CmdLineD_AlreadyAppeared;
+CmdLineP_MParserP_SemanticsD_NextOptionD_Counters {
+  s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B )(s.Num #OneTimeD_NotUsed e.Name )(e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Requireds ()s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B (s.Num #OneTimeD_Used e.Name )e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+  s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B )(s.Num #OneTimeD_Used e.Name )(e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Requireds (#Error )s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B (s.Num #OneTimeD_Used e.Name )e.CountersD_E )(e.Requireds )<MErrorP_CmdLineD_AlreadyAppeared t.hErrorList t.SrcPos e.Name >t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+  s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B )(s.Num #Multiply e.Name )(e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Requireds ()s.Type t.FnHandler (e.GroupInfo )(e.CountersD_B (s.Num #Multiply e.Name )e.CountersD_E )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_SwParam;
+$FORWARD CmdLineP_MParserP_CheckNeedParam;
+$LABEL Used;
+CmdLineP_MParserP_SemanticsD_NextOptionD_Requireds {
+  (e.Errors )s.Type t.FnHandler (e.GroupInfo )(e.Counters )(e.RequiredsD_B (s.Num t.Optional e.Name )e.RequiredsD_E )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_SwParam (e.Errors )(<CmdLineP_MParserP_CheckNeedParam s.Type e.Param >)(e.Name )t.FnHandler (e.GroupInfo )(e.Counters )(e.RequiredsD_B (s.Num #Used e.Name )e.RequiredsD_E )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+}
+
+$EXTERN MErrorP_CmdLineD_DontExpectParam;
+$EXTERN MErrorP_CmdLineD_ExpectParam;
+CmdLineP_MParserP_CheckNeedParam {
+  #Naked #NoParam =
+    ;
+  #Naked #Param e.Param =
+    MErrorP_CmdLineD_DontExpectParam ;
+  #Param #NoParam =
+    MErrorP_CmdLineD_ExpectParam ;
+  #Param #Param e.Param =
+    ;
+  #ParamOpt #NoParam =
+    ;
+  #ParamOpt #Param e.Param =
+    ;
+  #Switch #Param e.Param =
+    ;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_PrepareGroup;
+CmdLineP_MParserP_SemanticsD_NextOptionD_SwParam {
+  (e.Errors )()(e.Name )t.FnHandler (e.GroupInfo )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_PrepareGroup (e.Name )(e.Errors )t.FnHandler (e.GroupInfo )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+  (e.Errors )(s.FnError )(e.Name )t.FnHandler (e.GroupInfo )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_PrepareGroup (e.Name )(e.Errors #Error )t.FnHandler (e.GroupInfo )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )>;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_SwGroup;
+$FORWARD CmdLineP_MParserP_CheckNeedGroup;
+CmdLineP_MParserP_SemanticsD_NextOptionD_PrepareGroup {
+  (e.Name )(e.Errors )t.FnHandler (e.GroupInfo )(e.Counters )(e.Requireds )t.hErrorList t.Collected ((t.SrcPos s.Num e.Param )e.Group )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_SwGroup (e.Name )(e.Errors )t.FnHandler (<CmdLineP_MParserP_CheckNeedGroup (e.GroupInfo )e.Group >)(e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )>;
+}
+
+$EXTERN MErrorP_CmdLineD_ExpectGroup;
+CmdLineP_MParserP_CheckNeedGroup {
+  (#Required t.FnGroup e.FnGroupEx )#Group e.Group =
+    #Group (t.FnGroup e.FnGroupEx )e.Group ;
+  (#Required t.FnGroup e.FnGroupEx )=
+    #Error MErrorP_CmdLineD_ExpectGroup ;
+  (#Optional t.FnGroup e.FnGroupEx )#Group e.Group =
+    #Group (t.FnGroup e.FnGroupEx )e.Group ;
+  (#Optional t.FnGroup e.FnGroupEx )=
+    #NoGroup ;
+  ()#Group e.Group =
+    #Error MErrorP_CmdLineD_DontExpectGroup ;
+  ()=
+    #NoGroup ;
+}
+
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_ProcessD_Group;
+$FORWARD CmdLineP_MParserP_CalcGroupHandler;
+$FORWARD CmdLineP_MParserP_SemanticsD_NextOptionD_Process;
+CmdLineP_MParserP_SemanticsD_NextOptionD_SwGroup {
+  (e.Name )(e.Errors )t.FnHandler (#Group (t.FnGroup e.FnGroupEx )e.Group )(e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_ProcessD_Group (e.Errors )t.FnHandler (e.Counters )(e.Requireds )<CmdLineP_MParserP_SemanticsD_Loop t.hErrorList t.SrcPos e.Group <CmdLineP_MParserP_CalcGroupHandler (t.FnGroup e.FnGroupEx )e.Param >>t.Collected (t.SrcPos s.Num e.Param )>;
+  (e.Name )(e.Errors )t.FnHandler (#NoGroup )(e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Process (e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )#NoGroup >;
+  (e.Name )(e.Errors )t.FnHandler (#Error s.FnError )(e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Process (#Error e.Errors )t.FnHandler (e.Counters )(e.Requireds )<s.FnError t.hErrorList t.SrcPos e.Name >t.Collected (t.SrcPos s.Num e.Param )#NoGroup >;
+}
+
+$FORWARD CmdLineP_MParserP_CalcGroupHandlerD_SwValidParam;
+CmdLineP_MParserP_CalcGroupHandler {
+  (t.FnGroupHandler )e.Param =
+    t.FnGroupHandler ;
+  (t.FnGroupHandler t.FnGroupHandlerEx )#NoParam =
+    <CmdLineP_MParserP_CalcGroupHandlerD_SwValidParam t.FnGroupHandler <MLambdaP_Apply t.FnGroupHandlerEx #NoParam >>;
+  (t.FnGroupHandler t.FnGroupHandlerEx )#Param e.Param =
+    <CmdLineP_MParserP_CalcGroupHandlerD_SwValidParam t.FnGroupHandler <MLambdaP_Apply t.FnGroupHandlerEx e.Param >>;
+}
+
+$FORWARD CmdLineP_MParserP_MergeGroupHandlers;
+CmdLineP_MParserP_CalcGroupHandlerD_SwValidParam {
+  t.FnGroupHandler =
+    t.FnGroupHandler ;
+  t.FnGroupHandler t.FnSpecifiedHandler =
+    <CmdLineP_MParserP_MergeGroupHandlers (<MLambdaP_Apply t.FnGroupHandler >)<MLambdaP_Apply t.FnSpecifiedHandler >>;
+}
+
+$EXTERN MLambdaP_Const;
+$FORWARD CmdLineP_MParserP_ZipGroupHandlers;
+CmdLineP_MParserP_MergeGroupHandlers {
+  (e.DefaultHandlers )e.ExtHandlers =
+    <MLambdaP_Const <CmdLineP_MParserP_ZipGroupHandlers (e.DefaultHandlers )e.ExtHandlers >>;
+}
+
+CmdLineP_MParserP_ZipGroupHandlers {
+  ((t.FnInitDefault e.OptionsDefault )e.Defaults )(t.FnInitExt e.OptionsExt )e.Extensions =
+    (t.FnInitExt e.OptionsExt e.OptionsDefault )<CmdLineP_MParserP_ZipGroupHandlers (e.Defaults )e.Extensions >;
+  (e.Defaults )e.Extensions =
+    e.Defaults e.Extensions ;
+}
+
+CmdLineP_MParserP_SemanticsD_NextOptionD_ProcessD_Group {
+  (e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList #Success t.GroupCollected t.Collected (t.SrcPos s.Num e.Param )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Process (e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )t.GroupCollected >;
+  (e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList #Fails t.Collected (t.SrcPos s.Num e.Param )=
+    <CmdLineP_MParserP_SemanticsD_NextOptionD_Process (#Error e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )#NoGroup >;
+}
+
+$FORWARD CmdLineP_MParserP_MakeArgParam;
+CmdLineP_MParserP_SemanticsD_NextOptionD_Process {
+  ()t.FnHandler (e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )t.GroupCollected =
+    (e.Counters )(e.Requireds )<MLambdaP_Apply t.FnHandler t.hErrorList t.Collected t.SrcPos <CmdLineP_MParserP_MakeArgParam e.Param >t.GroupCollected >;
+  (e.Errors )t.FnHandler (e.Counters )(e.Requireds )t.hErrorList t.Collected (t.SrcPos s.Num e.Param )t.GroupCollected =
+    (e.Counters )(e.Requireds )t.hErrorList t.Collected ;
+}
+
+CmdLineP_MParserP_MakeArgParam {
+  #NoParam =
+    #NoParam ;
+  #Param e.Param =
+    (e.Param );
+}
+
+$LABEL FoundMissedRequireds;
+$EXTERN MErrorP_CmdLineD_AddMissedRequired;
+$FORWARD CmdLineP_MParserP_SemanticsD_AnalyzeD_AddSuccess;
+CmdLineP_MParserP_ProcessOptionalFinalizers {
+  s.HasMissedRequireds t.hErrorList t.Collected (s.Num #RequiredD_NotUsed e.Name )e.Tail t.EOGD_Handler t.EOGD_SrcPos =
+    <CmdLineP_MParserP_ProcessOptionalFinalizers #FoundMissedRequireds <MErrorP_CmdLineD_AddMissedRequired t.hErrorList t.EOGD_SrcPos e.Name >t.Collected e.Tail t.EOGD_Handler t.EOGD_SrcPos >;
+  s.HasMissedRequireds t.hErrorList t.Collected (s.Num #Used e.Name )e.Tail t.EOGD_Handler t.EOGD_SrcPos =
+    <CmdLineP_MParserP_ProcessOptionalFinalizers s.HasMissedRequireds t.hErrorList t.Collected e.Tail t.EOGD_Handler t.EOGD_SrcPos >;
+  s.HasMissedRequireds t.hErrorList t.Collected (s.Num (#Optional )e.Name )e.Tail t.EOGD_Handler t.EOGD_SrcPos =
+    <CmdLineP_MParserP_ProcessOptionalFinalizers s.HasMissedRequireds t.hErrorList t.Collected e.Tail t.EOGD_Handler t.EOGD_SrcPos >;
+  s.HasMissedRequireds t.hErrorList t.Collected (s.Num (#Optional t.FnOptionalHandler )e.Name )e.Tail t.EOGD_Handler t.EOGD_SrcPos =
+    <CmdLineP_MParserP_ProcessOptionalFinalizers s.HasMissedRequireds <MLambdaP_Apply t.FnOptionalHandler t.hErrorList t.Collected t.EOGD_SrcPos #NoParam #NoGroup >e.Tail t.EOGD_Handler t.EOGD_SrcPos >;
+  #NoMissedRequireds t.hErrorList t.Collected t.EOGD_Handler t.EOGD_SrcPos =
+    <CmdLineP_MParserP_SemanticsD_AnalyzeD_AddSuccess <MLambdaP_Apply t.EOGD_Handler t.hErrorList t.Collected t.EOGD_SrcPos #NoParam #NoGroup >>;
+  #FoundMissedRequireds t.hErrorList t.Collected t.EOGD_Handler t.EOGD_SrcPos =
+    t.hErrorList #Fails ;
+}
+
+CmdLineP_MParserP_SemanticsD_AnalyzeD_AddSuccess {
+  t.hErrorList t.Collected =
+    t.hErrorList #Success t.Collected ;
+}
+
+$LABEL NotInFile;
+$FORWARD CmdLineP_MParserP_FixupPathD_PtD_SwConcat;
+$EXTERN MFileSystemP_ConcatPath;
+$FORWARD CmdLineP_MParserP_PtD_ConfigDirD_Str;
+CmdLineP_MParserP_FixupPathD_PtD_SwKnownConfigFile {
+  (#NotInFile )e.PtFileName =
+    e.PtFileName ;
+  (e.StrFileName )e.PtFileName =
+    <CmdLineP_MParserP_FixupPathD_PtD_SwConcat <MFileSystemP_ConcatPath (<CmdLineP_MParserP_PtD_ConfigDirD_Str e.StrFileName >)e.PtFileName >(e.PtFileName )>;
+}
+
+$FORWARD CmdLineP_MParserP_PtD_ConfigDirD_StrD_Aux;
+CmdLineP_MParserP_PtD_ConfigDirD_Str {
+  e.StrFileName =
+    <CmdLineP_MParserP_PtD_ConfigDirD_StrD_Aux <MFileSystemP_PathFromStr e.StrFileName >>;
+}
+
+CmdLineP_MParserP_PtD_ConfigDirD_StrD_Aux {
+  #Success e.PtDirectory (e.FileName )=
+    e.PtDirectory ;
+}
+
+CmdLineP_MParserP_FixupPathD_PtD_SwConcat {
+  #Success e.PtConcatenatedPath (e.PtOriginalPath )=
+    e.PtConcatenatedPath ;
+  #Fails (e.PtOriginalPath )=
+    e.PtOriginalPath ;
+}
+
+$EXTERN MFileSystemP_StrFromPath;
+$EXTERN CmdLineP_MParserP_FixupPathD_Pt;
+CmdLineP_MParserP_FixupPathD_StrD_SwValidPath {
+  t.SrcPos (e.StrFileName )#Success e.PtFileName =
+    <MFileSystemP_StrFromPath <CmdLineP_MParserP_FixupPathD_Pt t.SrcPos e.PtFileName >>;
+  t.SrcPos (e.StrFileName )#Fails =
+    e.StrFileName ;
+}
+
+$EXTERN MErrorP_CreateErrList;
+$ENTRY CmdLineP_MParserP_Parse {
+  t.hErrorList t.FnCmdLineDescription e.ArgList =
+    <CmdLineP_MParserP_ParseD_SwErrors t.hErrorList <CmdLineP_MParserP_Semantics <CmdLineP_MParserP_Syntax <CmdLineP_MParserP_Lexer <MErrorP_CreateErrList >e.ArgList >>t.FnCmdLineDescription >>;
+}
+
+$EXTERN MSrcPosP_File;
+$ENTRY CmdLineP_MParserP_FixupPathD_Pt {
+  t.SrcPos e.PtFileName =
+    <CmdLineP_MParserP_FixupPathD_PtD_SwKnownConfigFile (<MSrcPosP_File t.SrcPos >)e.PtFileName >;
+}
+
+$ENTRY CmdLineP_MParserP_FixupPathD_Str {
+  t.SrcPos e.StrFileName =
+    <CmdLineP_MParserP_FixupPathD_StrD_SwValidPath t.SrcPos (e.StrFileName )<MFileSystemP_PathFromStr e.StrFileName >>;
+}
+
+CmdLineP_MParserP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY CmdLineP_MParserP_EntryPointE_ {
+  =
+    <RegisterE_ CmdLineP_MParserP_FinalizeE_ >;
+}
+

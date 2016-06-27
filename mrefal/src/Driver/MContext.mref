@@ -1,0 +1,77 @@
+$MODULE Driver::MContext;
+
+$IMPORT MTables = Driver::MTables;
+$IMPORT MModuleTable = Driver::Tables::MModules;
+
+$ENTRY GetStatusType {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetStatusType t.ModuleName
+    >;
+}
+
+$ENTRY GetCachedModuleIF {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetCachedModuleIF t.ModuleName
+    >;
+}
+
+$ENTRY GetMinMaxTime {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetMinMaxTime t.ModuleName
+    >;
+}
+
+$ENTRY SetClusterType {
+  t.hTables t.ModuleName s.NewType =
+    <MTables::Modules
+      t.hTables & MModuleTable.SetClusterType t.ModuleName s.NewType
+    >;
+}
+
+$ENTRY GetBackEndList {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetBackEndList t.ModuleName
+    >;
+}
+
+$ENTRY GetFrontEnd {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetFrontEnd t.ModuleName
+    >;
+}
+
+$ENTRY SetMinMaxTime {
+  t.hTables t.ModuleName (e.MinTime) (e.MaxTime) =
+    <MTables::Modules
+      t.hTables
+      & MModuleTable.SetMinMaxTime t.ModuleName (e.MinTime) (e.MaxTime)
+    >;
+}
+
+$ENTRY GetBackEnd {
+  t.hTables t.ModuleName s.BackEndName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetBackEnd t.ModuleName s.BackEndName
+    >;
+}
+
+$ENTRY GetTarget {
+  t.hTables t.ModuleName =
+    <MTables::Modules
+      t.hTables & MModuleTable.GetTarget t.ModuleName
+    >;
+}
+
+$ENTRY CreateModule {
+  t.hTables t.ModuleName e.Parameters =
+    <MTables::Modules
+      t.hTables & MModuleTable.CreateModule t.ModuleName e.Parameters
+    >;
+}
+
+$END Driver::MContext.

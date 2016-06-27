@@ -1,0 +1,63 @@
+$MODULE MProfiler;
+
+$IMPORT Core = CoreBE::MProfiler;
+
+/**
+  <Quantify s.Function e.Arguments>
+    === <s.Function e.Arguments>
+
+  Запускает профилировку функции с аргументами.
+*/
+$ENTRY Quantify {
+  s.Function e.Arguments = <Core::Quantify s.Function e.Arguments>;
+}
+
+/**
+  <PrintResults e.FileName>
+  <PrintResults пусто>
+    == пусто
+
+  Печатает результат профилирования в файл или на stdout.
+*/
+$ENTRY PrintResults {
+  e.OptionalFileName = <Core::PrintResults e.OptionalFileName>;
+}
+
+/**
+  <SetOutputName e.FileName>
+  <SetOutputName пусто>
+    == пусто
+
+  Устанавливает имя файла, в которое выводятся результаты профилирования.
+  При пустом аргументе вывод результатов отключается.
+  Результаты профилирования выводятся либо каждые 500 замеров, либо
+  при вызове функции Flush (Quantify-Flush).
+*/
+$ENTRY SetOutputName {
+  e.OptionalFileName = <Core::SetOutputName e.OptionalFileName>;
+}
+
+/**
+  <Flush> == пусто
+
+  Сбрасывает результаты профилирования в файл, установленный функцией
+  SetOutputName.
+*/
+$ENTRY Flush {
+  = <Core::Flush>;
+}
+
+/**
+  <Quantify-Flush s.Function e.Argument>
+    === <s.Function e.Argument>
+
+  Вызывает Quantify, затем Flush.
+*/
+$ENTRY Quantify-Flush {
+  s.Function e.Argument =
+    <Quantify s.Function e.Argument>
+    <Flush>;
+}
+
+$END MProfiler.
+

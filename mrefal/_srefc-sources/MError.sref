@@ -1,0 +1,334 @@
+$LABEL Empty;
+$LABEL NotEmpty;
+$LABEL Errors;
+MErrorP_SwContentLevel {
+  t.hErrorList #Empty =
+    t.hErrorList #Empty ;
+  t.hErrorList #NotEmpty =
+    t.hErrorList #Errors ;
+}
+
+$ENUM MErrorP_ErrorList;
+MErrorP_AddToList {
+  [MErrorP_ErrorList e.ErrorsD_B t.Error e.ErrorsD_E ]t.Error =
+    [MErrorP_ErrorList e.ErrorsD_B t.Error e.ErrorsD_E ];
+  [MErrorP_ErrorList e.Errors ]t.Error =
+    [MErrorP_ErrorList e.Errors t.Error ];
+}
+
+$FORWARD MErrorP_StringFromQualifiedName;
+MErrorP_PrintRecursiveLoop {
+  t.Name =
+    <MErrorP_StringFromQualifiedName t.Name >;
+  t.Name1 t.Name2 =
+    <MErrorP_StringFromQualifiedName t.Name1 >' and ' <MErrorP_StringFromQualifiedName t.Name2 >;
+  t.Name e.Names =
+    <MErrorP_StringFromQualifiedName t.Name >', ' <MErrorP_PrintRecursiveLoop e.Names >;
+}
+
+$EXTERN MQualifiedNameP_ToPrintableD_Quad;
+MErrorP_StringFromQualifiedName {
+  t.QualifiedName =
+    <MQualifiedNameP_ToPrintableD_Quad t.QualifiedName >;
+}
+
+$EXTERN MFileSystemP_CanonicalPathD_Str;
+$EXTERN MQualifiedNameP_ToRelativeFSPathD_Str;
+MErrorP_CanonicalStringFromQualifiedName {
+  t.QualifiedName =
+    <MFileSystemP_CanonicalPathD_Str <MQualifiedNameP_ToRelativeFSPathD_Str t.QualifiedName >>;
+}
+
+$LABEL EVar;
+$LABEL SVar;
+$LABEL TVar;
+MErrorP_VarTypeToPrefix {
+  #EVar =
+    'e.' ;
+  #SVar =
+    's.' ;
+  #TVar =
+    't.' ;
+}
+
+$LABEL Init;
+$LABEL Final;
+MErrorP_InitFinal {
+  #Init =
+    '$INIT' ;
+  #Final =
+    '$FINAL' ;
+}
+
+MErrorP_ErrorFile {
+  =
+    '__errors' ;
+}
+
+$LABEL True;
+$EXTERN MFileSystemP_RemoveFile;
+$LABEL False;
+MErrorP_DelErrorFileD_SwExist {
+  #True e.ErrorFile =
+    <MFileSystemP_RemoveFile e.ErrorFile >;
+  #False e.ErrorFile =
+    ;
+}
+
+$FORWARD MErrorP_DoTextFromErrors;
+MErrorP_TextFromErrors {
+  [MErrorP_ErrorList e.Errors ]=
+    <MErrorP_DoTextFromErrors e.Errors >;
+}
+
+$FORWARD MErrorP_PrintError;
+MErrorP_DoTextFromErrors {
+  (e.Error )e.Errors =
+    <MErrorP_PrintError e.Error ><MErrorP_DoTextFromErrors e.Errors >;
+  =
+    ;
+}
+
+$LABEL LexerError;
+$FORWARD MErrorP_OutError;
+$LABEL LexerUndefined;
+$LABEL Unexpected;
+$EXTERN FED_MRefalP_MLexerP_TokenToString;
+$LABEL Semantics;
+$LABEL CmdLineError;
+MErrorP_PrintError {
+  #LexerError t.SrcPos e.Message =
+    <MErrorP_OutError t.SrcPos ('LEXER' )e.Message >;
+  #LexerUndefined t.SrcPos e.Text =
+    <MErrorP_OutError t.SrcPos ('LEXER' )'undefined text ' e.Text >;
+  #Unexpected (s.Type t.SrcPos e.Info )e.Expected =
+    <MErrorP_OutError t.SrcPos ('SYNTAX' )'Expected ' e.Expected ', got ' <FED_MRefalP_MLexerP_TokenToString (s.Type e.Info )>>;
+  #Semantics t.SrcPos e.Message =
+    <MErrorP_OutError t.SrcPos ('SEMANTICS' )e.Message >;
+  #CmdLineError t.SrcPos e.Message =
+    <MErrorP_OutError t.SrcPos ('COMMAND LINE' )e.Message >;
+}
+
+$EXTERN MSrcPosP_ToStringD_Error;
+MErrorP_OutError {
+  t.SrcPos (e.Kind )e.Message =
+    (<MSrcPosP_ToStringD_Error t.SrcPos >': ' e.Kind ' ERROR ' e.Message );
+}
+
+$EXTERN MOutModuleStatusP_Flush;
+$EXTERN MInOutP_WriteLine;
+$EXTERN MOSP_Exit;
+$ENTRY MErrorP_LinkError {
+  e.Message =
+    <MOutModuleStatusP_Flush ><MInOutP_WriteLine 'LINKER ERROR: ' e.Message ><MOSP_Exit 1 >;
+}
+
+$ENTRY MErrorP_IsErrorList {
+  [MErrorP_ErrorList e.Errors ]=
+    [MErrorP_ErrorList e.Errors ];
+}
+
+$ENTRY MErrorP_CreateErrList {
+  =
+    [MErrorP_ErrorList ];
+}
+
+$ENTRY MErrorP_DestroyErrList {
+  [MErrorP_ErrorList e.Errors ]=
+    ;
+}
+
+$ENTRY MErrorP_EmptyList {
+  [MErrorP_ErrorList ]=
+    [MErrorP_ErrorList ]#Empty ;
+  [MErrorP_ErrorList e.Errors ]=
+    [MErrorP_ErrorList e.Errors ]#NotEmpty ;
+}
+
+$ENTRY MErrorP_ContentLevel {
+  t.hErrorList =
+    <MErrorP_SwContentLevel <MErrorP_EmptyList t.hErrorList >>;
+}
+
+$EXTERN MLambdaP_Reduce;
+$ENTRY MErrorP_MergeLists {
+  t.List1 [MErrorP_ErrorList e.Errors2 ]=
+    <MLambdaP_Reduce MErrorP_AddToList t.List1 e.Errors2 >;
+}
+
+$ENTRY MErrorP_AddCmdLineError {
+  t.hErrorList t.SrcPos e.Message =
+    <MErrorP_AddToList t.hErrorList (#CmdLineError t.SrcPos e.Message )>;
+}
+
+$ENTRY MErrorP_IllegalCmdLineArgument {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Illegal option \"' e.Name '\"' >;
+}
+
+$ENTRY MErrorP_CmdLineD_ExpectParam {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Option \"' e.Name '\" expect parameter' >;
+}
+
+$ENTRY MErrorP_CmdLineD_ExpectGroup {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Option \"' e.Name '\" expect group' >;
+}
+
+$ENTRY MErrorP_CmdLineD_DontExpectParam {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Option \"' e.Name '\" don\'t expect parameter' >;
+}
+
+$ENTRY MErrorP_CmdLineD_DontExpectGroup {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Option \"' e.Name '\" don\'t expect group' >;
+}
+
+$ENTRY MErrorP_CmdLineD_AddMissedRequired {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Expected option \"' e.Name '\"' >;
+}
+
+$ENTRY MErrorP_CmdLineD_AlreadyAppeared {
+  t.hErrorList t.SrcPos e.Name =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Option \"' e.Name '\" already appeared' >;
+}
+
+$LABEL Error;
+$LABEL Undefined;
+$ENTRY MErrorP_AddUnexpected {
+  t.hErrorList (#Error t.SrcPos e.Message )e.ExpectedText =
+    <MErrorP_AddToList t.hErrorList (#LexerError t.SrcPos e.Message )>;
+  t.hErrorList (#Undefined t.SrcPos e.Text )e.ExpectedText =
+    <MErrorP_AddToList t.hErrorList (#LexerUndefined t.SrcPos e.Text )>;
+  t.hErrorList t.Unexpected e.ExpectedText =
+    <MErrorP_AddToList t.hErrorList (#Unexpected t.Unexpected e.ExpectedText )>;
+}
+
+$ENTRY MErrorP_AddNamesMismatch {
+  t.hErrorList t.TailPos t.InHead t.InTail =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.TailPos 'Mismatch module names in head \'' <MErrorP_StringFromQualifiedName t.InHead >'\' and in tail \'' <MErrorP_StringFromQualifiedName t.InTail >'\'' )>;
+}
+
+$ENTRY MErrorP_AddRecursiveLink {
+  t.hErrorList t.SrcPos t.ImportName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Recursive link in import ' <MErrorP_StringFromQualifiedName t.ImportName >)>;
+}
+
+$ENTRY MErrorP_AddRecursiveLoop {
+  t.hErrorList t.SrcPos e.ImportNames =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Found recursive loop: ' <MErrorP_PrintRecursiveLoop e.ImportNames >)>;
+}
+
+$ENTRY MErrorP_AddBrokenImport {
+  t.hErrorList t.SrcPos t.ImportName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Can\'t load import module ' <MErrorP_StringFromQualifiedName t.ImportName >)>;
+}
+
+$ENTRY MErrorP_AddInvalidImportName {
+  t.hErrorList t.SrcPos t.ImportName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Invalid import module name ' <MErrorP_StringFromQualifiedName t.ImportName >)>;
+}
+
+$ENTRY MErrorP_DependedFromSource {
+  t.hErrorList t.SrcPos t.ImportName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Can\'t load import source module from library ' <MErrorP_StringFromQualifiedName t.ImportName >)>;
+}
+
+$ENTRY MErrorP_AddImportHead {
+  t.hErrorList t.SrcPos t.ImportName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Can\'t import $PROGRAM module ' <MErrorP_StringFromQualifiedName t.ImportName >)>;
+}
+
+$LABEL ModuleOverPacket;
+$LABEL PacketOverModule;
+$ENTRY MErrorP_AddTreeModulePacketConflict {
+  t.hErrorList t.SrcPos t.ImportName #ModuleOverPacket t.PacketName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Can\'t import module ' <MErrorP_StringFromQualifiedName t.ImportName >' because it is packet' )>;
+  t.hErrorList t.SrcPos t.ImportName #PacketOverModule t.ModuleName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Can\'t import module ' <MErrorP_StringFromQualifiedName t.ImportName >' because ' <MErrorP_StringFromQualifiedName t.ModuleName >' is module, is not packet' )>;
+}
+
+$ENTRY MErrorP_AddTreeCaseError {
+  t.hErrorList t.SrcPos t.ImportName t.ValidCaseName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Import module ' <MErrorP_StringFromQualifiedName t.ImportName >' has invalid name case, valid name ' '(name of module or packet that contains this module) is ' <MErrorP_StringFromQualifiedName t.ValidCaseName >)>;
+}
+
+$ENTRY MErrorP_AddMismatchInternalAndExternalNames {
+  t.hErrorList t.SrcPos t.InternalName t.ExternalName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Mismatch internal module name ' <MErrorP_StringFromQualifiedName t.InternalName >' and external name ' <MErrorP_StringFromQualifiedName t.ExternalName >)>;
+}
+
+$ENTRY MErrorP_AddMismatchInternalAndPhysicalNames {
+  t.hErrorList t.SrcPos t.InternalName t.ExternalName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Mismatch internal module name ' <MErrorP_StringFromQualifiedName t.InternalName >' and external name ' <MErrorP_CanonicalStringFromQualifiedName t.ExternalName >)>;
+}
+
+$ENTRY MErrorP_AddFailGeneration {
+  t.hErrorList t.SrcPos t.ModuleName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Error while generating module ' <MErrorP_StringFromQualifiedName t.ModuleName >)>;
+}
+
+$ENTRY MErrorP_AddRedeclaredIdentifier {
+  t.hErrorList t.SrcPos t.Identifier =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Identifier redeclared ' <MErrorP_StringFromQualifiedName t.Identifier >)>;
+}
+
+$ENTRY MErrorP_AddVarTypeMismatch {
+  t.hErrorList t.SrcPos e.VarName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Two different variables has same index ' e.VarName )>;
+}
+
+$ENTRY MErrorP_AddUndeclaredVariable {
+  t.hErrorList t.SrcPos s.VarType e.Index =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Undeclared variable ' <MErrorP_VarTypeToPrefix s.VarType >e.Index )>;
+}
+
+$ENTRY MErrorP_AddUnresolvedFunction {
+  t.hErrorList t.SrcPos t.EntityName =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Unresolved calling <' <MErrorP_StringFromQualifiedName t.EntityName >' ... >' )>;
+}
+
+$ENTRY MErrorP_AddGoNotFound {
+  t.hErrorList t.SrcPos =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Go function expected in main module' )>;
+}
+
+$ENTRY MErrorP_AddGoNotEntry {
+  t.hErrorList t.SrcPos =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Go function must be $ENTRY' )>;
+}
+
+$ENTRY MErrorP_AddInitOrFinalInMain {
+  t.hErrorList t.SrcPos s.Type =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos 'Unexpected ' <MErrorP_InitFinal s.Type >' block in $PROGRAM' )>;
+}
+
+$ENTRY MErrorP_AddInitOrFinalRedeclaration {
+  t.hErrorList t.SrcPos s.Type =
+    <MErrorP_AddToList t.hErrorList (#Semantics t.SrcPos <MErrorP_InitFinal s.Type >' block already defined' )>;
+}
+
+$EXTERN MFileSystemP_ExistFileD_T;
+$EXTERN MFileIOP_Save;
+$EXTERN MInOutP_WriteText;
+$ENTRY MErrorP_PrintErrors {
+  [MErrorP_ErrorList ]=
+    <MErrorP_DelErrorFileD_SwExist <MFileSystemP_ExistFileD_T <MErrorP_ErrorFile >>>;
+  t.hErrorList =
+    <MOutModuleStatusP_Flush ><MFileIOP_Save (<MErrorP_ErrorFile >)<MErrorP_TextFromErrors t.hErrorList >><MInOutP_WriteText <MErrorP_TextFromErrors t.hErrorList >>;
+}
+
+MErrorP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MErrorP_EntryPointE_ {
+  =
+    <RegisterE_ MErrorP_FinalizeE_ >;
+}
+

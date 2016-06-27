@@ -1,0 +1,28 @@
+$LABEL Success;
+$LABEL True;
+$LABEL Fails;
+$LABEL False;
+CoreBEP_MExistFileP_SwExistFile {
+  #Success e.Attributes =
+    #True ;
+  #Fails =
+    #False ;
+}
+
+$EXTERN CoreBEP_OSP_MFileSystemP_FileAttributes;
+$ENTRY CoreBEP_MExistFileP_ExistFile {
+  e.FileName =
+    <CoreBEP_MExistFileP_SwExistFile <CoreBEP_OSP_MFileSystemP_FileAttributes e.FileName >>;
+}
+
+CoreBEP_MExistFileP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY CoreBEP_MExistFileP_EntryPointE_ {
+  =
+    <RegisterE_ CoreBEP_MExistFileP_FinalizeE_ >;
+}
+

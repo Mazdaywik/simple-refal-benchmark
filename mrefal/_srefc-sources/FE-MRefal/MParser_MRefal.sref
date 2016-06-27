@@ -1,0 +1,496 @@
+$EXTERN FED_MRefalP_MParserU_CommonP_GeneralizeInfo;
+$EXTERN FED_MRefalP_MParserU_CommonP_Parse;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NModuleBody;
+FED_MRefalP_MParserU_MRefalP_ProfilingD_SrcModule {
+  t.hErrorList t.QualifiedName e.FileName =
+    <FED_MRefalP_MParserU_CommonP_GeneralizeInfo t.hErrorList t.QualifiedName <FED_MRefalP_MParserU_CommonP_Parse FED_MRefalP_MParserU_MRefalP_NModuleBody e.FileName >>;
+}
+
+$LABEL Directive;
+$LABEL Import;
+$EXTERN FED_MRefalP_MParserU_CommonP_NImportBlock;
+$EXTERN FED_MRefalP_MLexerP_NextToken;
+$LABEL Swap;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NSwapBlock;
+$LABEL Entry;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NFunctionDefinition;
+$LABEL Data;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NDataBlock;
+$LABEL Init;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NInitFinalBlock;
+$LABEL Final;
+$LABEL Identifier;
+$LABEL Local;
+$LABEL EndSent;
+$LABEL End;
+$EXTERN FED_MRefalP_MParserU_CommonP_NModuleTailer;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPoints;
+$LABEL EndOfText;
+$EXTERN MErrorP_AddUnexpected;
+$LABEL Success;
+$EXTERN FED_MRefalP_MLexerP_Destroy;
+FED_MRefalP_MParserU_MRefalP_NModuleBody {
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Import )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_CommonP_NImportBlock t.IModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Swap )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NSwapBlock t.IModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Entry )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NFunctionDefinition t.IModule (#Entry )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Data )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NDataBlock t.IModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Init )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NInitFinalBlock t.IModule #Init t.SrcPos t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #Final )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NInitFinalBlock t.IModule #Final t.SrcPos t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule t.hErrorList t.Lexer (#Identifier t.SrcPos e.Ident )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody <FED_MRefalP_MParserU_MRefalP_NFunctionDefinition t.IModule (#Local )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Ident )>>;
+  t.IModule t.hErrorList t.Lexer (#EndSent t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody t.IModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.IModule t.hErrorList t.Lexer (#Directive t.SrcPos #End )=
+    <FED_MRefalP_MParserU_CommonP_NModuleTailer <FED_MRefalP_MParserU_MRefalP_FixupEntryPoints t.IModule t.hErrorList t.SrcPos >t.Lexer (#Directive t.SrcPos #End )>;
+  t.IModule t.hErrorList t.Lexer (#EndOfText t.SrcPos )=
+    <MErrorP_AddUnexpected t.hErrorList (#EndOfText t.SrcPos )'$entry, $import, $swap or local function definition' >#Success t.IModule <FED_MRefalP_MLexerP_Destroy t.Lexer >;
+  t.IModule t.hErrorList t.Lexer t.OtherToken =
+    <FED_MRefalP_MParserU_MRefalP_NModuleBody t.IModule <MErrorP_AddUnexpected t.hErrorList t.OtherToken '$entry, $import, $swap or local function definition' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_SwModuleType;
+$EXTERN MIModuleP_GetModuleAttribute;
+$LABEL ModuleType;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPoints {
+  t.hIModule t.hErrorList t.SrcPos =
+    <FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_SwModuleType <MIModuleP_GetModuleAttribute t.hIModule #ModuleType >t.hErrorList t.SrcPos >;
+}
+
+$LABEL Found;
+$LABEL Main;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_Go;
+$EXTERN MQualifiedNameP_Create;
+$LABEL Regular;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_InitFinal;
+$EXTERN MIModuleP_GetEntryPoint;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_SwModuleType {
+  t.hIModule #Found #Main t.hErrorList t.SrcPos =
+    <FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_Go t.hIModule <MQualifiedNameP_Create ('Go' )>t.hErrorList t.SrcPos >;
+  t.hIModule #Found #Regular t.hErrorList t.SrcPos =
+    <FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_InitFinal <MIModuleP_GetEntryPoint t.hIModule >>t.hErrorList ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SwExist;
+$EXTERN MIModuleP_GetKind;
+$EXTERN MIModuleP_AbsolutName;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_Go {
+  t.hIModule t.GoName t.hErrorList t.SrcPos =
+    <FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SwExist <MIModuleP_GetKind <MIModuleP_AbsolutName t.hIModule t.GoName >>t.GoName t.hErrorList t.SrcPos >;
+}
+
+$LABEL Function;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SetEntryPoint;
+$EXTERN MLambdaP_Apply;
+$EXTERN MLambdaP_ParallelD_H;
+$EXTERN MLambdaP_BindLeftD_H;
+$EXTERN MIModuleP_GetFunctionAttribute;
+$LABEL ScopeClass;
+$LABEL Position;
+$EXTERN MErrorP_AddGoNotFound;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SwExist {
+  t.hIModule #Success #Function t.GoName t.hErrorList t.SrcPos =
+    <FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SetEntryPoint <MLambdaP_Apply <MLambdaP_ParallelD_H <MLambdaP_BindLeftD_H MIModuleP_GetFunctionAttribute #ScopeClass t.GoName ><MLambdaP_BindLeftD_H MIModuleP_GetFunctionAttribute #Position t.GoName >>t.hIModule >t.GoName t.hErrorList t.SrcPos >;
+  t.hIModule e.OtherKindOrFails t.GoName t.hErrorList t.SrcPos =
+    t.hIModule <MErrorP_AddGoNotFound t.hErrorList t.SrcPos >;
+}
+
+$EXTERN MIModuleP_SetGoEntryPoint;
+$LABEL Qualified;
+$EXTERN MErrorP_AddGoNotEntry;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_GoD_SetEntryPoint {
+  t.hIModule #Found #Entry #Found t.GoSrcPos t.GoName t.hErrorList t.EndSrcPos =
+    <MIModuleP_SetGoEntryPoint t.hIModule (#Function (#Qualified t.GoSrcPos t.GoName ))>t.hErrorList ;
+  t.hIModule #Found s.Other #Found t.GoSrcPos t.GoName t.hErrorList t.EndSrcPos =
+    t.hIModule <MErrorP_AddGoNotEntry t.hErrorList t.GoSrcPos >;
+}
+
+$EXTERN MLambdaP_Reduce;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupInitFinal;
+$EXTERN MIModuleP_SetInitEntryPoint;
+$EXTERN MIModuleP_SetFinalEntryPoint;
+FED_MRefalP_MParserU_MRefalP_FixupEntryPointsD_InitFinal {
+  t.hIModule #Regular t.InitSeq t.FinalSeq =
+    <MLambdaP_Reduce FED_MRefalP_MParserU_MRefalP_FixupInitFinal t.hIModule (MIModuleP_SetInitEntryPoint t.InitSeq 'Init' )(MIModuleP_SetFinalEntryPoint t.FinalSeq 'Final' )>;
+}
+
+$LABEL None;
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_GetPosition;
+$LABEL Result;
+FED_MRefalP_MParserU_MRefalP_FixupInitFinal {
+  t.hIModule (s.FnChanger #None e.FuncName )=
+    <FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_GetPosition s.FnChanger t.hIModule <MQualifiedNameP_Create (e.FuncName )>>;
+  t.hIModule (s.FnChanger (#Result e.Result )e.FuncName )=
+    t.hIModule ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_SetEntryCode;
+FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_GetPosition {
+  s.FnChanger t.hIModule t.FuncName =
+    <FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_SetEntryCode s.FnChanger t.FuncName <MIModuleP_GetFunctionAttribute t.hIModule #Position t.FuncName >>;
+}
+
+$LABEL NoName;
+FED_MRefalP_MParserU_MRefalP_FixupInitFinalD_SetEntryCode {
+  s.FnChanger t.FuncName t.hIModule #Found t.SrcPos =
+    <s.FnChanger t.hIModule (#Function (#Qualified t.SrcPos t.FuncName ))>;
+  s.FnChanger t.FuncName t.hIModule #NoName =
+    t.hIModule ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_ListDeclarationD_Chain;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NSwapBlockD_AddName;
+FED_MRefalP_MParserU_MRefalP_NSwapBlock {
+  t.hIModule t.hErrorList t.Lexer t.NextToken =
+    <FED_MRefalP_MParserU_MRefalP_ListDeclarationD_Chain FED_MRefalP_MParserU_MRefalP_NSwapBlockD_AddName ('swap' )t.hIModule t.hErrorList t.Lexer t.NextToken >;
+}
+
+$EXTERN FED_MRefalP_MParserU_CommonP_AddNewFunction;
+FED_MRefalP_MParserU_MRefalP_NSwapBlockD_AddName {
+  t.hIModule t.SrcPos t.SwapName t.hErrorList =
+    <FED_MRefalP_MParserU_CommonP_AddNewFunction t.hIModule t.SrcPos t.SwapName (#ScopeClass #Swap )t.hErrorList >;
+}
+
+$EXTERN FED_MRefalP_MParserU_CommonP_AddNewADT;
+FED_MRefalP_MParserU_MRefalP_NDataBlock {
+  t.hIModule t.hErrorList t.Lexer t.NextToken =
+    <FED_MRefalP_MParserU_MRefalP_ListDeclarationD_Chain FED_MRefalP_MParserU_CommonP_AddNewADT ('data type' )t.hIModule t.hErrorList t.Lexer t.NextToken >;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_ListDeclarationD_AfterName;
+FED_MRefalP_MParserU_MRefalP_ListDeclarationD_Chain {
+  s.AddItem (e.ListName )t.hIModule t.hErrorList t.Lexer (#Identifier t.SrcPos e.Name )=
+    <FED_MRefalP_MParserU_MRefalP_ListDeclarationD_AfterName s.AddItem (e.ListName )<s.AddItem t.hIModule t.SrcPos <MQualifiedNameP_Create (e.Name )>t.hErrorList ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  s.AddItem (e.ListName )t.hIModule t.hErrorList t.Lexer t.OtherToken =
+    t.hIModule <MErrorP_AddUnexpected t.hErrorList t.OtherToken e.ListName ' name' >t.Lexer t.OtherToken ;
+}
+
+$LABEL Comma;
+FED_MRefalP_MParserU_MRefalP_ListDeclarationD_AfterName {
+  s.AddItem (e.ListName )t.hIModule t.hErrorList t.Lexer (#Comma t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_ListDeclarationD_Chain s.AddItem (e.ListName )t.hIModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  s.AddItem (e.ListName )t.hIModule t.hErrorList t.Lexer (#EndSent t.SrcPos )=
+    t.hIModule t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  s.AddItem (e.ListName )t.hIModule t.hErrorList t.Lexer t.OtherToken =
+    t.hIModule <MErrorP_AddUnexpected t.hErrorList t.OtherToken 'comma or semicolon' >t.Lexer t.OtherToken ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_Closing;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NResultExpr;
+$EXTERN FED_MRefalP_MVarTableP_Create;
+FED_MRefalP_MParserU_MRefalP_NInitFinalBlock {
+  t.hIModule s.Type t.SrcPos t.hErrorList t.hLexer t.NextTerm =
+    <FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_Closing <FED_MRefalP_MParserU_MRefalP_NResultExpr <FED_MRefalP_MVarTableP_Create >('$' (t.hIModule s.Type t.SrcPos ))t.hErrorList t.hLexer t.NextTerm >>;
+}
+
+$EXTERN FED_MRefalP_MVarTableP_Destroy;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_ClosingD_Aux;
+$FORWARD FED_MRefalP_MParserU_MRefalP_InitFinalBlockD_SetEntryCode;
+FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_Closing {
+  t.VarTable ((#Result e.Result )t.hIModule s.Type t.SrcPos )t.hErrorList t.hLexer t.NextToken =
+    <FED_MRefalP_MVarTableP_Destroy t.VarTable ><FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_ClosingD_Aux <FED_MRefalP_MParserU_MRefalP_InitFinalBlockD_SetEntryCode <MIModuleP_GetEntryPoint t.hIModule >s.Type e.Result t.hErrorList t.SrcPos >t.hLexer t.NextToken >;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_ExpectEndSent;
+FED_MRefalP_MParserU_MRefalP_NInitFinalBlockD_ClosingD_Aux {
+  t.hIModule t.hErrorList t.hLexer t.NextToken =
+    t.hIModule <FED_MRefalP_MParserU_MRefalP_ExpectEndSent t.hErrorList t.hLexer t.NextToken >;
+}
+
+$LABEL Go;
+$EXTERN MErrorP_AddInitOrFinalInMain;
+$EXTERN MErrorP_AddInitOrFinalRedeclaration;
+$FORWARD FED_MRefalP_MParserU_MRefalP_EntrySetter;
+FED_MRefalP_MParserU_MRefalP_InitFinalBlockD_SetEntryCode {
+  t.hIModule #Go t.GoSeq s.Type e.Result t.hErrorList t.SrcPos =
+    t.hIModule <MErrorP_AddInitOrFinalInMain t.hErrorList t.SrcPos s.Type >;
+  t.hIModule #Regular (#Result e.InitCode )t.FinalSeq #Init e.Result t.hErrorList t.SrcPos =
+    t.hIModule <MErrorP_AddInitOrFinalRedeclaration t.hErrorList t.SrcPos #Init >;
+  t.hIModule #Regular t.InitSeq (#Result e.FinalCode )#Final e.Result t.hErrorList t.SrcPos =
+    t.hIModule <MErrorP_AddInitOrFinalRedeclaration t.hErrorList t.SrcPos #Final >;
+  t.hIModule #Regular t.InitSeq t.FinalSeq s.Type e.Result t.hErrorList t.SrcPos =
+    <MLambdaP_Apply <FED_MRefalP_MParserU_MRefalP_EntrySetter s.Type >t.hIModule e.Result >t.hErrorList ;
+}
+
+FED_MRefalP_MParserU_MRefalP_EntrySetter {
+  #Init =
+    MIModuleP_SetInitEntryPoint ;
+  #Final =
+    MIModuleP_SetFinalEntryPoint ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_NFunctionDefinitionD_Closing;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NFunctionBody;
+FED_MRefalP_MParserU_MRefalP_NFunctionDefinition {
+  t.IModule (s.ScopeClass )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Ident )=
+    <FED_MRefalP_MParserU_MRefalP_NFunctionDefinitionD_Closing t.IModule <FED_MRefalP_MParserU_MRefalP_NFunctionBody (((#Function s.ScopeClass (e.Ident )t.SrcPos )))t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.IModule (s.ScopeClass )t.hErrorList t.Lexer t.UnexpectedToken =
+    t.IModule <MErrorP_AddUnexpected t.hErrorList t.UnexpectedToken 'function name' >t.Lexer t.UnexpectedToken ;
+}
+
+$LABEL Body;
+FED_MRefalP_MParserU_MRefalP_NFunctionDefinitionD_Closing {
+  t.IModule (t.FunctionBody (#Function s.ScopeClass (e.Name )t.SrcPos ))t.hErrorList t.Lexer t.NextToken =
+    <FED_MRefalP_MParserU_CommonP_AddNewFunction t.IModule t.SrcPos <MQualifiedNameP_Create (e.Name )>(#Body t.FunctionBody )(#ScopeClass s.ScopeClass )t.hErrorList >t.Lexer t.NextToken ;
+}
+
+$LABEL OpenBlock;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NBlock;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NSentence;
+$LABEL OneSentence;
+FED_MRefalP_MParserU_MRefalP_NFunctionBody {
+  (t.ParentStack )t.hErrorList t.Lexer (#OpenBlock t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NBlock (t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  (t.ParentStack )t.hErrorList t.Lexer t.StartSentence =
+    <FED_MRefalP_MParserU_MRefalP_NFunctionBody <FED_MRefalP_MParserU_MRefalP_NSentence ((#OneSentence t.ParentStack ))t.hErrorList t.Lexer t.StartSentence >>;
+  (e.Sentence #OneSentence (e.ParentStack ))t.hErrorList t.Lexer t.NextToken =
+    ((e.Sentence )e.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+}
+
+$LABEL CloseBlock;
+$EXTERN MStringsP_Reverse;
+FED_MRefalP_MParserU_MRefalP_NBlock {
+  (e.Sentences (e.ParentStack ))t.hErrorList t.Lexer (#CloseBlock t.SrcPos )=
+    ((<MStringsP_Reverse e.Sentences >)e.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  (e.Sentences (e.ParentStack ))t.hErrorList t.Lexer (#EndOfText t.SrcPos )=
+    ((<MStringsP_Reverse e.Sentences >)e.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#EndOfText t.SrcPos )'start of pattern of closing block' ><FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  (e.Sentences t.ParentStack )t.hErrorList t.Lexer t.StartSentence =
+    <FED_MRefalP_MParserU_MRefalP_NBlock <FED_MRefalP_MParserU_MRefalP_NSentence ((e.Sentences t.ParentStack ))t.hErrorList t.Lexer t.StartSentence >>;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_NSentenceD_ExpectReplaces;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NPatternExpr;
+FED_MRefalP_MParserU_MRefalP_NSentence {
+  ((e.ParentStack ))t.hErrorList t.Lexer (#EndOfText t.SrcPos )=
+    (e.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#EndOfText t.SrcPos )'start of pattern' >t.Lexer (#EndOfText t.SrcPos );
+  (t.ParentStack )t.hErrorList t.Lexer (s.StartOfPattern t.SrcPos e.Info )=
+    <FED_MRefalP_MParserU_MRefalP_NSentenceD_ExpectReplaces <FED_MRefalP_MParserU_MRefalP_NPatternExpr <FED_MRefalP_MVarTableP_Create >('$' (t.ParentStack ))t.hErrorList t.Lexer (s.StartOfPattern t.SrcPos e.Info )>>;
+}
+
+$LABEL Replaces;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NSentenceD_Closing;
+FED_MRefalP_MParserU_MRefalP_NSentenceD_ExpectReplaces {
+  t.VarTable (t.Pattern t.ParentStack )t.hErrorList t.Lexer (#Replaces t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NSentenceD_Closing <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable ('$' (t.Pattern t.ParentStack ))t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (t.Pattern (e.ParentStack ))t.hErrorList t.Lexer (#EndOfText t.SrcPos )=
+    <FED_MRefalP_MVarTableP_Destroy t.VarTable >(e.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#EndOfText t.SrcPos )'\'=\'' ><FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.VarTable (t.Pattern (e.ParentStack ))t.hErrorList t.Lexer t.UnexpectedToken =
+    <FED_MRefalP_MVarTableP_Destroy t.VarTable >(e.ParentStack )<MErrorP_AddUnexpected t.hErrorList t.UnexpectedToken '\'=\'' ><FED_MRefalP_MLexerP_NextToken t.Lexer >;
+}
+
+FED_MRefalP_MParserU_MRefalP_NSentenceD_Closing {
+  t.VarTable (t.Result t.Pattern (e.ParentStack ))t.hErrorList t.Lexer t.NextToken =
+    <FED_MRefalP_MVarTableP_Destroy t.VarTable >((t.Pattern t.Result )e.ParentStack )<FED_MRefalP_MParserU_MRefalP_ExpectEndSent t.hErrorList t.Lexer t.NextToken >;
+}
+
+FED_MRefalP_MParserU_MRefalP_ExpectEndSent {
+  t.hErrorList t.Lexer (#EndSent t.SrcPos )=
+    t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.hErrorList t.Lexer t.OtherToken =
+    <MErrorP_AddUnexpected t.hErrorList t.OtherToken 'semicolon' >t.Lexer t.OtherToken ;
+}
+
+$LABEL Var;
+$LABEL Fails;
+FED_MRefalP_MParserU_MRefalP_AddVariable {
+  t.hErrorList t.VarTable #Success (e.PatternExpr t.ParentStack )t.Lexer (#Var t.SrcPos s.VarType e.Index )=
+    t.VarTable (e.PatternExpr (s.VarType e.Index )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.hErrorList t.VarTable #Fails (e.PatternExpr t.ParentStack )t.Lexer t.VarToken =
+    t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+}
+
+$EXTERN FED_MRefalP_MVarTableP_AddVariable;
+$FORWARD FED_MRefalP_MParserU_MRefalP_AnyExprD_AnalyzeStartOfQualifiedName;
+$LABEL Literal;
+$LABEL Macro;
+$LABEL Ampersand;
+$FORWARD FED_MRefalP_MParserU_MRefalP_QualifiedSuccessed;
+$EXTERN FED_MRefalP_MParserU_CommonP_NDotQualifiedName;
+$LABEL OpenBrac;
+$LABEL OpenSquare;
+$FORWARD FED_MRefalP_MParserU_MRefalP_CallableADTName;
+$LABEL OpenFnCall;
+$LABEL CloseBrac;
+$LABEL Structure;
+$LABEL InvalidADT;
+$LABEL CloseSquare;
+$LABEL Abstract;
+$LABEL CloseFnCall;
+$LABEL Pattern;
+FED_MRefalP_MParserU_MRefalP_NPatternExpr {
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#Var t.SrcPos s.VarType e.Index )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr <FED_MRefalP_MParserU_MRefalP_AddVariable <FED_MRefalP_MVarTableP_AddVariable t.hErrorList t.VarTable t.SrcPos s.VarType e.Index >(e.PatternExpr t.ParentStack )t.Lexer (#Var t.SrcPos s.VarType e.Index )>>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Identifier )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable <FED_MRefalP_MParserU_MRefalP_AnyExprD_AnalyzeStartOfQualifiedName (e.PatternExpr t.ParentStack )(t.SrcPos e.Identifier )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#Literal t.SrcPos e.Content )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.PatternExpr (#Literal e.Content )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#Macro t.SrcPos s.Value )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.PatternExpr (#Macro s.Value )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#Ampersand t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable <FED_MRefalP_MParserU_MRefalP_QualifiedSuccessed t.SrcPos (e.PatternExpr t.ParentStack )<FED_MRefalP_MParserU_CommonP_NDotQualifiedName t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#OpenBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable ((')' e.PatternExpr )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#OpenSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr <FED_MRefalP_MParserU_MRefalP_CallableADTName t.VarTable ((']' e.PatternExpr )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#OpenFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable ((')' e.PatternExpr )t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#OpenFnCall t.SrcPos )'any correct passive term' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((')' e.MultiBracket )e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (#Structure e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((']' e.MultiBracket )#InvalidADT e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (#Structure e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((']' e.MultiBracket )t.Callable e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (#Abstract t.Callable e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((')' e.MultiBracket )e.InBracket t.ParentStack )t.hErrorList t.Lexer (#CloseFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (#Structure e.InBracket )t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseFnCall t.SrcPos )'any correct passive term' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#CloseBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.PatternExpr t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseBrac t.SrcPos )'any correct term (unbalanced structure brackets)' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.PatternExpr t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.PatternExpr t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseSquare t.SrcPos )'any correct term (unbalanced ADT brackets)' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ('$' e.PatternExpr (e.ParentStack ))t.hErrorList t.Lexer (#Replaces t.SrcPos )=
+    t.VarTable ((#Pattern e.PatternExpr )e.ParentStack )t.hErrorList t.Lexer (#Replaces t.SrcPos );
+  t.VarTable ((s.BracketType e.MultiBracket )e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#Replaces t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (e.InBrackets )t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#Replaces t.SrcPos )'\'' s.BracketType '\'' >t.Lexer (#Replaces t.SrcPos )>;
+  t.VarTable ((s.BracketType e.MultiBracket )e.InBrackets t.ParentStack )t.hErrorList t.Lexer t.Unexpected =
+    <FED_MRefalP_MParserU_MRefalP_NPatternExpr t.VarTable (e.MultiBracket (e.InBrackets )t.ParentStack )<MErrorP_AddUnexpected t.hErrorList t.Unexpected '\'' s.BracketType '\'' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ('$' e.PatternExpr (e.ParentStack ))t.hErrorList t.Lexer t.Unexpected =
+    t.VarTable ((#Pattern e.PatternExpr )e.ParentStack )<MErrorP_AddUnexpected t.hErrorList t.Unexpected 'pattern expression or semicolon' >t.Lexer t.Unexpected ;
+}
+
+$LABEL Dot;
+$FORWARD FED_MRefalP_MParserU_MRefalP_ConcatQualified;
+FED_MRefalP_MParserU_MRefalP_AnyExprD_AnalyzeStartOfQualifiedName {
+  (e.Expression t.ParentStack )(t.SrcPos e.Name )t.hErrorList t.Lexer (#Dot t.DotSrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_ConcatQualified (e.Name )t.SrcPos (e.Expression t.ParentStack )<FED_MRefalP_MParserU_CommonP_NDotQualifiedName t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  (e.Expression t.ParentStack )(t.SrcPos e.Name )t.hErrorList t.Lexer t.NextToken =
+    (e.Expression (#Identifier t.SrcPos e.Name )t.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+}
+
+$LABEL FnPtr;
+$EXTERN MQualifiedNameP_AddSuperName;
+FED_MRefalP_MParserU_MRefalP_ConcatQualified {
+  (e.Name )t.SrcPos (e.Expression t.ParentStack )#Success t.QualifiedName t.hErrorList t.Lexer t.NextToken =
+    (e.Expression (#FnPtr (#Qualified t.SrcPos <MQualifiedNameP_AddSuperName t.QualifiedName e.Name >))t.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+  (e.Name )t.SrcPos (e.Expression t.ParentStack )#Fails t.hErrorList t.Lexer t.NextToken =
+    (e.Expression (#Identifier e.Name )t.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+}
+
+FED_MRefalP_MParserU_MRefalP_QualifiedSuccessed {
+  t.SrcPos (e.Expression t.ParentStack )#Success t.QualifiedName t.hErrorList t.Lexer t.NextToken =
+    (e.Expression (#FnPtr (#Qualified t.SrcPos t.QualifiedName ))t.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+  t.SrcPos (e.Expression t.ParentStack )#Fails t.hErrorList t.Lexer t.NextToken =
+    (e.Expression t.ParentStack )t.hErrorList t.Lexer t.NextToken ;
+}
+
+FED_MRefalP_MParserU_MRefalP_CallableADTName {
+  t.VarTable (e.Pattern t.UpParentStack )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Content )=
+    t.VarTable (e.Pattern (#Qualified t.SrcPos <MQualifiedNameP_Create (e.Content )>)t.UpParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.VarTable (e.Pattern t.UpParentStack )t.hErrorList t.Lexer t.OtherToken =
+    t.VarTable (e.Pattern #InvalidADT t.UpParentStack )<MErrorP_AddUnexpected t.hErrorList t.OtherToken 'name of ADT' >t.Lexer t.OtherToken ;
+}
+
+FED_MRefalP_MParserU_MRefalP_CheckVariable {
+  t.hErrorList t.VarTable #Success (e.ResultExpr t.ParentStack )t.Lexer (#Var t.SrcPos s.VarType e.Index )=
+    t.VarTable (e.ResultExpr (s.VarType e.Index )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.hErrorList t.VarTable #Fails (e.ResultExpr t.ParentStack )t.Lexer t.VarToken =
+    t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+}
+
+$EXTERN FED_MRefalP_MVarTableP_CheckVariable;
+$FORWARD FED_MRefalP_MParserU_MRefalP_NCallable;
+$LABEL InvalidCallable;
+$LABEL FnCall;
+$LABEL IndirectCall;
+$LABEL SVar;
+FED_MRefalP_MParserU_MRefalP_NResultExpr {
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#Var t.SrcPos s.VarType e.Index )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr <FED_MRefalP_MParserU_MRefalP_CheckVariable <FED_MRefalP_MVarTableP_CheckVariable t.hErrorList t.VarTable t.SrcPos s.VarType e.Index >(e.ResultExpr t.ParentStack )t.Lexer (#Var t.SrcPos s.VarType e.Index )>>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Ident )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable <FED_MRefalP_MParserU_MRefalP_AnyExprD_AnalyzeStartOfQualifiedName (e.ResultExpr t.ParentStack )(t.SrcPos e.Ident )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#Literal t.SrcPos e.Content )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.ResultExpr (#Literal e.Content )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#Macro t.SrcPos s.Value )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.ResultExpr (#Macro s.Value )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#Ampersand t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable <FED_MRefalP_MParserU_MRefalP_QualifiedSuccessed t.SrcPos (e.ResultExpr t.ParentStack )<FED_MRefalP_MParserU_CommonP_NDotQualifiedName t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#OpenBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable ((')' e.ResultExpr )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#OpenFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr <FED_MRefalP_MParserU_MRefalP_NCallable t.VarTable ((('>' e.ResultExpr )t.ParentStack ))t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#OpenSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr <FED_MRefalP_MParserU_MRefalP_CallableADTName t.VarTable ((']' e.ResultExpr )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable ((')' e.MultiBracket )e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#Structure e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#CloseBrac t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.ResultExpr t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseBrac t.SrcPos )'result expression or semicolon (unbalanced structure brackets)' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((']' e.MultiBracket )#InvalidADT e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#Structure e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ((']' e.MultiBracket )t.Callable e.InBrackets t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#Abstract t.Callable e.InBrackets )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#CloseSquare t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.ResultExpr t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseSquare t.SrcPos )'result expression or semicolon (unbalanced ADT brackets)' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (('>' e.MultiBracket )#InvalidCallable e.ResultExprFnArgument t.ParentStack )t.hErrorList t.Lexer (#CloseFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#Structure e.ResultExprFnArgument )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (('>' e.MultiBracket )(#FnCall t.Callable )e.ResultExprFnArgument t.ParentStack )t.hErrorList t.Lexer (#CloseFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#Function t.Callable e.ResultExprFnArgument )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (('>' e.MultiBracket )(#IndirectCall (#SVar e.Index ))e.ResultExprFnArgument t.ParentStack )t.hErrorList t.Lexer (#CloseFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (#IndirectCall (#SVar e.Index )e.ResultExprFnArgument )t.ParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable (e.ResultExpr t.ParentStack )t.hErrorList t.Lexer (#CloseFnCall t.SrcPos )=
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.ResultExpr t.ParentStack )<MErrorP_AddUnexpected t.hErrorList (#CloseFnCall t.SrcPos )'result expression or semicolon (unbalanced function brackets)' ><FED_MRefalP_MLexerP_NextToken t.Lexer >>;
+  t.VarTable ('$' e.ResultExpr (e.ParentStack ))t.hErrorList t.Lexer (#EndSent t.SrcPos )=
+    t.VarTable ((#Result e.ResultExpr )e.ParentStack )t.hErrorList t.Lexer (#EndSent t.SrcPos );
+  t.VarTable ((s.BracketType e.MultiBracket )e.InBrackets t.ParentStack )t.hErrorList t.Lexer t.Unexpected =
+    <FED_MRefalP_MParserU_MRefalP_NResultExpr t.VarTable (e.MultiBracket (e.InBrackets )t.ParentStack )<MErrorP_AddUnexpected t.hErrorList t.Unexpected s.BracketType ' (unbalanced brackets)' >t.Lexer t.Unexpected >;
+  t.VarTable ('$' e.ResultExpr (e.ParentStack ))t.hErrorList t.Lexer t.Unexpected =
+    t.VarTable ((e.ResultExpr )e.ParentStack )<MErrorP_AddUnexpected t.hErrorList t.Unexpected 'result expression or \';\'' >t.Lexer t.Unexpected ;
+}
+
+$FORWARD FED_MRefalP_MParserU_MRefalP_NCallableD_ReadQualifiedName;
+$EXTERN FED_MRefalP_MParserU_CommonP_NAnyQualifiedName;
+$FORWARD FED_MRefalP_MParserU_MRefalP_CheckCallableVariable;
+FED_MRefalP_MParserU_MRefalP_NCallable {
+  t.VarTable (t.ParentStack )t.hErrorList t.Lexer (#Identifier t.SrcPos e.Name )=
+    t.VarTable <FED_MRefalP_MParserU_MRefalP_NCallableD_ReadQualifiedName t.SrcPos (t.ParentStack )<FED_MRefalP_MParserU_CommonP_NAnyQualifiedName t.hErrorList t.Lexer (#Identifier t.SrcPos e.Name )>>;
+  t.VarTable (t.ParentStack )t.hErrorList t.Lexer (#Ampersand t.SrcPos )=
+    t.VarTable <FED_MRefalP_MParserU_MRefalP_NCallableD_ReadQualifiedName t.SrcPos (t.ParentStack )<FED_MRefalP_MParserU_CommonP_NDotQualifiedName t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >>>;
+  t.VarTable (t.ParentStack )t.hErrorList t.Lexer (#Var t.SrcPos #SVar e.Index )=
+    <FED_MRefalP_MParserU_MRefalP_CheckCallableVariable <FED_MRefalP_MVarTableP_CheckVariable t.hErrorList t.VarTable t.SrcPos #SVar e.Index >(t.ParentStack )t.Lexer (#Var t.SrcPos #SVar e.Index )>;
+  t.VarTable ((e.ResultExpr t.UpParentStack ))t.hErrorList t.Lexer t.OtherToken =
+    t.VarTable (e.ResultExpr #InvalidCallable t.UpParentStack )<MErrorP_AddUnexpected t.hErrorList t.OtherToken 'function name or module name' >t.Lexer t.OtherToken ;
+}
+
+FED_MRefalP_MParserU_MRefalP_NCallableD_ReadQualifiedName {
+  t.NamePos ((e.ResultExpr t.UpParentStack ))#Success t.QualifiedName t.hErrorList t.Lexer t.NextToken =
+    (e.ResultExpr (#FnCall (#Qualified t.NamePos t.QualifiedName ))t.UpParentStack )t.hErrorList t.Lexer t.NextToken ;
+  t.NamePos ((e.ResultExpr t.UpParentStack ))#Fails t.hErrorList t.Lexer t.NextToken =
+    (e.ResultExpr #InvalidCallable t.UpParentStack )t.hErrorList t.Lexer t.NextToken ;
+}
+
+FED_MRefalP_MParserU_MRefalP_CheckCallableVariable {
+  t.hErrorList t.VarTable #Success ((e.ResultExpr t.UpParentStack ))t.Lexer (#Var t.SrcPos #SVar e.Index )=
+    t.VarTable (e.ResultExpr (#IndirectCall (#SVar e.Index ))t.UpParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+  t.hErrorList t.VarTable #Fails ((e.ResultExpr t.UpParentStack ))t.Lexer (#Var t.SrcPos #SVar e.Index )=
+    t.VarTable (e.ResultExpr #InvalidCallable t.UpParentStack )t.hErrorList <FED_MRefalP_MLexerP_NextToken t.Lexer >;
+}
+
+$EXTERN MProfilerP_Quantify;
+$ENTRY FED_MRefalP_MParserU_MRefalP_SrcModule {
+  t.hErrorList t.QualifiedName e.FileName =
+    <MProfilerP_Quantify FED_MRefalP_MParserU_MRefalP_ProfilingD_SrcModule t.hErrorList t.QualifiedName e.FileName >;
+}
+
+FED_MRefalP_MParserU_MRefalP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY FED_MRefalP_MParserU_MRefalP_EntryPointE_ {
+  =
+    <RegisterE_ FED_MRefalP_MParserU_MRefalP_FinalizeE_ >;
+}
+

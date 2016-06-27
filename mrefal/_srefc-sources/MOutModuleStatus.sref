@@ -1,0 +1,226 @@
+$LABEL Compiling;
+$EXTERN MSwapSupportP_Write;
+$FORWARD MOutModuleStatusP_GU_Compiling;
+$EXTERN MSwapSupportP_PushBack;
+$FORWARD MOutModuleStatusP_GU_Recompiled;
+$LABEL Recompiled;
+$FORWARD MOutModuleStatusP_FlushCompilingRecompiled;
+$FORWARD MOutModuleStatusP_OutD_Q;
+$LABEL Compiled;
+MOutModuleStatusP_CompiledD_Aux {
+  (e.Compiling (#Compiling t.ModuleName ))t.ModuleName =
+    <MSwapSupportP_Write MOutModuleStatusP_GU_Compiling e.Compiling ><MSwapSupportP_PushBack MOutModuleStatusP_GU_Recompiled (#Recompiled t.ModuleName )>;
+  (e.Compiling )t.ModuleName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_OutD_Q #Compiled t.ModuleName >;
+}
+
+$SWAP MOutModuleStatusP_GU_Compiling;
+
+$SWAP MOutModuleStatusP_GU_Recompiled;
+
+$EXTERN MLambdaP_Map;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_UnBracket;
+MOutModuleStatusP_FlushCompilingRecompiled {
+  =
+    <MLambdaP_Map <MLambdaP_Composite MLambdaP_UnBracket MOutModuleStatusP_OutD_Q ><MOutModuleStatusP_GU_Compiling ><MOutModuleStatusP_GU_Recompiled >>;
+}
+
+$SWAP MOutModuleStatusP_GU_CurrentStatus;
+
+$SWAP MOutModuleStatusP_GU_Buffer;
+
+$FORWARD MOutModuleStatusP_Out;
+$EXTERN MQualifiedNameP_ToPrintableD_Quad;
+MOutModuleStatusP_OutD_Q {
+  s.NewStatus t.QualifiedName =
+    <MOutModuleStatusP_Out s.NewStatus <MQualifiedNameP_ToPrintableD_Quad t.QualifiedName >>;
+}
+
+$FORWARD MOutModuleStatusP_SwOut;
+MOutModuleStatusP_Out {
+  s.NewStatus e.ModuleName =
+    <MOutModuleStatusP_SwOut s.NewStatus <MOutModuleStatusP_GU_CurrentStatus >'`' e.ModuleName '\'' >;
+}
+
+$LABEL Startup;
+$FORWARD MOutModuleStatusP_BeginNewStatus;
+$FORWARD MOutModuleStatusP_AppendCurrentStatus;
+$FORWARD MOutModuleStatusP_NewLine;
+MOutModuleStatusP_SwOut {
+  s.NewStatus #Startup e.ModuleName =
+    <MOutModuleStatusP_BeginNewStatus s.NewStatus e.ModuleName >;
+  s.OldStatus s.OldStatus e.ModuleName =
+    <MOutModuleStatusP_GU_CurrentStatus s.OldStatus ><MOutModuleStatusP_AppendCurrentStatus e.ModuleName >;
+  s.NewStatus s.OldStatus e.ModuleName =
+    <MOutModuleStatusP_NewLine ><MOutModuleStatusP_BeginNewStatus s.NewStatus e.ModuleName >;
+}
+
+$LABEL Updated;
+$LABEL Library;
+$LABEL Linking;
+$LABEL XLinx;
+$LABEL Fails;
+MOutModuleStatusP_StatusStr {
+  #Updated =
+    ' Updated ' ;
+  #Compiling =
+    '_Compiling ' ;
+  #Compiled =
+    '^Compiled ' ;
+  #Recompiled =
+    '=Recompiled ' ;
+  #Library =
+    '+Load library ' ;
+  #Linking =
+    '*Linking ' ;
+  #XLinx =
+    '*Creating xlinx tables ' ;
+  #Fails =
+    '>  FAILS ' ;
+}
+
+MOutModuleStatusP_MaxLength {
+  =
+    66 ;
+}
+
+$FORWARD MOutModuleStatusP_DoCheckLength;
+MOutModuleStatusP_CheckLength {
+  e.Line =
+    <MOutModuleStatusP_DoCheckLength <MOutModuleStatusP_MaxLength >e.Line >;
+}
+
+$LABEL Limit;
+$EXTERN MMathP_Dec;
+MOutModuleStatusP_Dec {
+  1 =
+    #Limit ;
+  #Limit =
+    #Limit ;
+  s.Other =
+    <MMathP_Dec s.Other >;
+}
+
+$LABEL Long;
+$LABEL Short;
+MOutModuleStatusP_DoCheckLength {
+  #Limit e.Line =
+    #Long ;
+  s.Other =
+    #Short ;
+  s.Other s.Char e.Line =
+    <MOutModuleStatusP_DoCheckLength <MOutModuleStatusP_Dec s.Other >e.Line >;
+}
+
+MOutModuleStatusP_BeginNewStatus {
+  s.Status e.Name =
+    <MOutModuleStatusP_NewLine ><MSwapSupportP_Write MOutModuleStatusP_GU_CurrentStatus s.Status ><MSwapSupportP_Write MOutModuleStatusP_GU_Buffer <MOutModuleStatusP_StatusStr s.Status >e.Name >;
+}
+
+$FORWARD MOutModuleStatusP_SwNewLine;
+MOutModuleStatusP_NewLine {
+  =
+    <MOutModuleStatusP_SwNewLine <MOutModuleStatusP_GU_Buffer >>;
+}
+
+$EXTERN MInOutP_WriteLine;
+MOutModuleStatusP_SwNewLine {
+  =
+    ;
+  e.Line =
+    <MInOutP_WriteLine e.Line '.' >;
+}
+
+$FORWARD MOutModuleStatusP_AppendCurrentStatusD_CheckLength;
+MOutModuleStatusP_AppendCurrentStatus {
+  e.Name =
+    <MOutModuleStatusP_AppendCurrentStatusD_CheckLength (<MOutModuleStatusP_GU_Buffer >)e.Name >;
+}
+
+$FORWARD MOutModuleStatusP_SwAppendCurrentStatusD_CheckLength;
+MOutModuleStatusP_AppendCurrentStatusD_CheckLength {
+  ()e.Name =
+    <MOutModuleStatusP_BeginNewStatus <MOutModuleStatusP_GU_CurrentStatus >e.Name >;
+  (e.Buffer )e.Name =
+    <MOutModuleStatusP_SwAppendCurrentStatusD_CheckLength <MOutModuleStatusP_CheckLength e.Buffer ', ' e.Name ><MOutModuleStatusP_GU_CurrentStatus >(e.Buffer )e.Name >;
+}
+
+MOutModuleStatusP_SwAppendCurrentStatusD_CheckLength {
+  #Short s.Status (e.Buffer )e.Name =
+    <MOutModuleStatusP_GU_CurrentStatus s.Status ><MOutModuleStatusP_GU_Buffer e.Buffer ', ' e.Name >;
+  #Long s.Status (e.Buffer )e.Name =
+    <MOutModuleStatusP_GU_Buffer e.Buffer ><MOutModuleStatusP_BeginNewStatus s.Status e.Name >;
+}
+
+MOutModuleStatusP_SwFlush {
+  =
+    ;
+  e.Line =
+    <MInOutP_WriteLine e.Line '.' >;
+}
+
+$EXTERN MOutModuleStatusP_Flush;
+$ENTRY MOutModuleStatusP_Final {
+  =
+    <MOutModuleStatusP_Flush >;
+}
+
+$LABEL Starting;
+$ENTRY MOutModuleStatusP_Init {
+  =
+    <MOutModuleStatusP_GU_CurrentStatus #Starting >;
+}
+
+$ENTRY MOutModuleStatusP_UpdatedD_Q {
+  t.QualifiedName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_OutD_Q #Updated t.QualifiedName >;
+}
+
+$ENTRY MOutModuleStatusP_CompilingD_Q {
+  t.ModuleName =
+    <MSwapSupportP_PushBack MOutModuleStatusP_GU_Compiling (#Compiling t.ModuleName )>;
+}
+
+$EXTERN MSwapSupportP_Read;
+$ENTRY MOutModuleStatusP_CompiledD_Q {
+  t.ModuleName =
+    <MOutModuleStatusP_CompiledD_Aux (<MSwapSupportP_Read MOutModuleStatusP_GU_Compiling >)t.ModuleName >;
+}
+
+$ENTRY MOutModuleStatusP_LibraryD_Q {
+  t.QualifiedName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_OutD_Q #Library t.QualifiedName >;
+}
+
+$ENTRY MOutModuleStatusP_FailsD_Q {
+  t.QualifiedName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_OutD_Q #Fails t.QualifiedName >;
+}
+
+$ENTRY MOutModuleStatusP_Linking {
+  e.ProgName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_Out #Linking e.ProgName >;
+}
+
+$ENTRY MOutModuleStatusP_XLinx {
+  e.ProgName =
+    <MOutModuleStatusP_FlushCompilingRecompiled ><MOutModuleStatusP_Out #XLinx e.ProgName >;
+}
+
+$ENTRY MOutModuleStatusP_Flush {
+  =
+    <MOutModuleStatusP_SwFlush <MOutModuleStatusP_GU_Buffer >>;
+}
+
+MOutModuleStatusP_FinalizeE_ {
+  =
+    <MOutModuleStatusP_Final >;
+}
+
+$EXTERN RegisterE_;
+$ENTRY MOutModuleStatusP_EntryPointE_ {
+  =
+    <MOutModuleStatusP_Init ><RegisterE_ MOutModuleStatusP_FinalizeE_ >;
+}
+

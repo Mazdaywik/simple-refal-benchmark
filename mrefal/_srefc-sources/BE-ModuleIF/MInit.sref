@@ -1,0 +1,25 @@
+$LABEL Success;
+BED_ModuleIFP_MInitP_Link {
+  (e.OutName )e.Modules =
+    #Success ;
+}
+
+$EXTERN ConfigP_MConfigP_RegisterBackEnd;
+$LABEL BED_ModuleIF;
+$EXTERN BED_ModuleIFP_MCompilerP_Generate;
+$ENTRY BED_ModuleIFP_MInitP_Register {
+  t.Config (e.Directory )(e.Ext )=
+    <ConfigP_MConfigP_RegisterBackEnd t.Config #BED_ModuleIF BED_ModuleIFP_MCompilerP_Generate BED_ModuleIFP_MInitP_Link (e.Directory )(e.Ext )>;
+}
+
+BED_ModuleIFP_MInitP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY BED_ModuleIFP_MInitP_EntryPointE_ {
+  =
+    <RegisterE_ BED_ModuleIFP_MInitP_FinalizeE_ >;
+}
+

@@ -1,0 +1,112 @@
+$LABEL Success;
+$FORWARD CoreBEP_MFileSystemP_CheckFullNameD_SwExist;
+$EXTERN CoreBEP_MFileSystemP_ExistFile;
+$LABEL Fails;
+$LABEL FileNotFound;
+CoreBEP_MFileSystemP_CheckFullName {
+  #Success e.FullName =
+    <CoreBEP_MFileSystemP_CheckFullNameD_SwExist <CoreBEP_MFileSystemP_ExistFile e.FullName >e.FullName >;
+  #Fails =
+    #FileNotFound ;
+}
+
+$LABEL True;
+$LABEL False;
+CoreBEP_MFileSystemP_CheckFullNameD_SwExist {
+  #True e.FullName =
+    (e.FullName );
+  #False e.FullName =
+    #FileNotFound ;
+}
+
+CoreBEP_MFileSystemP_LookupAttribute {
+  s.Attribute #Fails =
+    #FileNotFound ;
+  s.Attribute e.AttrD_B (s.Attribute e.Value )e.AttrD_E =
+    (e.Value );
+}
+
+CoreBEP_MFileSystemP_AddAsterisk {
+  e.DirName '\\' =
+    e.DirName '\\*' ;
+  e.DirName '/' =
+    e.DirName '\\*' ;
+  e.DirName =
+    e.DirName '\\*' ;
+}
+
+$EXTERN MLambdaP_Map;
+$FORWARD CoreBEP_MFileSystemP_NameFromRecord;
+CoreBEP_MFileSystemP_SwDirList {
+  #Success e.Records =
+    #Success <MLambdaP_Map CoreBEP_MFileSystemP_NameFromRecord e.Records >;
+  #Fails =
+    #Fails ;
+}
+
+CoreBEP_MFileSystemP_NameFromRecord {
+  ((e.FileName )e.Attributes )=
+    (e.FileName );
+}
+
+$EXTERN CoreBEP_MExistFileP_ExistFile;
+$ENTRY CoreBEP_MFileSystemP_ExistFile {
+  e.FileName =
+    <CoreBEP_MExistFileP_ExistFile e.FileName >;
+}
+
+$EXTERN MLambdaP_Nil;
+$EXTERN CoreBEP_OSP_MFileSystemP_MakeDir;
+$ENTRY CoreBEP_MFileSystemP_MakeDir {
+  e.DirName =
+    <MLambdaP_Nil <CoreBEP_OSP_MFileSystemP_MakeDir e.DirName >>;
+}
+
+$EXTERN CoreBEP_OSP_MFileSystemP_RemoveDir;
+$ENTRY CoreBEP_MFileSystemP_RemoveDir {
+  e.DirName =
+    <MLambdaP_Nil <CoreBEP_OSP_MFileSystemP_RemoveDir e.DirName >>;
+}
+
+$EXTERN CoreBEP_OSP_MFileSystemP_RemoveFile;
+$ENTRY CoreBEP_MFileSystemP_RemoveFile {
+  e.FileName =
+    <MLambdaP_Nil <CoreBEP_OSP_MFileSystemP_RemoveFile e.FileName >>;
+}
+
+$LABEL LongName;
+$EXTERN CoreBEP_OSP_MFileSystemP_FullName;
+$LABEL DateTime;
+$LABEL MD_DateTime;
+$EXTERN CoreBEP_OSP_MFileSystemP_FileAttributes;
+$LABEL Size;
+$ENTRY CoreBEP_MFileSystemP_FileAttribute {
+  #LongName e.FileName =
+    <CoreBEP_MFileSystemP_CheckFullName <CoreBEP_OSP_MFileSystemP_FullName e.FileName >>;
+  #DateTime e.FileName =
+    <CoreBEP_MFileSystemP_LookupAttribute #MD_DateTime <CoreBEP_OSP_MFileSystemP_FileAttributes e.FileName >>;
+  #Size e.FileName =
+    <CoreBEP_MFileSystemP_LookupAttribute #Size <CoreBEP_OSP_MFileSystemP_FileAttributes e.FileName >>;
+}
+
+$EXTERN CoreBEP_OSP_MFileSystemP_FindFiles;
+$ENTRY CoreBEP_MFileSystemP_DirList {
+  e.DirNameD_B '*' e.DirNameD_E =
+    #Fails ;
+  e.DirNameD_B '?' e.DirNameD_E =
+    #Fails ;
+  e.DirName =
+    <CoreBEP_MFileSystemP_SwDirList <CoreBEP_OSP_MFileSystemP_FindFiles <CoreBEP_MFileSystemP_AddAsterisk e.DirName >>>;
+}
+
+CoreBEP_MFileSystemP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY CoreBEP_MFileSystemP_EntryPointE_ {
+  =
+    <RegisterE_ CoreBEP_MFileSystemP_FinalizeE_ >;
+}
+

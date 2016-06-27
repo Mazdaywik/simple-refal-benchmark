@@ -1,0 +1,675 @@
+$LABEL Success;
+$LABEL Help;
+$LABEL Config;
+$LABEL Fails;
+ConfigP_MLoadP_LoadD_Aux {
+  t.hErrorList #Success (#Help e.Message )=
+    t.hErrorList #Success (#Help e.Message );
+  t.hErrorList #Success (#Config t.Config e.PtFiles )=
+    t.hErrorList #Success t.Config e.PtFiles ;
+  t.hErrorList #Fails =
+    t.hErrorList #Fails ;
+}
+
+$FORWARD ConfigP_MLoadP_HelpConfig;
+$LABEL Naked;
+$LABEL EOG;
+$FORWARD ConfigP_MLoadP_HelpHandler;
+$LABEL Required;
+$LABEL Multiply;
+$FORWARD ConfigP_MLoadP_EOGHelpHandler;
+$LABEL OneTime;
+$FORWARD ConfigP_MLoadP_RealConfig;
+$LABEL Param;
+$LABEL File;
+$FORWARD ConfigP_MLoadP_FileHandler;
+$LABEL Optional;
+$FORWARD ConfigP_MLoadP_FileGroup;
+$FORWARD ConfigP_MLoadP_ModulePathHandler;
+$FORWARD ConfigP_MLoadP_DefaultModulePathHandler;
+$LABEL Switch;
+$FORWARD ConfigP_MLoadP_MakeModeHandler;
+$FORWARD ConfigP_MLoadP_BackEndSelectorHandler;
+$FORWARD ConfigP_MLoadP_XLinxOnHandler;
+$FORWARD ConfigP_MLoadP_TuneBEHandler;
+$FORWARD ConfigP_MLoadP_TuneBEGroup;
+$FORWARD ConfigP_MLoadP_TuneBEGroupEx;
+$FORWARD ConfigP_MLoadP_TuneFEHandler;
+$FORWARD ConfigP_MLoadP_TuneFEGroup;
+$FORWARD ConfigP_MLoadP_EOGHandler;
+ConfigP_MLoadP_TopLevelDescription {
+  =
+    (ConfigP_MLoadP_HelpConfig ((#Naked ('help' )('h' )('?' )(#EOG ))ConfigP_MLoadP_HelpHandler #Required #Multiply )((#Naked (#EOG ))ConfigP_MLoadP_EOGHelpHandler #Required #OneTime ))(ConfigP_MLoadP_RealConfig ((#Param (#File ))ConfigP_MLoadP_FileHandler #Required #Multiply #Optional ConfigP_MLoadP_FileGroup )((#Param ('MP' ))ConfigP_MLoadP_ModulePathHandler (#Optional ConfigP_MLoadP_DefaultModulePathHandler )#Multiply )((#Switch (('make' ))(('build' ))(('linkonly' )))ConfigP_MLoadP_MakeModeHandler #Required #OneTime )((#Param ('be' )('profile' ))ConfigP_MLoadP_BackEndSelectorHandler #Required #OneTime )((#Naked ('xlinx' ))ConfigP_MLoadP_XLinxOnHandler (#Optional )#OneTime )((#Param ('tune-be' ))ConfigP_MLoadP_TuneBEHandler (#Optional )#Multiply #Required ConfigP_MLoadP_TuneBEGroup ConfigP_MLoadP_TuneBEGroupEx )((#Param ('tune-fe' ))ConfigP_MLoadP_TuneFEHandler (#Optional )#Multiply #Required ConfigP_MLoadP_TuneFEGroup )((#Naked (#EOG ))ConfigP_MLoadP_EOGHandler #Required #OneTime ));
+}
+
+ConfigP_MLoadP_HelpConfig {
+  =
+    (#Help ('Printing help for compiler' )('use mrefal -foo -bar' ));
+}
+
+$LABEL NoParam;
+$LABEL NoGroup;
+ConfigP_MLoadP_HelpHandler {
+  t.hErrorList t.Help t.SrcPos #NoParam #NoGroup =
+    t.hErrorList t.Help ;
+}
+
+ConfigP_MLoadP_EOGHelpHandler {
+  t.hErrorList t.Help t.SrcPos #NoParam #NoGroup =
+    t.hErrorList t.Help ;
+}
+
+ConfigP_MLoadP_RealConfig {
+  =
+    ();
+}
+
+$FORWARD ConfigP_MLoadP_FileHandlerD_AddFile;
+$LABEL NoTarget;
+ConfigP_MLoadP_FileHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.FileName )#NoGroup =
+    t.hErrorList <ConfigP_MLoadP_FileHandlerD_AddFile t.SrcPos (e.FileName )#NoTarget e.Config >;
+  t.hErrorList (e.Config )t.SrcPos (e.FileName )(e.Target )=
+    t.hErrorList <ConfigP_MLoadP_FileHandlerD_AddFile t.SrcPos (e.FileName )(e.Target )e.Config >;
+}
+
+$LABEL Files;
+ConfigP_MLoadP_FileHandlerD_AddFile {
+  t.SrcPos (e.FileName )t.Target e.ConfigD_B (#Files e.Files )e.ConfigD_E =
+    (e.ConfigD_B (#Files e.Files (t.SrcPos e.FileName t.Target ))e.ConfigD_E );
+  t.SrcPos (e.FileName )t.Target e.Config =
+    (e.Config (#Files (t.SrcPos e.FileName t.Target )));
+}
+
+$FORWARD ConfigP_MLoadP_FileConfig;
+$FORWARD ConfigP_MLoadP_FileTargetHandler;
+$FORWARD ConfigP_MLoadP_FileEOGHandler;
+ConfigP_MLoadP_FileGroup {
+  =
+    (ConfigP_MLoadP_FileConfig ((#Param ('target' ))ConfigP_MLoadP_FileTargetHandler #Required #OneTime )((#Naked (#EOG ))ConfigP_MLoadP_FileEOGHandler #Required #OneTime ));
+}
+
+ConfigP_MLoadP_FileConfig {
+  =
+    ();
+}
+
+$FORWARD ConfigP_MLoadP_FileTargetHandlerD_Check;
+$EXTERN MFileSystemP_PathFromStr;
+ConfigP_MLoadP_FileTargetHandler {
+  t.hErrorList ()t.SrcPos (e.StrTargetName )#NoGroup =
+    <ConfigP_MLoadP_FileTargetHandlerD_Check t.hErrorList t.SrcPos (e.StrTargetName )<MFileSystemP_PathFromStr e.StrTargetName >>;
+}
+
+$EXTERN CmdLineP_MParserP_FixupPathD_Pt;
+$EXTERN MErrorP_AddCmdLineError;
+$LABEL Illegal;
+ConfigP_MLoadP_FileTargetHandlerD_Check {
+  t.hErrorList t.SrcPos (e.StrTargetName )#Success e.PtTargetName =
+    t.hErrorList (<CmdLineP_MParserP_FixupPathD_Pt t.SrcPos e.PtTargetName >);
+  t.hErrorList t.SrcPos (e.StrTargetName )#Fails =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Incorrect target name \'' e.StrTargetName '\'' >(#Illegal );
+}
+
+ConfigP_MLoadP_FileEOGHandler {
+  t.hErrorList t.Config t.SrcPos #NoParam #NoGroup =
+    t.hErrorList t.Config ;
+}
+
+$FORWARD ConfigP_MLoadP_ModulePathD_IsCorrectPath;
+ConfigP_MLoadP_ModulePathHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.StrPath )#NoGroup =
+    <ConfigP_MLoadP_ModulePathD_IsCorrectPath t.hErrorList (e.Config )t.SrcPos (e.StrPath )<MFileSystemP_PathFromStr e.StrPath >>;
+}
+
+$LABEL ModulePath;
+ConfigP_MLoadP_ModulePathD_IsCorrectPath {
+  t.hErrorList (e.ConfigD_B (#ModulePath e.Paths )e.ConfigD_E )t.SrcPos (e.StrPath )#Success e.PtPath =
+    t.hErrorList (e.ConfigD_B (#ModulePath e.Paths (<CmdLineP_MParserP_FixupPathD_Pt t.SrcPos e.PtPath >))e.ConfigD_E );
+  t.hErrorList (e.Config )t.SrcPos (e.SrcPath )#Success e.PtPath =
+    t.hErrorList (e.Config (#ModulePath (<CmdLineP_MParserP_FixupPathD_Pt t.SrcPos e.PtPath >)));
+  t.hErrorList (e.Config )t.SrcPos (e.StrPath )#Fails =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Incorrect path \'' e.StrPath '\'' >(e.Config );
+}
+
+ConfigP_MLoadP_DefaultModulePathHandler {
+  t.hErrorList (e.Config )t.SrcPos #NoParam #NoGroup =
+    <ConfigP_MLoadP_ModulePathHandler t.hErrorList (e.Config )t.SrcPos ('.' )#NoGroup >;
+}
+
+$LABEL Mode;
+$FORWARD ConfigP_MLoadP_MakeModeFromStr;
+ConfigP_MLoadP_MakeModeHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.Mode )#NoGroup =
+    t.hErrorList (e.Config (#Mode <ConfigP_MLoadP_MakeModeFromStr e.Mode >));
+}
+
+$LABEL Make;
+$LABEL Build;
+$LABEL LinkOnly;
+ConfigP_MLoadP_MakeModeFromStr {
+  'make' =
+    #Make ;
+  'build' =
+    #Build ;
+  'linkonly' =
+    #LinkOnly ;
+}
+
+$FORWARD ConfigP_MLoadP_SwBackEndSelector;
+$FORWARD ConfigP_MLoadP_ProfileBackEnd;
+ConfigP_MLoadP_BackEndSelectorHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.BackEnd )#NoGroup =
+    <ConfigP_MLoadP_SwBackEndSelector t.hErrorList (e.Config )t.SrcPos (e.BackEnd )<ConfigP_MLoadP_ProfileBackEnd >>;
+}
+
+$FORWARD ConfigP_MLoadP_AddProfile;
+ConfigP_MLoadP_SwBackEndSelector {
+  t.hErrorList (e.Config )t.SrcPos (e.BackEndName )e.BEProfilesD_B (s.ProfileName (e.Depended )e.NamesD_B (e.BackEndName )e.NamesD_E )e.BEProfilesD_E =
+    t.hErrorList (<ConfigP_MLoadP_AddProfile s.ProfileName (e.Depended )e.Config >);
+  t.hErrorList (e.Config )t.SrcPos (e.BackEndName )e.BEProfiles =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Unknown profile \"' e.BackEndName '\"' >(e.Config );
+}
+
+$LABEL XLinxOn;
+$LABEL Profile;
+$LABEL BED_XLinx;
+ConfigP_MLoadP_AddProfile {
+  s.Profile (e.Depended )e.ConfigD_B #XLinxOn e.ConfigD_E =
+    e.ConfigD_B e.ConfigD_E (#Profile s.Profile (e.Depended #BED_XLinx ));
+  s.Profile (e.Depended )e.Config =
+    e.Config (#Profile s.Profile (e.Depended ));
+}
+
+ConfigP_MLoadP_XLinxOnHandler {
+  t.hErrorList (e.ConfigD_B (#Profile s.Profile (e.Depended ))e.ConfigD_E )t.SrcPos #NoParam #NoGroup =
+    t.hErrorList (e.ConfigD_B (#Profile s.Profile (e.Depended #BED_XLinx ))e.ConfigD_E );
+  t.hErrorList (e.Config )t.SrcPos #NoParam #NoGroup =
+    t.hErrorList (e.Config #XLinxOn );
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_MakeMode;
+ConfigP_MLoadP_EOGHandler {
+  t.hErrorList (e.ConfigD_B (#Files e.Files )e.ConfigD_E )t.SrcPos #NoParam #NoGroup =
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_MakeMode t.hErrorList (#Files e.Files )(e.ConfigD_B e.ConfigD_E )>;
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_ModulePath;
+ConfigP_MLoadP_EOGHandlerD_AuxD_MakeMode {
+  t.hErrorList (#Files e.Files )(e.ConfigD_B (#Mode s.Mode )e.ConfigD_E )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_ModulePath t.hErrorList (#Files e.Files )(#Mode s.Mode )(e.ConfigD_B e.ConfigD_E )>;
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_Profile;
+ConfigP_MLoadP_EOGHandlerD_AuxD_ModulePath {
+  t.hErrorList (#Files e.Files )(#Mode s.Mode )(e.ConfigD_B (#ModulePath e.ModulePath )e.ConfigD_E )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_Profile t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(e.ConfigD_B e.ConfigD_E )>;
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_Depended;
+ConfigP_MLoadP_EOGHandlerD_AuxD_Profile {
+  t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(e.ConfigD_B (#Profile s.Profile (e.Depended ))e.ConfigD_E )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_Depended t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(e.Depended )(e.ConfigD_B e.ConfigD_E )>;
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_DoDepended;
+ConfigP_MLoadP_EOGHandlerD_AuxD_Depended {
+  t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(e.Depended )(e.Config )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_DoDepended t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )()(e.Config )(e.Depended )>;
+}
+
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_CheckDirExt;
+$LABEL BackEnds;
+$FORWARD ConfigP_MLoadP_ScanDependedD_Ext;
+ConfigP_MLoadP_EOGHandlerD_AuxD_DoDepended {
+  t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(e.ScannedBackEnds )(e.Config )()=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CheckDirExt t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.ScannedBackEnds )(e.Config )>;
+  t.hErrorList t.Files t.Mode t.ModulePath t.Profile (e.ScannedBackEnds )(e.Config )(s.NextId e.Ids )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_DoDepended t.hErrorList t.Files t.Mode t.ModulePath t.Profile <ConfigP_MLoadP_ScanDependedD_Ext (e.ScannedBackEnds )(e.Config )s.NextId >(e.Ids )>;
+}
+
+$LABEL BackEnd;
+$LABEL Ext;
+$FORWARD ConfigP_MLoadP_ScanDependedD_Dir;
+$LABEL Default;
+$FORWARD ConfigP_MLoadP_LookupDefaultD_BED_Ext;
+ConfigP_MLoadP_ScanDependedD_Ext {
+  (e.ScannedBackEnds )(e.ConfigD_B (#BackEnd s.Id e.TweaksD_B (#Ext (e.OptName )t.SrcPos e.Ext )e.TweaksD_E )e.ConfigD_E )s.Id =
+    <ConfigP_MLoadP_ScanDependedD_Dir (e.ScannedBackEnds )s.Id (#Ext t.SrcPos e.Ext )(e.ConfigD_B (#BackEnd s.Id e.TweaksD_B e.TweaksD_E )e.ConfigD_E )>;
+  (e.ScannedBackEnds )(e.Config )s.Id =
+    <ConfigP_MLoadP_ScanDependedD_Dir (e.ScannedBackEnds )s.Id (#Ext #Default <ConfigP_MLoadP_LookupDefaultD_BED_Ext s.Id >)(e.Config )>;
+}
+
+$LABEL Dir;
+$FORWARD ConfigP_MLoadP_ScanDependedD_Additional;
+$FORWARD ConfigP_MLoadP_LookupDefaultD_BED_Dir;
+ConfigP_MLoadP_ScanDependedD_Dir {
+  (e.ScannedBackEnds )s.Id t.ExtInfo (e.ConfigD_B (#BackEnd s.Id e.TweaksD_B (#Dir (e.OptName )t.SrcPos e.Dir )e.TweaksD_E )e.ConfigD_E )=
+    <ConfigP_MLoadP_ScanDependedD_Additional (e.ScannedBackEnds )s.Id t.ExtInfo (#Dir t.SrcPos e.Dir )(e.ConfigD_B (#BackEnd s.Id e.TweaksD_B e.TweaksD_E )e.ConfigD_E )>;
+  (e.ScannedBackEnds )s.Id t.ExtInfo (e.Config )=
+    <ConfigP_MLoadP_ScanDependedD_Additional (e.ScannedBackEnds )s.Id t.ExtInfo (#Dir #Default <ConfigP_MLoadP_LookupDefaultD_BED_Dir s.Id >)(e.Config )>;
+}
+
+$FORWARD ConfigP_MLoadP_LookupDefaultD_BED_Tweaks;
+ConfigP_MLoadP_ScanDependedD_Additional {
+  (e.ScannedBackEnds )s.Id t.ExtInfo t.DirInfo (e.ConfigD_B (#BackEnd s.Id e.Tweaks )e.ConfigD_E )=
+    (e.ScannedBackEnds (s.Id t.ExtInfo t.DirInfo e.Tweaks ))(e.ConfigD_B e.ConfigD_E );
+  (e.ScannedBackEnds )s.Id t.ExtInfo t.DirInfo (e.Config )=
+    (e.ScannedBackEnds (s.Id t.ExtInfo t.DirInfo <ConfigP_MLoadP_LookupDefaultD_BED_Tweaks s.Id >))(e.Config );
+}
+
+$FORWARD ConfigP_MLoadP_DoEOGHandlerD_AuxD_CheckDirExt;
+ConfigP_MLoadP_EOGHandlerD_AuxD_CheckDirExt {
+  t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds )(e.Config )=
+    <ConfigP_MLoadP_DoEOGHandlerD_AuxD_CheckDirExt #Success t.hErrorList ((#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile ))(#BackEnds e.BackEnds )(e.Config )>;
+}
+
+$FORWARD ConfigP_MLoadP_SelectRealSrcPos;
+$FORWARD ConfigP_MLoadP_BackEndD_NameFromId;
+$FORWARD ConfigP_MLoadP_StrFromPos;
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_CollectFrontEnd;
+ConfigP_MLoadP_DoEOGHandlerD_AuxD_CheckDirExt {
+  s.Result t.hErrorList (e.Options )(#BackEnds e.BackEndsD_B (s.Id1 (#Ext t.SrcPosExt1 e.Ext )(#Dir t.SrcPosDir1 e.Dir )e.Tweaks1 )e.BackEndsD_M (s.Id2 (#Ext t.SrcPosExt2 e.Ext )(#Dir t.SrcPosDir2 e.Dir )e.Tweaks2 )e.BackEndsD_E )(e.Config )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CheckDirExt #Fails <MErrorP_AddCmdLineError t.hErrorList <ConfigP_MLoadP_SelectRealSrcPos t.SrcPosExt1 t.SrcPosDir1 t.SrcPosExt2 t.SrcPosDir2 >'Conflict between back-ends ' <ConfigP_MLoadP_BackEndD_NameFromId s.Id1 >' and ' <ConfigP_MLoadP_BackEndD_NameFromId s.Id2 >': back-ends have same output directory ' '(' e.Dir ', defined at ' <ConfigP_MLoadP_StrFromPos t.SrcPosDir1 >' and ' <ConfigP_MLoadP_StrFromPos t.SrcPosDir2 >') and same extension (' e.Ext ', ' 'defined at ' <ConfigP_MLoadP_StrFromPos t.SrcPosExt1 >' and ' <ConfigP_MLoadP_StrFromPos t.SrcPosExt2 >')' >(e.Options )(#BackEnds e.BackEndsD_B (s.Id1 (#Ext t.SrcPosExt1 e.Ext )(#Dir t.SrcPosDir1 e.Dir )e.Tweaks1 )e.BackEndsD_M e.BackEndsD_E )(e.Config )>;
+  s.Result t.hErrorList ((#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile ))(#BackEnds e.BackEnds )(e.Config )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CollectFrontEnd s.Result t.hErrorList ((#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds ))()e.Config >;
+}
+
+$LABEL FrontEnd;
+$FORWARD ConfigP_MLoadP_EOGHandlerD_AuxD_CheckExtFE;
+$LABEL FrontEnds;
+$FORWARD ConfigP_MLoadP_MergeDefaultFEsOptions;
+ConfigP_MLoadP_EOGHandlerD_AuxD_CollectFrontEnd {
+  s.Result t.hErrorList (e.Options )(e.FrontEnds )e.ConfigD_B (#FrontEnd s.FrontEndId e.Options )e.ConfigD_E =
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CollectFrontEnd s.Result t.hErrorList (e.Options )(e.FrontEnds (s.FrontEndId e.Options ))e.ConfigD_B e.ConfigD_E >;
+  s.Result t.hErrorList (e.Options )(e.FrontEnds )e.Config =
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CheckExtFE s.Result t.hErrorList (e.Options )(#FrontEnds <ConfigP_MLoadP_MergeDefaultFEsOptions e.FrontEnds >)(e.Config )>;
+}
+
+$FORWARD ConfigP_MLoadP_DoMergeFEsOptions;
+$FORWARD ConfigP_MLoadP_GetDefaultFEOptions;
+ConfigP_MLoadP_MergeDefaultFEsOptions {
+  e.FrontEnds =
+    <ConfigP_MLoadP_DoMergeFEsOptions (<ConfigP_MLoadP_GetDefaultFEOptions >)e.FrontEnds >;
+}
+
+$FORWARD ConfigP_MLoadP_MergeFEOptions;
+ConfigP_MLoadP_DoMergeFEsOptions {
+  ((s.FrontEndId e.DefaultOptions )e.Defaults )e.FrontEndsD_B (s.FrontEndId e.UserOptions )e.FrontEndsD_E =
+    (s.FrontEndId <ConfigP_MLoadP_MergeFEOptions (e.DefaultOptions )e.UserOptions >)<ConfigP_MLoadP_DoMergeFEsOptions (e.Defaults )e.FrontEndsD_B e.FrontEndsD_E >;
+  ((s.FrontEndId e.DefaultOptions )e.Defaults )e.FrontEnds =
+    (s.FrontEndId <ConfigP_MLoadP_MergeFEOptions (e.DefaultOptions )>)<ConfigP_MLoadP_DoMergeFEsOptions (e.Defaults )e.FrontEnds >;
+  ()=
+    ;
+}
+
+$EXTERN MLambdaP_Map;
+$FORWARD ConfigP_MLoadP_PrepareFEUserOption;
+ConfigP_MLoadP_MergeFEOptions {
+  ((s.OptionName e.DefaultValue )e.Defaults )e.UserOptionsD_B (s.OptionName (e.Name )t.SrcPos e.UserValue )e.UserOptionsD_E =
+    (s.OptionName t.SrcPos e.UserValue )<ConfigP_MLoadP_MergeFEOptions (e.Defaults )e.UserOptionsD_B e.UserOptionsD_E >;
+  ((s.OptionName e.DefaultValue )e.Defaults )e.UserOptions =
+    (s.OptionName #Default e.DefaultValue )<ConfigP_MLoadP_MergeFEOptions (e.Defaults )e.UserOptions >;
+  ()e.UserOptions =
+    <MLambdaP_Map ConfigP_MLoadP_PrepareFEUserOption e.UserOptions >;
+}
+
+ConfigP_MLoadP_PrepareFEUserOption {
+  (s.OptionName (e.Name )t.SrcPos e.Value )=
+    (s.OptionName t.SrcPos e.Value );
+}
+
+ConfigP_MLoadP_SelectRealSrcPos {
+  #Default e.Tail =
+    <ConfigP_MLoadP_SelectRealSrcPos e.Tail >;
+  t.SrcPos e.Tail =
+    t.SrcPos ;
+}
+
+$EXTERN MSrcPosP_ToString;
+ConfigP_MLoadP_StrFromPos {
+  #Default =
+    '<by default>' ;
+  t.SrcPos =
+    <MSrcPosP_ToString t.SrcPos >;
+}
+
+$FORWARD ConfigP_MLoadP_FrontEndD_NameFromId;
+$FORWARD ConfigP_MLoadP_ConstructConfig;
+$FORWARD ConfigP_MLoadP_DelUnusedConfigOptions;
+ConfigP_MLoadP_EOGHandlerD_AuxD_CheckExtFE {
+  s.Result t.hErrorList (e.Options )(#FrontEnds e.FrontEndsD_B (s.Id1 e.Tunes1D_B (#Ext t.SrcPos1 e.Ext )e.Tunes1D_E )e.FrontEndsD_M (s.Id2 e.Tunes2D_B (#Ext t.SrcPos2 e.Ext )e.Tunes2D_E )e.FrontEndsD_E )(e.Config )=
+    <ConfigP_MLoadP_EOGHandlerD_AuxD_CheckExtFE #Fails <MErrorP_AddCmdLineError t.hErrorList <ConfigP_MLoadP_SelectRealSrcPos t.SrcPos1 t.SrcPos2 >'Conflict between front-ends ' <ConfigP_MLoadP_FrontEndD_NameFromId s.Id1 >' and ' <ConfigP_MLoadP_FrontEndD_NameFromId s.Id2 >': front-ends have same extension (' e.Ext ', defined at ' <ConfigP_MLoadP_StrFromPos t.SrcPos1 >' and at ' <ConfigP_MLoadP_StrFromPos t.SrcPos2 >')' >(e.Options )(#FrontEnds e.FrontEndsD_B (s.Id1 e.Tunes1D_B (#Ext t.SrcPos1 e.Ext )e.Tunes1D_E )e.FrontEndsD_M e.FrontEndsD_E )(e.Config )>;
+  s.Result t.hErrorList ((#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds ))(#FrontEnds e.FrontEnds )(e.Config )=
+    <ConfigP_MLoadP_ConstructConfig s.Result t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds )(#FrontEnds e.FrontEnds )(<MLambdaP_Map ConfigP_MLoadP_DelUnusedConfigOptions e.Config >)>;
+}
+
+ConfigP_MLoadP_DelUnusedConfigOptions {
+  (#BackEnd s.Id e.Tweaks )=
+    ;
+}
+
+$FORWARD ConfigP_MLoadP_ConstructConfigD_Aux;
+ConfigP_MLoadP_ConstructConfig {
+  #Success t.hErrorList (#Files e.Files )(#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds )(#FrontEnds e.FrontEnds )()=
+    t.hErrorList (#Config <ConfigP_MLoadP_ConstructConfigD_Aux (#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds )(#FrontEnds e.FrontEnds )>e.Files );
+  s.Result t.hErrorList e.Options ()=
+    t.hErrorList #Fails ;
+}
+
+$EXTERN MLambdaP_Apply;
+$EXTERN MLambdaP_Composite;
+$EXTERN MLambdaP_BindRight;
+$EXTERN ConfigP_MConfigP_SetMakeMode;
+$FORWARD ConfigP_MLoadP_CreateBackEndRegister;
+$FORWARD ConfigP_MLoadP_CreateFrontEndRegister;
+$EXTERN ConfigP_MConfigP_Create;
+ConfigP_MLoadP_ConstructConfigD_Aux {
+  (#Mode s.Mode )(#ModulePath e.ModulePath )(#Profile s.Profile )(#BackEnds e.BackEnds )(#FrontEnds e.FrontEnds )=
+    <MLambdaP_Apply <MLambdaP_Composite <MLambdaP_BindRight ConfigP_MConfigP_SetMakeMode s.Mode ><MLambdaP_Map ConfigP_MLoadP_CreateBackEndRegister e.BackEnds ><MLambdaP_Map ConfigP_MLoadP_CreateFrontEndRegister e.FrontEnds >><ConfigP_MConfigP_Create e.ModulePath >>;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_GetFnRegister;
+ConfigP_MLoadP_CreateBackEndRegister {
+  (s.BackEndId (#Ext t.SrcPosExt e.Ext )(#Dir t.SrcPosDir e.Dir )e.Tweaks )=
+    <MLambdaP_BindRight <ConfigP_MLoadP_BackEndD_GetFnRegister s.BackEndId >(e.Dir )(e.Ext )e.Tweaks >;
+}
+
+$FORWARD ConfigP_MLoadP_FrontEndD_GetFnRegister;
+ConfigP_MLoadP_CreateFrontEndRegister {
+  (s.FrontEndId e.TunersD_B (#Ext t.SrcPos e.Ext )e.TunersD_E )=
+    <MLambdaP_BindRight <ConfigP_MLoadP_FrontEndD_GetFnRegister s.FrontEndId >(e.Ext )>;
+}
+
+$EXTERN ConfigP_MHelpersP_TuneEndConfig;
+$FORWARD ConfigP_MLoadP_ExtHandler;
+$FORWARD ConfigP_MLoadP_DirHandler;
+$FORWARD ConfigP_MLoadP_TunerEOGHandler;
+ConfigP_MLoadP_TuneBEGroup {
+  =
+    (ConfigP_MHelpersP_TuneEndConfig ((#Param ('ext' ))ConfigP_MLoadP_ExtHandler (#Optional )#OneTime )((#Param ('dir' ))ConfigP_MLoadP_DirHandler (#Optional )#OneTime )((#Naked (#EOG ))ConfigP_MLoadP_TunerEOGHandler #Required #OneTime ));
+}
+
+ConfigP_MLoadP_ExtHandler {
+  t.hErrorList (e.TunerConfig )t.SrcPos (e.Ext )#NoGroup =
+    t.hErrorList (e.TunerConfig (#Ext ('ext' )t.SrcPos e.Ext ));
+}
+
+$FORWARD ConfigP_MLoadP_DirHandlerD_SwCorrectDir;
+ConfigP_MLoadP_DirHandler {
+  t.hErrorList (e.TunerConfig )t.SrcPos (e.StrDirectory )#NoGroup =
+    <ConfigP_MLoadP_DirHandlerD_SwCorrectDir t.hErrorList (e.TunerConfig )t.SrcPos (e.StrDirectory )<MFileSystemP_PathFromStr e.StrDirectory >>;
+}
+
+ConfigP_MLoadP_DirHandlerD_SwCorrectDir {
+  t.hErrorList (e.TunerConfig )t.SrcPos (e.StrDirectory )#Success e.PtDirectory =
+    t.hErrorList (e.TunerConfig (#Dir ('dir' )t.SrcPos e.PtDirectory ));
+  t.hErrorList (e.TunerConfig )t.SrcPos (e.StrDirectory )#Fails =
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Illegal folder path ' e.StrDirectory >(e.TunerConfig );
+}
+
+ConfigP_MLoadP_TunerEOGHandler {
+  t.hErrorList (e.TunerConfig )t.SrcPos #NoParam #NoGroup =
+    t.hErrorList (e.TunerConfig );
+}
+
+$FORWARD ConfigP_MLoadP_SwTuneBEHandler;
+$FORWARD ConfigP_MLoadP_BackEndD_IdFromName;
+ConfigP_MLoadP_TuneBEHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.BackEndName )(e.Options )=
+    <ConfigP_MLoadP_SwTuneBEHandler t.hErrorList (e.Config )t.SrcPos <ConfigP_MLoadP_BackEndD_IdFromName e.BackEndName >(e.Options )>;
+}
+
+$FORWARD ConfigP_MLoadP_MergeOptions;
+ConfigP_MLoadP_SwTuneBEHandler {
+  t.hErrorList (e.ConfigD_B (#BackEnd s.BackEndId e.Options )e.ConfigD_E )t.SrcPos #Success s.BackEndId (e.NewOptions )=
+    <ConfigP_MLoadP_MergeOptions t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos #BackEnd s.BackEndId ()(e.Options )(e.NewOptions )>;
+  t.hErrorList (e.Config )t.SrcPos #Success s.BackEndId (e.Options )=
+    t.hErrorList (e.Config (#BackEnd s.BackEndId e.Options ));
+  t.hErrorList (e.Config )t.SrcPos #Fails e.BackEndName (e.Options )=
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Illegal name of back-end: \'' e.BackEndName '\'' >(e.Config );
+}
+
+ConfigP_MLoadP_MergeOptions {
+  t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos s.EndType s.EndId (e.Merged )((s.NextOption (e.Name )t.OldSrcPos e.OldValue )e.OldOptions )(e.NewOptionsD_B (s.NextOption (e.Name )t.NewSrcPos e.NewValue )e.NewOptionsD_E )=
+    <ConfigP_MLoadP_MergeOptions <MErrorP_AddCmdLineError t.hErrorList t.NewSrcPos 'Redefinition of option \'-' e.Name '\'' >(e.ConfigD_B )(e.ConfigD_E )t.SrcPos s.EndType s.EndId (e.Merged (s.NextOption (e.Name )t.OldSrcPos e.OldValue ))(e.OldOptions )(e.NewOptionsD_B e.NewOptionsD_E )>;
+  t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos s.EndType s.EndId (e.Merged )((s.NextOption (e.Name )t.SrcPos e.Value )e.OldOptions )(e.NewOptions )=
+    <ConfigP_MLoadP_MergeOptions t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos s.EndType s.EndId (e.Merged (s.NextOption (e.Name )t.SrcPos e.Value ))(e.OldOptions )(e.NewOptions )>;
+  t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos s.EndType s.EndId (e.Merged )()(e.NewOptions )=
+    t.hErrorList (e.ConfigD_B (s.EndType s.EndId e.Merged e.NewOptions )e.ConfigD_E );
+}
+
+$FORWARD ConfigP_MLoadP_TuneBEGroupExD_SwName;
+ConfigP_MLoadP_TuneBEGroupEx {
+  e.BackEndName =
+    <ConfigP_MLoadP_TuneBEGroupExD_SwName <ConfigP_MLoadP_BackEndD_IdFromName e.BackEndName >>;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_GetExtension;
+ConfigP_MLoadP_TuneBEGroupExD_SwName {
+  #Success s.BackEndId =
+    <ConfigP_MLoadP_BackEndD_GetExtension s.BackEndId >;
+  #Fails e.BackEndName =
+    ;
+}
+
+ConfigP_MLoadP_TuneFEGroup {
+  =
+    (ConfigP_MHelpersP_TuneEndConfig ((#Param ('ext' ))ConfigP_MLoadP_ExtHandler (#Optional )#OneTime )((#Naked (#EOG ))ConfigP_MLoadP_TunerEOGHandler #Required #OneTime ));
+}
+
+$FORWARD ConfigP_MLoadP_SwTuneFEHandler;
+$FORWARD ConfigP_MLoadP_FrontEndD_IdFromName;
+ConfigP_MLoadP_TuneFEHandler {
+  t.hErrorList (e.Config )t.SrcPos (e.FrontEndName )(e.Options )=
+    <ConfigP_MLoadP_SwTuneFEHandler t.hErrorList (e.Config )t.SrcPos <ConfigP_MLoadP_FrontEndD_IdFromName e.FrontEndName >(e.Options )>;
+}
+
+ConfigP_MLoadP_SwTuneFEHandler {
+  t.hErrorList (e.ConfigD_B (#FrontEnd s.FrontEndId e.Options )e.ConfigD_E )t.SrcPos #Success s.FrontEndId (e.NewOptions )=
+    <ConfigP_MLoadP_MergeOptions t.hErrorList (e.ConfigD_B )(e.ConfigD_E )t.SrcPos #FrontEnd s.FrontEndId ()(e.Options )(e.NewOptions )>;
+  t.hErrorList (e.Config )t.SrcPos #Success s.FrontEndId (e.Options )=
+    t.hErrorList (e.Config (#FrontEnd s.FrontEndId e.Options ));
+  t.hErrorList (e.Config )t.SrcPos #Fails e.FrontEndName (e.Options )=
+    <MErrorP_AddCmdLineError t.hErrorList t.SrcPos 'Illegal name of front-end: \'' e.FrontEndName '\'' >(e.Config );
+}
+
+$LABEL BED_CppSR;
+$LABEL Relative;
+$EXTERN BED_CppSRP_MInitP_Register;
+$EXTERN BED_CppSRP_MInitP_Extent;
+$LABEL BED_ModuleIF;
+$EXTERN BED_ModuleIFP_MInitP_Register;
+$FORWARD ConfigP_MLoadP_ExtentNone;
+$LABEL BED_Refal5;
+$EXTERN BED_Refal5P_MInitP_Register;
+$LABEL BED_SimRef;
+$EXTERN BED_SimRefP_MInitP_Register;
+$EXTERN BED_SimRefP_MInitP_Extent;
+$EXTERN BED_XLinxP_MInitP_Register;
+ConfigP_MLoadP_BackEndsTable {
+  =
+    (#BED_CppSR ('CppSR' )((#Relative )('~CppSR' ))('cpp' )BED_CppSRP_MInitP_Register BED_CppSRP_MInitP_Extent )(#BED_ModuleIF ('ModuleIF' )((#Relative )('~ModuleIF' ))('mif' )BED_ModuleIFP_MInitP_Register ConfigP_MLoadP_ExtentNone )(#BED_Refal5 ('Refal5' )((#Relative )('~ROut' ))('rout' )BED_Refal5P_MInitP_Register ConfigP_MLoadP_ExtentNone )(#BED_SimRef ('SimRef' )((#Relative )('~SimRef' ))('sref' )BED_SimRefP_MInitP_Register BED_SimRefP_MInitP_Extent )(#BED_XLinx ('XLinx' )((#Relative )('~XLinx' ))('xlinx' )BED_XLinxP_MInitP_Register ConfigP_MLoadP_ExtentNone );
+}
+
+$LABEL FED_MRefal;
+$EXTERN FED_MRefalP_MInitP_Register;
+ConfigP_MLoadP_FrontEndsTable {
+  =
+    (#FED_MRefal ('MRefal' )('mref' )FED_MRefalP_MInitP_Register );
+}
+
+$EXTERN ConfigP_MHelpersP_GenExtent;
+ConfigP_MLoadP_ExtentNone {
+  =
+    <ConfigP_MHelpersP_GenExtent >;
+}
+
+$LABEL PrD_Refal5;
+$LABEL PrD_SimRef;
+$LABEL PrD_CppSR;
+ConfigP_MLoadP_ProfileBackEnd {
+  =
+    (#PrD_Refal5 (#BED_Refal5 #BED_ModuleIF )('Refal5' )('R5' ))(#PrD_SimRef (#BED_SimRef #BED_ModuleIF )('SimRef' )('SRefal' )('SR' ))(#PrD_CppSR (#BED_CppSR #BED_ModuleIF )('CPPSR' )('C++/SR' ));
+}
+
+$FORWARD ConfigP_MLoadP_LookupDefaultD_BED_ExtD_Aux;
+$FORWARD ConfigP_MLoadP_SelectBEInfo;
+ConfigP_MLoadP_LookupDefaultD_BED_Ext {
+  s.BackEndId =
+    <ConfigP_MLoadP_LookupDefaultD_BED_ExtD_Aux <ConfigP_MLoadP_SelectBEInfo s.BackEndId >>;
+}
+
+$FORWARD ConfigP_MLoadP_SelectBEInfoD_Aux;
+ConfigP_MLoadP_SelectBEInfo {
+  s.BackEndId =
+    <ConfigP_MLoadP_SelectBEInfoD_Aux s.BackEndId <ConfigP_MLoadP_BackEndsTable >>;
+}
+
+ConfigP_MLoadP_SelectBEInfoD_Aux {
+  s.BackEndId e.InfosD_B (s.BackEndId e.Info )e.InfosD_E =
+    s.BackEndId e.Info ;
+}
+
+ConfigP_MLoadP_LookupDefaultD_BED_ExtD_Aux {
+  s.BackEndId (e.Name )(e.Dir )(e.Ext )s.FnRegister s.FnExtent =
+    e.Ext ;
+}
+
+$FORWARD ConfigP_MLoadP_LookupDefaultD_BED_DirD_Aux;
+ConfigP_MLoadP_LookupDefaultD_BED_Dir {
+  s.BackEndId =
+    <ConfigP_MLoadP_LookupDefaultD_BED_DirD_Aux <ConfigP_MLoadP_SelectBEInfo s.BackEndId >>;
+}
+
+ConfigP_MLoadP_LookupDefaultD_BED_DirD_Aux {
+  s.BackEndId (e.Name )(e.Dir )(e.Ext )s.FnRegister s.FnExtent =
+    e.Dir ;
+}
+
+ConfigP_MLoadP_LookupDefaultD_BED_Tweaks {
+  s.BackEndId =
+    ;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_NameFromIdD_Aux;
+ConfigP_MLoadP_BackEndD_NameFromId {
+  s.BackEndId =
+    <ConfigP_MLoadP_BackEndD_NameFromIdD_Aux <ConfigP_MLoadP_SelectBEInfo s.BackEndId >>;
+}
+
+ConfigP_MLoadP_BackEndD_NameFromIdD_Aux {
+  s.BackEndId (e.Name )(e.Dir )(e.Ext )s.FnRegister s.FnExtent =
+    e.Name ;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_GetFnRegisterD_Aux;
+ConfigP_MLoadP_BackEndD_GetFnRegister {
+  s.BackEndId =
+    <ConfigP_MLoadP_BackEndD_GetFnRegisterD_Aux <ConfigP_MLoadP_SelectBEInfo s.BackEndId >>;
+}
+
+ConfigP_MLoadP_BackEndD_GetFnRegisterD_Aux {
+  s.BackEndId (e.Name )(e.Dir )(e.Ext )s.FnRegister s.FnExtent =
+    s.FnRegister ;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_GetFnExtensionD_Aux;
+ConfigP_MLoadP_BackEndD_GetExtension {
+  s.BackEndId =
+    <ConfigP_MLoadP_BackEndD_GetFnExtensionD_Aux <ConfigP_MLoadP_SelectBEInfo s.BackEndId >>;
+}
+
+ConfigP_MLoadP_BackEndD_GetFnExtensionD_Aux {
+  s.BackEndId (e.Name )(e.Dir )(e.Ext )s.FnRegister s.FnExtent =
+    s.FnExtent ;
+}
+
+$FORWARD ConfigP_MLoadP_BackEndD_SwIdFromName;
+ConfigP_MLoadP_BackEndD_IdFromName {
+  e.BackEndName =
+    <ConfigP_MLoadP_BackEndD_SwIdFromName (e.BackEndName )<ConfigP_MLoadP_BackEndsTable >>;
+}
+
+ConfigP_MLoadP_BackEndD_SwIdFromName {
+  (e.Name )e.InfosD_B (s.Id (e.Name )e.Info )e.InfosD_E =
+    #Success s.Id ;
+  (e.Name )e.Infos =
+    #Fails e.Name ;
+}
+
+$FORWARD ConfigP_MLoadP_FrontEndD_NameFromIdD_Aux;
+$FORWARD ConfigP_MLoadP_SelectFEInfo;
+ConfigP_MLoadP_FrontEndD_NameFromId {
+  s.FrontEndId =
+    <ConfigP_MLoadP_FrontEndD_NameFromIdD_Aux <ConfigP_MLoadP_SelectFEInfo s.FrontEndId >>;
+}
+
+$FORWARD ConfigP_MLoadP_SelectFEInfoD_Aux;
+ConfigP_MLoadP_SelectFEInfo {
+  s.FrontEndId =
+    <ConfigP_MLoadP_SelectFEInfoD_Aux s.FrontEndId <ConfigP_MLoadP_FrontEndsTable >>;
+}
+
+ConfigP_MLoadP_SelectFEInfoD_Aux {
+  s.FrontEndId e.InfosD_B (s.FrontEndId e.Info )e.InfosD_E =
+    s.FrontEndId e.Info ;
+}
+
+ConfigP_MLoadP_FrontEndD_NameFromIdD_Aux {
+  s.FrontEndId (e.Name )(e.Ext )s.FnRegister =
+    e.Name ;
+}
+
+$FORWARD ConfigP_MLoadP_GetDefaultFEOptionsD_Aux;
+ConfigP_MLoadP_GetDefaultFEOptions {
+  =
+    <MLambdaP_Map ConfigP_MLoadP_GetDefaultFEOptionsD_Aux <ConfigP_MLoadP_FrontEndsTable >>;
+}
+
+ConfigP_MLoadP_GetDefaultFEOptionsD_Aux {
+  (s.FrontEndId (e.Name )(e.Ext )s.FnRegister )=
+    (s.FrontEndId (#Ext e.Ext ));
+}
+
+$FORWARD ConfigP_MLoadP_FrontEndD_GetFnRegisterD_Aux;
+ConfigP_MLoadP_FrontEndD_GetFnRegister {
+  s.FrontEndId =
+    <ConfigP_MLoadP_FrontEndD_GetFnRegisterD_Aux <ConfigP_MLoadP_SelectFEInfo s.FrontEndId >>;
+}
+
+ConfigP_MLoadP_FrontEndD_GetFnRegisterD_Aux {
+  s.FrontEndId (e.Name )(e.Ext )s.FnRegister =
+    s.FnRegister ;
+}
+
+$FORWARD ConfigP_MLoadP_FrontEndD_SwIdFromName;
+ConfigP_MLoadP_FrontEndD_IdFromName {
+  e.Name =
+    <ConfigP_MLoadP_FrontEndD_SwIdFromName (e.Name )<ConfigP_MLoadP_FrontEndsTable >>;
+}
+
+ConfigP_MLoadP_FrontEndD_SwIdFromName {
+  (e.Name )e.InfosD_B (s.Id (e.Name )e.Info )e.InfosD_E =
+    #Success s.Id ;
+  (e.Name )e.Infos =
+    #Fails e.Name ;
+}
+
+$EXTERN CmdLineP_MParserP_Parse;
+$ENTRY ConfigP_MLoadP_Load {
+  t.hErrorList e.CommandLine =
+    <ConfigP_MLoadP_LoadD_Aux <CmdLineP_MParserP_Parse t.hErrorList ConfigP_MLoadP_TopLevelDescription e.CommandLine >>;
+}
+
+ConfigP_MLoadP_FinalizeE_ {
+  =
+    ;
+}
+
+$EXTERN RegisterE_;
+$ENTRY ConfigP_MLoadP_EntryPointE_ {
+  =
+    <RegisterE_ ConfigP_MLoadP_FinalizeE_ >;
+}
+
