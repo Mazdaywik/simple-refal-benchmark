@@ -21,7 +21,7 @@ set OPT=OPT
 set OPTFLAG=-X%~1
 call :PERFORM_ALL
 
-sort report.tmp > report.txt
+sort report.tmp > report%~1.txt
 erase report.tmp
 
 erase *.obj *.o temp.cmd 2>NUL
