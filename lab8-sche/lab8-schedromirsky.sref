@@ -1,0 +1,308 @@
+//FROM LibraryEx
+$EXTERN Compare, Add, Fetch, Dec,
+LoadFile, Reduce, Inc, Seq, Y, SymbCompare, Ord, ExistFile, Arg, StrFromInt, Map, DelAccumulator, MapReduce, ReadLine, WriteLine;
+
+$ENTRY Go { = <Lexic3>;}
+
+Lexic1 { = <Lexic> <Lexic> <Lexic> <Lexic> <Lexic>
+           <Lexic> <Lexic> <Lexic> <Lexic> <Lexic>; }
+
+Lexic2 { = <Lexic1> <Lexic1> <Lexic1> <Lexic1> <Lexic1>
+           <Lexic1> <Lexic1> <Lexic1> <Lexic1> <Lexic1>; }
+
+Lexic3 { = <Lexic2> <Lexic2> <Lexic2> <Lexic2> <Lexic2>
+           <Lexic2> <Lexic2> <Lexic2> <Lexic2> <Lexic2>; }
+
+/*----------------------------------FIRST------------------------------------*/
+
+MAIN_CYCLE {
+	e.lems (#Error e.n) = (#Error e.n);
+	e.lems (e.first) (#FALSE) = e.first;
+	e.lems (e.first) (#TRUE) = <MAIN_CYCLE e.lems <CREATE_FIRST e.lems (e.first) (#FALSE)>>;
+};
+
+RUN_FIRST {
+	e.lems = <MAIN_CYCLE e.lems (<INIT_FIRST e.lems>) (#TRUE)>;
+}
+
+INIT_FIRST {
+	(e.nterm (e.lems) e.other) e.next = (e.nterm ()) <INIT_FIRST e.next>;
+	 = ;
+}
+
+GET_FIRST {
+	(e.left (e.Name (e.Data)) e.right) (e.Name) = e.Data;
+	(e.lse) (e.Name) = (#Error e.Name);
+}
+
+ADD_FIRST {
+	e.all (#Error e.n) (t.flag) = (#Error e.n);
+ 	(e.first) e.Name () (t.upd_flag) = (e.first) (t.upd_flag);
+	(e.first) e.Name (e.ForwData (e.Data) e.NextData) (t.upd_flag) 
+		= <Fetch <ADD_FIRST (e.first) e.Name (e.Data) (t.upd_flag)> 
+		{ 
+			(#Error e.n) = (#Error e.n);
+			(e.newfirst) (t.new_flag) = <ADD_FIRST (e.newfirst) e.Name (e.ForwData e.NextData) (t.new_flag)>; 
+		}>; 	
+	(e.left (e.Name (e.Data t.NewData e.SomeData)) e.right) e.Name t.NewData (t.upd_flag) 
+		= (e.left (e.Name (e.Data t.NewData e.SomeData)) e.right) (t.upd_flag);
+	(e.left (e.Name (e.Data)) e.right) e.Name t.NewData (t.upd_flag) 
+		= (e.left (e.Name (e.Data t.NewData)) e.right) (#TRUE);
+}
+
+FIRST {
+	(()) (e.first) = (#EPS);
+	((#NTERM e.name) e.next) (e.first) =
+		<Fetch <GET_FIRST (e.first) (e.name)> {
+			e.left (#EPS) e.right = e.left e.right <FIRST (e.next) (e.first)>;
+			e.left #EPS e.right = e.left e.right <FIRST (e.next) (e.first)>;
+			(#Error e.n) = (#Error e.n);
+			e.lse = e.lse;
+		}>;
+	('\"' s.char '\"' e.next) (e.first) =  ('\"' s.char '\"');
+	(#B_REPEAT e.some #E_REPEAT) (e.first) = #EPS <FIRST (e.some) (e.first)>;
+	(#B_REPEAT e.some #E_REPEAT e.next) (e.first) = <FIRST (e.some) (e.first)> <FIRST (e.next) (e.first)>;
+	((e.data) e.next) (e.first) = <FIRST (e.data) (e.first)> <FIRST (e.next) (e.first)>;
+	e.p1 (#Error e.n) e.p2 = (#Error e.n);
+	e.lse = ;
+};
+
+CREATE_FIRST {
+	e.data (#Error e.n) =  (#Error e.n);
+	(e.name (e.data) e.other) e.next (e.first) (t.upd_flag) = 
+	//<WriteLine 'Init: =========' ((e.data) e.other) e.next> 
+	<CREATE_FIRST e.next  <ADD_FIRST (e.first) e.name (<FIRST ((e.data) e.other) (e.first)>) (t.upd_flag)>>;
+	(e.first) (t.upd_flag) = (e.first) (t.upd_flag);
+}
+
+/*-----------------------------------NTERMFUNCTIONS:--------------------------------------*/
+
+CheckTerm {
+	((t.ag e.data) e.tokens) (e.lems (e.last)) t.ag = <Fetch t.ag {
+				#RBRACKET = (e.tokens) (e.lems (e.last #E_REPEAT));
+				e.lse = (e.tokens) (e.lems (e.last));
+			}>;
+	//mdaaa
+	(e.pp1 (e.pp2 #Error e.data) e.pp) e.any =  (#Error e.data);
+	(e.pp2 #Error e.data) e.any = (#Error e.data);
+	((t.ag e.some) e.tokens) e.first t.ag2 =  (#Error t.ag2 ());
+}
+
+NTF_CONSR {
+	(e.1 (#Error e.data) e.2) e.3 = (#Error e.data);
+	e.tokens = <Fetch 
+		<NTF_CONS e.tokens> { 
+			(#Error e.data) = e.tokens;
+			e.res = <NTF_CONSR e.res>;
+		}>;
+}
+
+NTF_CONS {
+	(e.1 (#Error e.data) e.2) e.3 = (#Error e.data);
+	((t.token t.pos1 t.pos2 e.name) e.tokens) (e.lems (e.last)) = 
+		<Fetch  
+			<Fetch t.token {
+				#TERM     = (e.tokens) (e.lems (e.last e.name));
+				#NTERM 	  = (e.tokens) (e.lems (e.last (#NTERM e.name)));
+				#LBRACKET = <CheckTerm <NTF_CONSR <NTF_CONS (e.tokens) (e.lems (e.last #B_REPEAT))>> #RBRACKET>;
+				#LPAREN   = <Fetch <CheckTerm <NTF_CONSEQS (e.tokens) (())> #RPAREN>
+					{
+						(#Error e.data) = (#Error e.data);
+						e.res_tokens (e.res_elems) = e.res_tokens (e.lems (e.last (e.res_elems)));
+					}>;
+				e.lse =  (#Error t.pos1 t.pos2);
+			}>
+		{
+			(#Error e.data) = (#Error e.data);
+			e.res = e.res; 
+		}>;
+	(#Error e.lse) = (#Error e.lse);
+}
+
+NTF_CONSEQS {
+	((#RPAREN e.data) e.tokens) (()) = ((#RPAREN e.data) e.tokens) (());
+	e.tokens = <Fetch <NTF_CONSR <NTF_CONS e.tokens> >
+		{
+			((#COMMA e.data) e.res) (e.lems) = <NTF_CONSEQS (e.res) (e.lems ())>;
+			e.fullres = e.fullres;
+		}>;
+}
+
+NTF_RULE {
+	((#NTERM t.pos1 t.pos2 e.name) (#LPAREN e.data) e.next_tokens) 
+	(e.first) 
+	= <CheckTerm 
+	    <Fetch <NTF_CONSEQS (e.next_tokens) (()) >
+	    	{
+	    		e.tokens (e.rules) = e.tokens (e.first (e.name e.rules)); 
+	    	}>
+	    #RPAREN
+	   >;
+	((t.oken t.pos1 t.pos2 e.name) e.next_tokens) (e.first)
+	= (#Error t.pos1 t.pos2);
+}
+
+NTF_START {
+	e.11 (s.1 s.2 s.3) e.22 = <WriteLine 'Syntax Error: (' <StrFromInt s.3> ', ' <StrFromInt s.2> ')' >;
+	(#Error t.ag ()) = <WriteLine 'Syntax Error: ' t.ag 'expected' >;
+	(#Error (s.1 s.2 s.3) t.pos2) = <WriteLine 'Syntax Error: (' <StrFromInt s.3> ', ' <StrFromInt s.2> ')' >;
+	() (e.first) = e.first;
+	(e.tokens) (e.first) = <NTF_START <NTF_RULE (e.tokens) (e.first)>>;
+	e.tokens = <NTF_START (e.tokens) ()>;
+}
+
+/*------------------------------------------------LEXER-------------------------------------------*/
+/*
+CheckInStr {
+	s.char e.st s.char e.end = #True;
+	e.lse = #False; 
+}
+
+IsToken {
+	'\"' s.c '\"' = <Fetch <IsNumber s.c> <IsSymbol s.c> 
+					<CheckInStr s.c '(){}+-\\*'> {
+						e.any #True e.any = #True;
+						e.other = #False; 
+					}>;
+	e.lse = #False;
+}*/
+
+Lexic {
+   = <Main <Arg 1> >;
+}
+
+IncPos {
+	(s.Pos s.LinePos s.LineNum) '\n' = (<Inc s.Pos> 1 <Inc s.LineNum>);
+	(s.Pos s.LinePos s.LineNum) e.Any = (<Inc s.Pos> <Inc s.LinePos> s.LineNum);
+}
+
+/*LexMessage {
+	(s.1 s.2 s.3) = <WriteLine #Error '(' <StrFromInt s.3> ', ' <StrFromInt s.2> ')' >;
+	(t.Name (s.1 s.2 s.3) (s.4 s.5 s.6) e.Str) = 
+		<WriteLine t.Name '(' <StrFromInt  s.3> ', ' <StrFromInt s.2 > ')-('  <StrFromInt s.6> ',' <StrFromInt s.5 >')' ': ' e.Str >;
+}*/
+
+Message {
+	(#Error e.Name) = <WriteLine 'Error: Non-terminal with no rule: ' e.Name>;
+	(s.Name (e.First)) = <WriteLine 'FIRST[' s.Name '] = ' e.First ';'>;
+}
+
+CheckIn {
+	s.Char s.a s.b = <Fetch 
+		<SymbCompare s.a s.Char> <SymbCompare s.b s.Char>
+		{
+
+			'>' s.2 = #False;
+			s.1 '<' = #False;
+			e.other = #True;
+		}
+	>;	
+}
+
+IsSpace {
+	#EOF = #True;
+	' ' = #True;
+	'\r' = #True;
+	'\n' = #True;
+	'\t' = #True;
+	s.other = #False;
+}
+
+IsSymbol {
+	s.Char = <Fetch 
+		<CheckIn s.Char 'A' 'Z'> <CheckIn s.Char 'a' 'z'>
+		{
+			e.1 #True e.2 = #True;
+			e.lse = #False;
+		}
+	>;
+}
+
+StringProc
+{
+	t.Pos s.Char '\"' e.Text (e.Str) = <IncPos t.Pos s.Char> e.Text (e.Str s.Char '\"');
+	t.Pos s.Char e.Text (e.Str) = 
+		<Fetch
+			<IsSpace s.Char>
+			{
+				#True = <StringProc <IncPos t.Pos s.Char> e.Text (e.Str s.Char)>;
+				#False =  #Error;
+			}
+		>;
+	t.Pos e.any = #Error;
+}
+
+SkipSpaces {
+	t.Pos s.Char e.Text = 
+	<Fetch
+		<IsSpace s.Char>
+		{
+			#True = <SkipSpaces <IncPos t.Pos s.Char> e.Text>;
+			#False = t.Pos s.Char e.Text;
+		}
+	>;
+	t.Pos = t.Pos;
+}
+
+ErrorSet {
+	t.Pos () = t.Pos t.Pos; /* Set New Error */
+	t.Pos t.Err = () t.Err;  
+}
+
+Main {
+	 = <WriteLine 'Usage: prog filepath'>;
+	e.FileName = <Fetch <ExistFile e.FileName> {
+	#False = <WriteLine #BadName>;
+	#True = 
+	<Fetch 
+		<LoadFile e.FileName>
+		<Seq
+			{ = ();	e.text = e.text; }
+			(Reduce { (e.L1) (e.L2) = (e.L1 '\n' e.L2); } )
+			{ (e.Text) = (1 1 1) e.Text #EOF (); }
+			<Y {
+				s.MainLoop = {
+					t.Pos t.Err = ();
+					t.Pos s.Char e.Text t.Err = 	
+					<Fetch
+						s.Char <IsSpace s.Char> <IsSymbol s.Char>
+						<Seq 
+						{							
+							'\"' e.other = <StringProc <IncPos t.Pos> e.Text (s.Char) > #TERM;
+						
+							'{' e.other = t.Pos e.Text (s.Char) #LBRACKET;
+							'}' e.other = t.Pos e.Text (s.Char) #RBRACKET;
+							'(' e.other = t.Pos e.Text (s.Char) #LPAREN;
+							')' e.other = t.Pos e.Text (s.Char) #RPAREN;
+							',' e.other = t.Pos e.Text (s.Char) #COMMA;
+
+							s.1 #True s.2 = #Space;
+
+							e.other #True = t.Pos e.Text (s.Char) #NTERM;
+													
+							e.other = #Error;
+						}
+						{
+							#Error e.Any = 
+								<Fetch <ErrorSet t.Pos t.Err> {
+									t.Mess t.ErrNew = t.Mess 
+									<s.MainLoop <IncPos t.Pos> e.Text t.ErrNew >;
+								} >;
+							#Space = <s.MainLoop <SkipSpaces <IncPos t.Pos s.Char> e.Text> t.Err>; 
+							t.End e.NextText (e.Str) t.Type = 	
+								(t.Type t.Pos t.End e.Str) 
+								<s.MainLoop <IncPos t.End> e.NextText () >;
+						}
+						>
+					>;
+				};
+			} >
+			(Map { () = ; e.1 = e.1; }) /* delete empty */
+			NTF_START
+//			WriteLine
+			RUN_FIRST
+			(Map Message)
+		>
+	>;
+	} >;
+}
