@@ -1,0 +1,1379 @@
+/*
+ Interpreter of a subset of Refal:
+                                  Program ::= $ENTRY  definition+          
+                                  definition ::= function-name {  sentence;+ }
+                                  sentence   ::= pattern  =  expr 
+                                  expr  ::= empty | term expr1 | function-call expr1
+                                  function-call ::= <function-name expr>
+                                  pattern ::= empty | term pattern1
+                                  term  ::= SYMBOL | var | (expr)
+                                  var   ::= e.name | t.name  | s.name
+                                  empty ::=  
+
+There are two additional restrictions: 
+ 1) the set of the variables of the right side of a sentence is a subset of the variable set 
+    of the left side of the sentence; 
+ 2) two e-variables are not allowed on the same parenthesis structure in the patterns. 
+    (For example, the pattern (e.1) e.2 (e.3) is allowed, while (e.1 A e.2) e.3 is not.)
+
+We use the following mapping Encode to encode the programs and the data in the Refal data.
+
+Encode(Program) = ( Encode(definition)+ )
+Encode(F {  sentence;+ }) = (F Encode(sentence;)+ )
+Encode(pattern =  expr;) = (( Encode(pattern) )'='( Encode(expr) ))
+Encode(expr1 expr2) = Encode(expr1) Encode(expr2)
+Encode( ( expr ) ) = ('*' Encode(expr) )
+Encode( <F expr> ) = (Call  F Encode(expr) )
+Encode(e.name) = (Var 'e' name)
+Encode(t.name) = (Var 't' name)
+Encode(s.name) = (Var 's' name)
+Encode(SYMBOL) = SYMBOL
+Encode() = 
+A pattern is the partial case of an expression. 
+*/
+* No open e-variables. (two e-variables on the same structure bracket level)
+* The test times are given under the following configuration:
+* Microsoft Windows-XP 5.1.2600, Processor: x86/6/8/10 Intel, 995 Mhz,
+* Total Physical Memory: 256 MB, 
+* Available Physical Memory: 144 MB
+* <TimeElapsed 0 >
+* <Prout Steps: <Step>' ' Time: <TimeElapsed>>;
+* в нечистых примерах попробовать поднять параметр.
+
+*$MST_FROM_ENTRY;
+*$STRATEGY Applicative;
+*$MATCHING ForRepeatedSpecialization;
+
+$ENTRY Go {
+  = 
+*    <Testing>
+    <Timing>;
+*+ e.data = <Interpreter (Call Zip e.data) <Prog Zip>>;
+*+ e.data = <Interpreter (Call Go e.data) <Prog Zip>>;
+
+* Lazy:- looping.
+* Applicative:-+ has finished but there are a lot of garbage.
+*- e.data = <Interpreter (Call IncFact e.data) <Prog IncFact>>;
+* Time: 17.976
+*+- e.data = <Interpreter (Call Fact e.data) <Prog IncFact>>;
+* Time: 4.667
+*+! e.data = <Interpreter (Call Times e.data) <Prog IncFact>>;
+* Time: 2.273
+*+! e.data = <Interpreter (Call Plus e.data) <Prog IncFact>>;
+*+- e.data = <Interpreter (Call Minus e.data) <Prog IncFact>>;
+
+*- e.data = <Interpreter (Call IncFactStep e.data) <Prog IncFactStep>>;
+* Time: 22.472
+*+- e.data = <Interpreter (Call FactStep e.data) <Prog IncFactStep>>;
+
+* Time: 45.305
+*+- e.data = <Interpreter (Call The_task e.data) <Prog The_task>>;
+* Time: 5.829
+*+ e.data = <Interpreter (Call BSub e.data) <Prog The_task>>;
+* Time: 1.302
+*+ e.data = <Interpreter (Call BPred e.data) <Prog The_task>>;
+*  1.132
+*+ e.data = <Interpreter (Call P e.data) <Prog The_task>>;
+
+* Lazy:-+ A lot of garbage.
+* Applicative
+* Time: 9.373
+*+ e.data = <Interpreter (Call Go e.data) <Prog Replace>>;
+* Lazy
+*- e.data = <Interpreter (Call Go e.data) <Prog Replace>>;
+* Applicative
+* Time: 2.343
+*+ e.data = <Interpreter (Call Go1 e.data) <Prog Replace>>;
+*+ e.data = <Interpreter (Call Go2 e.data) <Prog Replace>>;
+* Lazy, repeated+,
+* Time: 18.296
+*-+ e.data = <Interpreter (Call Go1 e.data) <Prog Replace>>;
+* Time: 6.700
+*+ e.data = <Interpreter (Call Replace e.data) <Prog Replace>>;
+
+* Time: 1.122
+*+! e.data = <Interpreter (Call Go e.data) <Prog F>>;
+* Time: 1.392
+*+ e.data = <Interpreter (Call F e.data) <Prog F>>;
+
+* Iterations.
+* Time: 1.022
+*+ e.data = <Interpreter (Call Go e.data) <Prog UnarySum>>;
+
+*+ Applicative, repeated.
+* Time: 11.877
+*+! Lazy.
+* Time: 61.959
+*+ e.data = <Interpreter (Call Go e.data) <Prog H>>;
+* Time: 11.747
+*+ e.data = <Interpreter (Call H e.data) <Prog H>>;
+
+* Time: 0.991
+*+! e.data = <Interpreter (Call Go e.data) <Prog F_1>>;
+* Time: 0.922
+*+! e.data = <Interpreter (Call F_1 e.data) <Prog F_1>>;
+
+* Time: 1.122
+*+! e.data = <Interpreter (Call Go e.data) <Prog F_2>>;
+* Time: 1.082
+*+! e.data = <Interpreter (Call F_2 e.data) <Prog F_2>>;
+
+* Time: 1.382
+*+ e.data = <Interpreter (Call Go e.data) <Prog Test>>;
+* Time: 1.312
+*+ e.data = <Interpreter (Call Test e.data) <Prog Test>>;
+
+* Time: 16.323
+*+- e.data = <Interpreter (Call Go e.data) <Prog Fact1>>;
+* Time: 21.301
+*+- e.data = <Interpreter (Call Fact1 e.data) <Prog Fact1>>;
+* Time: 119.853
+*--+ e.data = <Interpreter (Call IncFact1 e.data) <Prog Fact1>>;
+
+* Time: 0.781
+*+! e.data = <Interpreter (Call Go e.data) <Prog H_1>>;
+* Time: 0.711
+*+! e.data = <Interpreter (Call H_1 e.data) <Prog H_1>>;
+
+* repeated.
+* Time: 7.230
+*+- e.data = <Interpreter (Call Go e.data) <Prog last>>;
+* Time: 3.104
+*+ e.data = <Interpreter (Call Go1 e.data) <Prog last>>;
+
+* Time: 0.811
+*+ e.data = <Interpreter (Call Go e.data) <Prog Ack>>;
+* Time: 1.633
+*+ e.data = <Interpreter (Call Go1 e.data) <Prog Ack>>;
+* Time: 3.826
+*+ e.data = <Interpreter (Call Go2 e.data) <Prog Ack>>;
+* repeated.
+* Time: 6.830
+*+- e.data = <Interpreter (Call Ack e.data) <Prog Ack>>;
+
+* Time: 2.003
+*+! e.data = <Interpreter (Call Go e.data) <Prog Prefix>>;
+* Time: 4.497
+*+?! e.data = <Interpreter (Call Prefix e.data) <Prog Prefix>>;
+
+* Time: 3.004
+*+! e.data = <Interpreter (Call Go e.data) <Prog Subst>>;
+* Lazy-+, repeated. Error in repeated definitions!
+* Applicative.
+* Time: 3.755
+*+ e.data = <Interpreter (Call Go1 e.data) <Prog Subst>>;
+* Time: 14.641
+*+ e.data = <Interpreter (Call Subst e.data) <Prog Subst>>;
+
+* Lazy:+- , repeated. See for improving.
+* Applicative:
+* Time: 1.802
+*+! e.data = <Interpreter (Call Go e.data) <Prog F_3>>;
+* Time: 1.692
+*+! e.data = <Interpreter (Call F_3 e.data) <Prog F_3>>;
+
+*- e.data = <Interpreter (Call Go e.data) <Prog F_4>>;
+* repeated.
+* Time: 2.394
+*+ e.data = <Interpreter (Call F_4 e.data) <Prog F_4>>;
+
+* Time: 1.883
+*+! e.data = <Interpreter (Call Go e.data) <Prog Def>>;
+* Time: 2.794
+*+! e.data = <Interpreter (Call Go1 e.data) <Prog Def>>;
+* Time: 1.813
+*+! e.data = <Interpreter (Call Def e.data) <Prog Def>>;
+
+* Time: 0.871
+*+ e.data = <Interpreter (Call F_5 e.data) <Prog F_5>>;
+
+* Time: 1.592
+*+? e.data = <Interpreter (Call G e.data) <Prog G>>;
+* Time: 1.652
+*+? e.data = <Interpreter (Call F2 e.data) <Prog G>>;
+**-------------------------------------------------------
+
+* Lazy -- error.
+* Applicative
+* Time: 0.851
+*+ e.data = <Interpreter (Call Go e.data) <Prog F_6>>;
+* Time: 0.802
+*+ e.data = <Interpreter (Call F_6 e.data) <Prog F_6>>;
+
+* Lazy-+, repeated.
+* Applicative
+* Time: 0.931
+*+- e.data = <Interpreter (Call Go e.data) <Prog F_7>>;
+* Time: 0.912
+*+ e.data = <Interpreter (Call F_7 e.data) <Prog F_7>>;
+
+* Lazy+-, repeated.
+* Applicative
+* Time: 0.831
+*+- e.data = <Interpreter (Call Go e.data) <Prog F_8>>;
+* Time: 0.801
+*+- e.data = <Interpreter (Call F_8 e.data) <Prog F_8>>;
+
+* Lazy-+, repeated.
+* Applicative
+* Time: 1.291
+*+! e.data = <Interpreter (Call Go e.data) <Prog LispStyleReverse>>;
+* Time: 0.952
+*+ e.data = <Interpreter (Call LispStyleReverse e.data) <Prog LispStyleReverse>>;
+
+* Lazy-
+* Applicative
+* Time: 0.911
+*+ e.data = <Interpreter (Call Go e.data) <Prog RefalStyleReverse>>;
+* Lazy-
+* Applicative-+
+* e.data = <Interpreter (Call Go1 e.data) <Prog RefalStyleReverse>>;
+* Time: 0.761
+*+ e.data = <Interpreter (Call RefalStyleReverse e.data) <Prog RefalStyleReverse>>;
+
+*+ Applicative, repeated.
+* Time: 1.613
+*+ Lazy, repeated.
+* Time: 4.035 
+* e.data = <Interpreter (Call Fa e.data) <Prog Fa>>;
+
+* Lazy-+, repeated.
+* Applicative, repeated.
+*-+ e.data = <Interpreter (Call Go e.data) <Prog pal>>;
+* Time: 1.783
+*+ e.data = <Interpreter (Call pal e.data) <Prog pal>>;
+
+* Lazy-
+* Applicative, repeated.
+*+-? repeated.
+* Time: 118.841
+* e.data = <Interpreter (Call Go e.data) <Prog Search>>;
+* Time: 10.916
+*+-? e.data = <Interpreter (Call Search e.data) <Prog Search>>;
+* Time: 43.443
+*+-? e.data = <Interpreter (Call Look e.data) <Prog Search>>;
+
+*+ Applicative.
+* Time: 2.274
+*+ Lazy, repeated. == -+?, +
+* Time: 13.659
+* e.data = <Interpreter (Call Sq e.data) <Prog Sq>>;
+
+* Lazy-
+*+ Applicative.
+*+ 2 min 13 sec.
+* Time: 129.245
+*+! e.data = <Interpreter (Call Go e.data) <Prog Turing>>;
+*- e.data = <Interpreter (Call Turing e.data) <Prog Turing>>;
+
+*  = <Testing Plus <Prog Plus> (<Data Plus>)>
+*    <Testing Replace <Prog Replace> (<Data Replace>)>;
+
+}
+
+*$ENTRY 
+Interpreter { (Call s.F e.d) t.P = <Eval <EvalCall s.F (e.d) t.P> t.P>; }
+
+* <Eval (e.environment) (e.expression) t.Program> ==> e.data
+Eval {
+ (e.env) ((Call s.F e.expr1) e.expr) t.P 
+      = <Eval <EvalCall s.F (<Eval (e.env) (e.expr1) t.P>) t.P> t.P>
+        <Eval (e.env) (e.expr) t.P>;
+
+ (e.env) ((Var e.var) e.expr) t.P 
+      = <Subst (e.env) (Var e.var)> <Eval (e.env) (e.expr) t.P>;
+
+ (e.env) (('*' e.expr1) e.expr) t.P 
+      = ('*' <Eval (e.env) (e.expr1) t.P>) <Eval (e.env) (e.expr) t.P>;
+
+ (e.env) (s.x e.expr) t.P = s.x <Eval (e.env) (e.expr) t.P>;
+ (e.env) () t.P = ;
+}
+
+EvalCall {
+ s.F (e.d) t.P = <Matching False (((False)'='(False)) <LookFor s.F t.P>) (e.d)>;
+}
+
+* <Matching t.boolen (e.pattern)'='(e.data)> ==> (e.environment) (e.expression)
+* , where t.boolen ::= (e.environment) | False
+Matching {
+ False (t.sent ((e.p)'='(e.expr)) e.def) (e.d) =
+       <Matching <RigitMatch (e.p)'='(e.d) ()> (((e.p)'='(e.expr)) e.def) (e.d)>; 
+ (e.env) (((e.p)'='(e.expr)) e.def) (e.d) = (e.env) (e.expr);
+}
+
+* <RigitMatch (e.pattern)'='(e.data) (e.environment)> ==> (e.environment1) | False
+RigitMatch {
+ ((Var 'e' s.n))'='(e.s) (e.env) 
+                    = <RigitMatch ()'='() <PutVar ((Var 'e' s.n) e.s) (e.env)>>;
+ ((Var 's' s.n) e.p)'='(s.1 e.s) (e.env)
+                    = <RigitMatch (e.p)'='(e.s) <PutVar ((Var 's' s.n) s.1) (e.env)>>;
+ ((Var 't' s.n) e.p)'='(t.1 e.s) (e.env)
+                    = <RigitMatch (e.p)'='(e.s) <PutVar ((Var 't' s.n) t.1) (e.env)>>;
+ (('*' e.p1) e.p)'='(('*' e.1) e.s) (e.env)
+                    = <RigitMatch (e.p)'='(e.s) <RigitMatch (e.p1)'='(e.1) (e.env)>>;
+ (s.1 e.p)'='(s.1 e.s) (e.env)
+                    = <RigitMatch (e.p)'='(e.s) (e.env)>;
+
+ ((Var 'e' s.n) e.p (Var 's' s.n1))'='(e.s s.1) (e.env) 
+           = <RigitMatch ((Var 'e' s.n) e.p)'='(e.s) <PutVar ((Var 's' s.n1) s.1) (e.env)>>;
+ ((Var 'e' s.n) e.p (Var 't' s.n1))'='(e.s t.1) (e.env) 
+           = <RigitMatch ((Var 'e' s.n) e.p)'='(e.s) <PutVar ((Var 't' s.n1) t.1) (e.env)>>;
+ ((Var 'e' s.n) e.p ('*' e.p1))'='(e.s ('*' e.1)) (e.env) 
+           = <RigitMatch (e.p1)'='(e.1) <RigitMatch ((Var 'e' s.n) e.p)'='(e.s) (e.env)>>;
+ ((Var 'e' s.n) e.p s.1)'='(e.s s.1) (e.env) 
+                    = <RigitMatch ((Var 'e' s.n) e.p)'='(e.s) (e.env)>;
+
+ ()'='() (e.env) = (e.env);
+ (e.p)'='(e.s) e.False = False;
+}
+
+* <PutVar (e.assignment) (e.environment) > ==> t.boolean
+PutVar { t.assign (e.env) = <CheckPut <PutVar1 t.assign (e.env)>>; }
+PutVar1 {
+ ((Var s.t s.n) e.value) (((Var s.t s.n) e.value1) e.env)  
+                   = ((Var s.t s.n) e.value1) e.env <Eq (e.value) (e.value1)>;
+ t.assign (t.assign1 e.env) = t.assign1 <PutVar1 t.assign (e.env)>;  
+ t.assign () = t.assign True;  
+}
+
+CheckPut {
+ e.env True = (e.env);
+ e.trash False = False;
+}
+
+* <Eq (e.expression1) (e.expression2)> ==> s.boolean
+* , where s.boolean ::= True | False
+Eq {
+ (s.1 e.xpr1) (s.1 e.xpr2) = <Eq (e.xpr1) (e.xpr2)>;
+* Was: -- it is wrong. Consider <Eq (('*' A B) C) (('*' A) B C)>
+*- (('*' e.1) e.xpr1) (('*' e.2) e.xpr2) = <Eq (e.1 e.xpr1) (e.2 e.xpr2)>;
+ (('*' e.1) e.xpr1) (('*' e.2) e.xpr2) = <ContEq <Eq (e.1) (e.2)> (e.ex) (e.ey)>;
+ () () = True;
+ (e.xpr1) (e.xpr2) = False;
+}
+
+ContEq {
+ False (e.ex) (e.ey) = False;
+ True (e.ex) (e.ey) = <Eq (e.ex) (e.ey)>;
+}
+
+
+* <LookFor s.Function-name (e.Program)> ==> e.definition
+LookFor {
+ s.F ((s.F e.def) e.P) = e.def;
+ s.F ((s.F1 e.def) e.P) = <LookFor s.F (e.P)>;
+}
+
+* <Subst (e.environment) t.variable> ==> e.data
+Subst {
+ (((Var s.t s.n) e.value) e.env)  (Var s.t s.n) = e.value;
+ (t.assign e.env) t.var = <Subst (e.env) t.var>;  
+}
+
+*-----------------------------------------
+*Interpreter { (Call s.F e.d) t.P = <Eval <EvalCall s.F (e.d) t.P> t.P>; }
+Testing {
+ s.F t.P (e.d) = <Prout "Program:" s.F> <Prout "Data:"  e.d>
+                 <Prout "Result:" <Interpreter (Call Go e.d) t.P>>;
+}
+
+
+Prog { 
+/*
+$ENTRY Go { (e.1) (e.2) = <Plus (e.1) (e.2)>; } 
+Plus {
+(e.u) () = e.u;
+(e.u) (I e.v) = I <Plus (e.u) (e.v)>;
+}
+*/
+ Plus = ( (Go (( ('*'(Var 'e' 1)) ('*'(Var 'e' 2)) ) 
+                                  '=' ((Call Plus ('*'(Var 'e' 1)) ('*'(Var 'e' 2)) )) ))
+          (Plus 
+              ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+              ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+                                  '=' (I (Call Plus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+         )
+        );
+
+/*
+$ENTRY Go { (s.a e.b) e.where  = <Replace (s.a e.b) e.where>; }
+Replace {
+(s.x e.v)  = ;
+(s.x e.v) s.x e.where = e.v <Replace (s.x e.v) e.where>;
+(s.x e.v) s.1 e.where = s.1 <Replace (s.x e.v) e.where>;
+(s.x e.v) (e.1) e.where = (<Replace (s.x e.v) e.1>) <Replace (s.x e.v) e.where>;
+}
+*-/
+ Replace = ( 
+   (Go (( ('*' (Var 's' a) (Var 'e' b)) (Var 'e' where) ) 
+               '=' ((Call Replace ('*'(Var 's' a) (Var 'e' b)) (Var 'e' where) )) ))
+   (Replace 
+     ( ( ('*'(Var 's' x) (Var 'e' v)) ) '=' (  ) )
+     ( ( ('*'(Var 's' x) (Var 'e' v)) (Var 's' x) (Var 'e' where) ) 
+               '=' ((Var 'e' v) (Call Replace ('*'(Var 's' x) (Var 'e' v)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' x) (Var 'e' v)) (Var 's' 1) (Var 'e' where) ) 
+               '=' ((Var 's' 1) (Call Replace ('*'(Var 's' x) (Var 'e' v)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' x) (Var 'e' v)) ('*'(Var 'e' 1)) (Var 'e' where) ) 
+               '=' ( ('*' (Call Replace ('*'(Var 's' x) (Var 'e' v)) (Var 'e' 1) ) ) 
+                     (Call Replace ('*'(Var 's' x) (Var 'e' v)) (Var 'e' where) )) )
+  )
+ );
+*/
+
+/*
+$ENTRY Go { (e.names) (e.values)  = <Zip (e.names) (e.values)>; }
+Zip {
+   (s.name e.names) (t.value e.values) 
+                       = (s.name t.value) <Zip (e.names) (e.values)>;
+   ()               () = ;
+}   
+*/
+ Zip = ( 
+   (Go (( ('*' (Var 'e' names)) ('*' (Var 'e' values)) ) 
+               '=' ((Call Zip ('*' (Var 'e' names)) ('*' (Var 'e' values)) )) ))
+   (Zip 
+     ( ( ('*' (Var 's' name) (Var 'e' names)) ('*' (Var 't' value) (Var 'e' values)) ) 
+               '=' ( ('*' (Var 's' name) (Var 't' value)) 
+                     (Call Zip ('*' (Var 'e' names)) ('*' (Var 'e' values)) )) )
+     ( ( ('*') ('*') ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY IncFact { e.numb = <Plus (I) (<Fact (e.numb)>)>; }
+Fact {
+ () = I;
+ (e.numb) = <Times (e.numb) (<Fact (<Minus (e.numb) (I)>)>)>;
+}
+Times { 
+ (e.u) () = ;
+ (e.u) (I e.v) = <Plus (<Times (e.u) (e.v)>) (e.u)>;
+}
+Plus {
+ (e.u) () = e.u;
+ (e.u) (I e.v) = I <Plus (e.u) (e.v)>;
+}
+Minus {
+ (I e.u) (I e.v) = <Minus (e.u) (e.v)>;
+ (e.u)     () = e.u;
+}
+*/
+ IncFact = ( 
+   (IncFact (( (Var 'e' numb) ) 
+               '=' ((Call Plus ('*' I) ('*' (Call Fact ('*' (Var 'e' numb)) ) ) )) ))
+   (Fact 
+     ( ( ('*') ) '=' ( I ) )
+     ( ( ('*' (Var 'e' numb)) ) 
+               '=' ( (Call Times ('*' (Var 'e' numb)) 
+                       ('*' (Call Fact ('*' (Call Minus ('*' (Var 'e' numb)) ('*' I) )) )) 
+                     ) 
+                   )
+     )
+   )
+   (Times 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' (  ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Plus ('*' (Call Times ('*' (Var 'e' u)) ('*' (Var 'e' v))) ) ('*' (Var 'e' u)) )) )
+   )
+   (Plus 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' (I (Call Plus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+   )
+   (Minus 
+     ( ( ('*' I (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Minus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+   )
+ );
+
+/*
+$ENTRY IncFactStep { e.numb = <Plus (I) (<FactStep (e.numb) ()>)>; }
+
+FactStep {
+ () (e.steps) = I;
+ (e.numb) (e.steps) 
+         = <Times (e.numb) (<FactStep (<Minus (e.numb) (I)>) (e.steps I)>)>;
+}
+*/
+  IncFactStep = ( 
+   (IncFactStep (( (Var 'e' numb) ) 
+               '=' ((Call Plus ('*' I) ('*' (Call FactStep ('*' (Var 'e' numb)) ('*') ) ) )) ))
+   (FactStep 
+     ( ( ('*') ('*'  (Var 'e' steps)) ) '=' ( I ) )
+     ( ( ('*' (Var 'e' numb)) ('*'  (Var 'e' steps)) ) 
+               '=' ( (Call Times ('*' (Var 'e' numb)) 
+                       ('*' (Call FactStep ('*' (Call Minus ('*' (Var 'e' numb)) ('*' I) ))  ('*'  (Var 'e' steps) I) )) 
+                     ) 
+                   )
+     )
+   )
+   (Times 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' (  ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Plus ('*' (Call Times ('*' (Var 'e' u)) ('*' (Var 'e' v))) ) ('*' (Var 'e' u)) )) )
+   )
+   (Plus 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' (I (Call Plus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+   )
+   (Minus 
+     ( ( ('*' I (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Minus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+   )
+ );
+
+/*
+$ENTRY The_task { t.numb = <BSub t.numb t.numb>;  };
+BPred { (e.xs) = (<P e.xs>) }; 
+P {
+  '1'    = ;
+  '1' e.xs = '0' e.xs;
+  '0' e.xs = '1' <P e.xs>;
+           = ;
+}
+BSub {
+  (e.xs) () = (e.xs);
+  (e.xs) (e.ys) = <BPred <BSub (e.xs) <BPred (e.ys)>>>;
+}
+*/
+
+  The_task = ( 
+   (The_task (( (Var 't' numb) ) 
+               '=' ((Call BSub (Var 't' numb) (Var 't' numb) )) ))
+   (BPred 
+     ( ( ('*' (Var 'e' xs)) ) '=' ( ('*' (Call P (Var 'e' xs))) ) )
+   )
+   (P 
+     ( ( '1' ) '=' (  ) )
+     ( ( '1' (Var 'e' xs) ) '=' ( '0' (Var 'e' xs) ) )
+     ( ( '0' (Var 'e' xs) ) '=' ( '1' (Call P (Var 'e' xs) )) )
+     ( (  ) '=' (  ) )
+   )
+   (BSub 
+     ( ( ('*' (Var 'e' xs)) ('*') ) '=' ( ('*' (Var 'e' xs)) ) )
+     ( ( ('*' (Var 'e' xs)) ('*'  (Var 'e' ys)) ) 
+               '=' ( (Call BPred
+                       (Call BSub ('*' (Var 'e' xs)) (Call BPred ('*' (Var 'e' ys)) )  )
+                     ) 
+                   )
+     )
+   )
+ );
+
+/*
+$ENTRY Go { e.input = <Replace (B C) <Replace (A B) e.input>>; }
+
+Replace {
+(s.what s.with) s.what e.where =  s.with <Replace (s.what s.with) e.where>;
+(s.what s.with) s.1 e.where =  s.1 <Replace (s.what s.with) e.where>;
+(s.what s.with) =  ;
+}
+*/
+ Replace = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call Replace ('*' B C) (Call Replace ('*' A B) (Var 'e' input) ))) ))
+   (Go1 (( ('*' (Var 's' a) (Var 's' b)) (Var 'e' where) ) 
+               '=' ((Call Replace ('*'(Var 's' a) (Var 's' b)) (Var 'e' where) )) ))
+   (Go2 (( ('*' (Var 's' a) (Var 's' a)) (Var 'e' where) ) 
+               '=' ((Call Replace ('*'(Var 's' a) (Var 's' a)) (Var 'e' where) )) ))
+   (Replace 
+     ( ( ('*'(Var 's' what) (Var 's' with)) (Var 's' what) (Var 'e' where) ) 
+               '=' ((Var 's' with) (Call Replace ('*'(Var 's' what) (Var 's' with)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' what) (Var 's' with)) (Var 's' 1) (Var 'e' where) ) 
+               '=' ((Var 's' 1) (Call Replace ('*'(Var 's' what) (Var 's' with)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' what) (Var 's' with)) ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.input = <F e.input B>; }
+
+F {
+ (e.1) e.2 s.3 = (<F e.1 s.3>) <F e.2 s.3> ;
+ s.1   e.2 s.3 = s.1 <F e.2 s.3>;
+             A = ;
+}
+*
+* После специализации по контексту вызова "функция" F будет пустой; 
+* что и обнаружит алгоритм, который содержит в себе определение синтаксически пустого графа.
+*
+*/
+ F = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call F (Var 'e' input) B )) ))
+   (F 
+     ( ( ('*'(Var 'e' 1)) (Var 'e' 2) (Var 's' 3) ) 
+               '=' ( ('*' (Call F (Var 'e' 1) (Var 's' 3) )) (Call F (Var 'e' 2) (Var 's' 3) )) )
+     ( ( (Var 's' 1) (Var 'e' 2) (Var 's' 3) ) 
+               '=' ( (Var 's' 1) (Call F (Var 'e' 2) (Var 's' 3) )) )
+     ( ( A ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.number = <UnarySum (I I I) (e.number)>; }
+
+UnarySum {
+ (e.numb1) (I e.numb2) = I <UnarySum (e.numb1) (e.numb2)>;
+ (e.numb1) () = e.numb1;
+}
+*/
+
+  UnarySum = ( 
+   (Go (( (Var 'e' number) ) 
+               '=' ((Call UnarySum ('*' I I I) ('*' (Var 'e' number)) )) ))
+   (UnarySum 
+     ( ( ('*' (Var 'e' numb1)) ('*' I (Var 'e' numb2)) ) 
+               '=' (I (Call UnarySum ('*' (Var 'e' numb1)) ('*' (Var 'e' numb2)) )) )
+     ( ( ('*' (Var 'e' numb1)) ('*') ) '=' ( (Var 'e' numb1) ) )
+   )
+ );
+
+/*
+$ENTRY Go { e.input = <H e.input>; }
+
+H {
+ (e.1)       (e.3) (e.4) = e.1 e.4 e.1;
+ (e.1) A e.2 (e.3) (e.4) = <H (e.1) e.2 (e.3 e.1) (e.4)>;
+ (e.1) B e.2 (e.3) (e.4) = <H (e.1) e.2 (e.3 e.4) (e.4)>;
+ (e.1) e.2   (e.3) (e.4) = e.1 e.4 e.1;
+}
+*/
+ H = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call H (Var 'e' input))) ))
+   (H 
+     ( ( ('*'(Var 'e' 1)) ('*'(Var 'e' 3)) ('*'(Var 'e' 4)) ) 
+               '=' ( (Var 'e' 1) (Var 'e' 4) (Var 'e' 1) ) )
+     ( ( ('*'(Var 'e' 1)) A (Var 'e' 2) ('*' (Var 'e' 3)) ('*' (Var 'e' 4)) ) 
+               '=' ( (Call H ('*'(Var 'e' 1)) (Var 'e' 2) ('*' (Var 'e' 3) (Var 'e' 1)) ('*'(Var 'e' 4)) )) )
+     ( ( ('*'(Var 'e' 1)) B (Var 'e' 2) ('*' (Var 'e' 3)) ('*' (Var 'e' 4)) ) 
+               '=' ( (Call H ('*'(Var 'e' 1)) (Var 'e' 2) ('*' (Var 'e' 3) (Var 'e' 4)) ('*'(Var 'e' 4)) )) )
+     ( ( ('*'(Var 'e' 1)) (Var 'e' 2) ('*' (Var 'e' 3)) ('*' (Var 'e' 4)) ) 
+               '=' ( (Var 'e' 1) (Var 'e' 4) (Var 'e' 1) ) )
+  )
+ );
+
+/*
+Replaced F by F_1
+$ENTRY Go { e.1 = <F_1 e.1>; }
+F_1 {
+ s.1  e.expr = s.1 <F_1 e.expr>;
+(e.1) e.expr = (<F_1 e.1>) <F_1 e.expr>;
+             = ;
+}
+*/
+ F_1 = ( 
+   (Go (( (Var 'e' 1) ) 
+               '=' ((Call F_1 (Var 'e' 1) )) ))
+   (F_1 
+     ( ( (Var 's' 1) (Var 'e' expr) ) 
+               '=' ( (Var 's' 1) (Call F_1 (Var 'e' expr) )) )
+     ( ( ('*'(Var 'e' 1)) (Var 'e' expr) ) 
+               '=' ( ('*' (Call F_1 (Var 'e' 1) )) (Call F_1 (Var 'e' expr) )) )
+     ( ( ) '=' (  ) )
+  )
+ );
+
+/*
+Replaced F by F_2
+$ENTRY Go { e.1 = <F_2 e.1>; }
+F_2 {
+ s.1 = s.1;
+ s.1 e.string  = <F_2 s.1> <F_2 <F_2 e.string>>;
+     = ;
+}
+*/
+ F_2 = ( 
+   (Go (( (Var 'e' 1) ) 
+               '=' ((Call F_2 (Var 'e' 1) )) ))
+   (F_2 
+     ( ( (Var 's' 1) ) 
+               '=' ( (Var 's' 1) ) )
+     ( ( (Var 's' 1) (Var 'e' string) ) 
+               '=' ( (Call F_2 (Var 's' 1) ) (Call F_2 (Call F_2 (Var 'e' string) ))) )
+     ( ( ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.input = <Test e.input>; }
+Test {
+ A   e.2 ()    = () <Test e.2>;
+ s.1 e.2 (e.3) = (e.3) <Test e.2>;
+               = B;  
+}
+*/
+ Test = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call Test (Var 'e' input) )) ))
+   (Test 
+     ( ( A (Var 'e' 2) ('*') ) 
+               '=' ( ('*') (Call Test (Var 'e' 2) )) )
+     ( ( (Var 's' 1) (Var 'e' 2) ('*' (Var 'e' 3)) ) 
+               '=' ( ('*' (Var 'e' 3)) (Call Test (Var 'e' 2) )) )
+     ( (  ) '=' ( B ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.n = <Fact1 (e.n)>; }
+$ENTRY IncFact1 { e.numb = <Plus (I) <Fact1 (e.numb)>>; }
+Fact1 {
+ () = (I);
+ (e.numb) = (<Times (e.numb) <Fact1 (<Minus (e.numb) (I)>)>>);
+}
+*/
+ Fact1 = ( 
+   (Go (( (Var 'e' n) ) 
+               '=' ((Call Fact1 ('*' (Var 'e' n)) ) ) ))
+   (IncFact1 (( (Var 'e' numb) ) 
+               '=' ((Call Plus ('*' I) (Call Fact1 ('*' (Var 'e' numb)) ) )) ))
+   (Fact1 
+     ( ( ('*') ) '=' ( ('*' I) ) )
+     ( ( ('*' (Var 'e' numb)) ) 
+               '=' ( ('*' (Call Times ('*' (Var 'e' numb)) 
+                          (Call Fact1 ('*' (Call Minus ('*' (Var 'e' numb)) ('*' I) ) )) 
+                     )) 
+                   )
+     )
+   )
+   (Times 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' (  ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Plus ('*' (Call Times ('*' (Var 'e' u)) ('*' (Var 'e' v))) ) ('*' (Var 'e' u)) )) )
+   )
+   (Plus 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' (I (Call Plus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+   )
+   (Minus 
+     ( ( ('*' I (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Minus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+   )
+ );
+
+/*
+Replaced H by H_1
+$ENTRY Go { e.input = <H_1 e.input> e.input; }
+H_1 {
+ s.1 e.x = s.1;
+ e.x = <F e.x B>; }
+
+* Где функция F определена в примере раздела 10.1.1. 
+*/
+ H_1 = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call H_1 (Var 'e' input) ) (Var 'e' input)) ))
+   (H_1 
+     ( ( (Var 's' 1) (Var 'e' x) ) 
+               '=' ( (Var 's' 1) ) )
+     ( ( (Var 'e' x) ) 
+               '=' ( (Call F (Var 'e' 1) B)) )
+  )
+   (F 
+     ( ( ('*'(Var 'e' 1)) (Var 'e' 2) (Var 's' 3) ) 
+               '=' ( ('*' (Call F (Var 'e' 1) (Var 's' 3) )) (Call F (Var 'e' 2) (Var 's' 3) )) )
+     ( ( (Var 's' 1) (Var 'e' 2) (Var 's' 3) ) 
+               '=' ( (Var 's' 1) (Call F (Var 'e' 2) (Var 's' 3) )) )
+     ( ( A ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY Go { 
+ (e.names s.name) (e.values t.value) 
+                    = <last <Zip (e.names s.name) (e.values t.value)>>; 
+}
+$ENTRY Go { 
+ (e.names s.name) (e.values t.value) 
+                    = <Zip (e.names s.name) (e.values t.value)>; 
+}
+last { e.x t.last = t.last; }
+*/
+ last = ( 
+   (Go (( ('*' (Var 'e' names) (Var 's' name)) ('*' (Var 'e' values) (Var 't' value)) ) 
+               '=' ((Call last (Call Zip ('*' (Var 'e' names) (Var 's' name)) ('*' (Var 'e' values) (Var 't' value)) ))) ))
+   (Go1 (( ('*' (Var 'e' names) (Var 's' name)) ('*' (Var 'e' values) (Var 't' value)) ) 
+               '=' ((Call Zip ('*' (Var 'e' names) (Var 's' name)) ('*' (Var 'e' values) (Var 't' value)) )) ))
+   (Zip 
+     ( ( ('*' (Var 's' name) (Var 'e' names)) ('*' (Var 't' value) (Var 'e' values)) ) 
+               '=' ( ('*' (Var 's' name) (Var 't' value)) 
+                     (Call Zip ('*' (Var 'e' names)) ('*' (Var 'e' values)) )) )
+     ( ( ('*') ('*') ) '=' (  ) )
+   )
+   (last (( (Var 'e' x) (Var 't' last) ) 
+               '=' ( (Var 't' last) ) ))
+ );
+
+/*
+Ack { 
+ ()      (e.n)   = I e.n;
+ (I e.m) ()      = <Ack (e.m) (I)>;
+ (I e.m) (I e.n) = <Ack (e.m) (<Ack (I e.m) (e.n)>)>;
+}
+$ENTRY Go { e.n = <Ack () (e.n)>; }
+$ENTRY Go { e.n = <Ack (I) (e.n)>; }
+$ENTRY Go { e.n = <Ack (I I) (e.n)>; }
+*/
+ Ack = ( 
+   (Go (( (Var 'e' n) ) 
+               '=' ((Call Ack ('*') ('*' (Var 'e' n)) ) ) ))
+   (Go1 (( (Var 'e' n) ) 
+               '=' ((Call Ack ('*' I) ('*' (Var 'e' n)) ) ) ))
+   (Go2 (( (Var 'e' n) ) 
+               '=' ((Call Ack ('*' I I) ('*' (Var 'e' n)) ) ) ))
+   (Ack 
+     ( ( ('*') ('*' (Var 'e' n)) ) '=' ( I (Var 'e' n) ) )
+     ( ( ('*' I (Var 'e' m)) ('*') ) 
+               '=' ( (Call Ack ('*' (Var 'e' m)) ('*' I) )) )
+     ( ( ('*' I (Var 'e' m)) ('*' I (Var 'e' n)) ) 
+               '=' ( (Call Ack ('*' (Var 'e' m)) ('*' (Call Ack ('*' I (Var 'e' m)) ('*' (Var 'e' n)) )) )) )
+   )
+ );
+
+/*
+$ENTRY Go { (e.pref) (e.exp) = <Prefix (e.pref) e.pref e.exp>; }
+
+Prefix {
+ (s.1 e.pref) s.1 e.exp = <Prefix (e.pref) e.exp>;
+ ((e.1) e.pref) (e.2) e.exp = <Prefix (e.1 e.pref) e.2 e.exp>;
+ () e.exp = True;
+ (s.1 e.pref) e.exp = False;
+ ((e.1) e.pref) e.exp = False;
+}
+*/
+ Prefix = ( 
+   (Go (( ('*'(Var 'e' pref)) ('*'(Var 'e' exp)) ) 
+               '=' ((Call Prefix  ('*'(Var 'e' pref)) (Var 'e' pref) (Var 'e' exp) ) ) ))
+   (Prefix 
+     ( ( ('*' (Var 's' 1) (Var 'e' pref)) (Var 's' 1) (Var 'e' exp) ) 
+               '=' ( (Call Prefix ('*' (Var 'e' pref)) (Var 'e' exp) )) )
+     ( ( ('*' ('*'(Var 'e' 1)) (Var 'e' pref)) ('*'(Var 'e' 2)) (Var 'e' exp) ) 
+               '=' ( (Call Prefix ('*' (Var 'e' 1) (Var 'e' pref)) (Var 'e' 2) (Var 'e' exp) )) )
+     ( ( ('*') (Var 'e' exp) ) 
+               '=' ( True ) )
+     ( ( ('*' (Var 's' 1) (Var 'e' pref)) (Var 'e' exp) ) 
+               '=' ( False ) )
+     ( ( ('*' ('*'(Var 'e' 1)) (Var 'e' pref)) (Var 'e' exp) ) 
+               '=' ( False ) )
+   )
+ );
+
+/*
+$ENTRY Go { s.SYMBOL (e.where) = <Subst (s.SYMBOL s.SYMBOL) e.where>; }
+
+Subst {
+ (s.what e.value)  = ;
+ (s.what e.value) s.what e.where 
+   = e.value <Subst (s.what e.value) e.where>;
+ (s.what e.value) s.1 e.where 
+   = s.1 <Subst (s.what e.value) e.where>;
+ (s.what e.value) (e.1) e.where 
+   = (<Subst (s.what e.value) e.1>) <Subst (s.what e.value) e.where>;
+}
+*/
+ Subst = ( 
+   (Go (( (Var 's' SYMBOL) ('*' (Var 'e' where)) ) 
+               '=' ((Call Subst ('*'(Var 's' SYMBOL) (Var 's' SYMBOL)) (Var 'e' where) )) ))
+   (Go1 (( (Var 's' SYMBOL) (Var 's' SYMBOL1) ('*' (Var 'e' where)) ) 
+               '=' ((Call Subst ('*'(Var 's' SYMBOL) (Var 's' SYMBOL1)) (Var 'e' where) )) ))
+   (Subst 
+     ( ( ('*'(Var 's' what) (Var 'e' value)) ) '=' (  ) )
+     ( ( ('*'(Var 's' what) (Var 'e' value)) (Var 's' what) (Var 'e' where) ) 
+               '=' ((Var 'e' value) (Call Subst ('*'(Var 's' what) (Var 'e' value)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' what) (Var 'e' value)) (Var 's' 1) (Var 'e' where) ) 
+               '=' ((Var 's' 1) (Call Subst ('*'(Var 's' what) (Var 'e' value)) (Var 'e' where) )) )
+     ( ( ('*'(Var 's' what) (Var 'e' value)) ('*'(Var 'e' 1)) (Var 'e' where) ) 
+               '=' ( ('*' (Call Subst ('*'(Var 's' what) (Var 'e' value)) (Var 'e' 1) ) ) 
+                     (Call Subst ('*'(Var 's' what) (Var 'e' value)) (Var 'e' where) )) )
+  )
+ );
+
+/*
+Replaced F by F_3
+$ENTRY Go { e.1 = <F_3 (e.1) () e.1>; }
+F_3 { (e.0) (e.2) A e.1 = <F_3 (<F_3 (e.0) (e.2 C) e.1>) (e.2 B) e.1>;
+    (e.0) (e.2)       = e.2; 
+}
+*/
+ F_3 = ( 
+   (Go (( (Var 'e' 1) ) 
+               '=' ((Call F_3 ('*'(Var 'e' 1)) ('*') (Var 'e' 1) )) ))
+   (F_3 
+     ( ( ('*'(Var 'e' 0)) ('*'(Var 'e' 2)) A (Var 'e' 1) ) 
+               '=' ( (Call F_3 ('*'(Call F_3 ('*'(Var 'e' 0)) ('*'(Var 'e' 2) C) (Var 'e' 1) )) ('*'(Var 'e' 2) B) (Var 'e' 1) )) )
+     ( ( ('*'(Var 'e' 0)) ('*'(Var 'e' 2)) ) '=' ( (Var 'e' 2) ) )
+  )
+ );
+
+/*
+Replaced F by F_4
+$ENTRY Go { e.1 = <Out <F_4 (e.1) () ()>>; }
+Out { (e.1) (e.2) = (e.1) (); }
+F_4 {
+    ()      (e.2) (e.3) = (e.2) (e.3);
+    (A e.1) (e.2) (e.3) = <F_4 (e.1) <F_4 (e.1) (e.2 B) (e.3 C)>>;
+}
+*/
+ F_4 = ( 
+   (Go (( (Var 'e' 1) ) 
+               '=' ((Call Out (Call F_4 ('*'(Var 'e' 1)) ('*') ('*') ))) ))
+   (Out (( ('*'(Var 'e' 1)) ('*'(Var 'e' 2)) ) 
+               '=' ( ('*'(Var 'e' 1)) ('*') ) ))
+   (F_4 
+     ( ( ('*') ('*'(Var 'e' 2)) ('*'(Var 'e' 3)) ) '=' ( ('*'(Var 'e' 2)) ('*'(Var 'e' 3)) ) )
+     ( ( ('*' A (Var 'e' 1)) ('*'(Var 'e' 2)) ('*'(Var 'e' 3)) ) 
+               '=' ( (Call F_4 ('*'(Var 'e' 1)) (Call F_4 ('*'(Var 'e' 1)) ('*'(Var 'e' 2) B) ('*'(Var 'e' 3) C) )) ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.1 = <Def e.1>; }
+Def {	
+ A e.1 = B <Def e.1>;	 
+ s.1 e.1 = s.1 <Rep_Def e.1>;	 
+         = ;
+}
+Rep_Def {
+ A e.1 = B <Rep_Def e.1>;
+ s.1 e.1 = s.1 <Def e.1>;
+         = ;
+}
+$ENTRY Go {
+ A e.1 = <Def e.1> <Def e.1>;
+ B e.1 = <Test A <Def e.1>> <Test B <Def e.1>>;
+}
+Test { s.1 s.2 e.1 = e.1; }
+*/
+ Def = ( 
+   (Go (( (Var 'e' 1) ) 
+               '=' ((Call Def (Var 'e' 1) ) ) ))
+   (Go1 
+     ( ( A (Var 'e' 1) ) 
+               '=' (  (Call Def (Var 'e' 1) ) (Call Def (Var 'e' 1) )) )
+     ( ( B (Var 'e' 1) ) 
+               '=' ( (Call Test A (Call Def (Var 'e' 1) )) (Call Test B (Call Def (Var 'e' 1) ))) )
+   )
+   (Def 
+     ( ( A (Var 'e' 1) ) 
+               '=' ( B (Call Def (Var 'e' 1) )) )
+     ( ( (Var 's' 1) (Var 'e' 1) ) 
+               '=' ( (Var 's' 1) (Call Rep_Def (Var 'e' 1) )) )
+     ( (  ) '=' (  ) )
+   )
+   (Rep_Def 
+     ( ( A (Var 'e' 1) ) 
+               '=' ( B (Call Rep_Def (Var 'e' 1) )) )
+     ( ( (Var 's' 1) (Var 'e' 1) ) 
+               '=' ( (Var 's' 1) (Call Def (Var 'e' 1) )) )
+     ( (  ) '=' (  ) )
+   )
+   (Test (( (Var 's' 1) (Var 's' 2) (Var 'e' 1) ) 
+               '=' ( (Var 'e' 1) ) ))
+ );
+
+/*
+Replaced F by F_5
+F_5 { A   e.1 = B <F_5 e.1>;
+    s.2 e.1 = s.2 <F_5 e.1>;
+            = ;
+}
+*/
+ F_5 = ( 
+   (F_5 
+     ( ( A (Var 'e' 1) ) 
+               '=' ( B (Call F_5 (Var 'e' 1) )) )
+     ( ( (Var 's' 2) (Var 'e' 1) ) 
+               '=' ( (Var 's' 2) (Call F_5 (Var 'e' 1) )) )
+     ( ( ) '=' (  ) )
+  )
+ );
+/*
+G { B e.1 = <G e.1>;
+    A e.1 = <F2 e.1>;
+  s.2 e.1 = False;
+          = True;
+}
+F2 { B e.1 = <G e.1>;
+     A e.1 = <F2 e.1>;
+   s.2 e.1 = False;
+           = False;
+}
+*/
+ G = ( 
+   (G 
+     ( ( B (Var 'e' 1) ) 
+               '=' ( (Call G (Var 'e' 1) )) )
+     ( ( A (Var 'e' 1) ) 
+               '=' ( (Call F2 (Var 'e' 1) )) )
+     ( ( (Var 's' 2) (Var 'e' 1) ) 
+               '=' ( False ) )
+     ( ( ) '=' ( True ) )
+  )
+   (F2 
+     ( ( B (Var 'e' 1) ) 
+               '=' ( (Call G (Var 'e' 1) )) )
+     ( ( A (Var 'e' 1) ) 
+               '=' ( (Call F2 (Var 'e' 1) )) )
+     ( ( (Var 's' 2) (Var 'e' 1) ) 
+               '=' ( False ) )
+     ( ( ) '=' ( False ) )
+  )
+ );
+***-----------------------------------------------
+/*
+ Глава: Несколько примеров преобразований.
+*/
+/*
+*Replaced F by F_6
+$ENTRY Go { e.input = <F_6 e.input>; }
+F_6 { A A A e.1 = A <F_6 A e.1> ;
+    A         = ;
+}
+*/
+ F_6 = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call F_6 (Var 'e' input) )) ))
+   (F_6 
+     ( ( A A A (Var 'e' 1) ) 
+               '=' ( A (Call F_6 A (Var 'e' 1) )) )
+     ( ( A ) '=' (  ) )
+  )
+ );
+
+/*
+*Replaced F by F_7
+$ENTRY Go { e.input = <F_7 e.input>; }
+F_7 { s.x s.x e.1 = s.x  <F_7 e.1> ;
+    s.x         = ;
+}
+*/
+ F_7 = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call F_7 (Var 'e' input) )) ))
+   (F_7 
+     ( ( (Var 's' x) (Var 's' x) (Var 'e' 1) ) 
+               '=' ( (Var 's' x) (Call F_7 (Var 'e' 1) )) )
+     ( ( (Var 's' x) ) '=' (  ) )
+  )
+ );
+
+/*
+*Replaced F by F_8
+$ENTRY Go { e.input = <F_8 e.input> e.input; }
+F_8 { A A e.1 = A <F_8 e.1> ;
+    A       = ;
+}
+*/
+ F_8 = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call F_8 (Var 'e' input) ) (Var 'e' input)) ))
+   (F_8 
+     ( ( A A (Var 'e' 1) ) 
+               '=' ( A (Call F_8 (Var 'e' 1) )) )
+     ( ( A ) '=' (  ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.input = <LispStyleReverse e.input A ()>; }
+LispStyleReverse { s.x e.1 (e.res) = <LispStyleReverse e.1 (s.x e.res)>;
+                           (e.res) = e.res; 
+}
+*/
+ LispStyleReverse = ( 
+   (Go (( (Var 'e' input) ) 
+               '=' ((Call LispStyleReverse (Var 'e' input) A ('*') ) ) ))
+   (LispStyleReverse 
+     ( ( (Var 's' x) (Var 'e' 1) ('*'(Var 'e' res)) ) 
+               '=' ( (Call LispStyleReverse (Var 'e' 1) ('*' (Var 's' x) (Var 'e' res)) )) )
+     ( ( ('*'(Var 'e' res)) ) '=' ( (Var 'e' res) ) )
+  )
+ );
+
+/*
+$ENTRY Go { s.y e.input = <RefalStyleReverse s.y e.input>; }
+RefalStyleReverse {
+s.x e.1 = <RefalStyleReverse e.1> s.x;
+        = ;
+}
+*/
+ RefalStyleReverse = ( 
+   (Go (( (Var 's' y) (Var 'e' input) ) 
+               '=' ((Call RefalStyleReverse (Var 's' y) (Var 'e' input) ) ) ))
+   (Go1 (( (Var 's' y) (Var 'e' input) ) 
+               '=' ((Call last (Call RefalStyleReverse (Var 's' y) (Var 'e' input) ) )) ))
+   (RefalStyleReverse 
+     ( ( (Var 's' x) (Var 'e' 1) ) 
+               '=' ( (Call RefalStyleReverse (Var 'e' 1) ) (Var 's' x) ) )
+     ( (  ) '=' (  ) )
+  )
+  (last (( (Var 'e' x) (Var 't' last) ) 
+               '=' ( (Var 't' last) ) ))
+ );
+
+/*
+$ENTRY Fa { e.x = <Fba <Fab e.x>>; }
+Fab {
+A e.S = B <Fab e.S>;
+      = ;
+}
+Fba {
+B e.S = A <Fba e.S>;
+      = ;
+}
+*/
+ Fa = ( 
+   (Fa (( (Var 'e' x) ) 
+               '=' ((Call Fba (Call Fab (Var 'e' x) )) ) ))
+   (Fab
+     ( ( A (Var 'e' S) ) 
+               '=' ( B (Call Fab (Var 'e' S) )) )
+     ( (  ) '=' (  ) )
+  )
+   (Fba
+     ( ( B (Var 'e' S) ) 
+               '=' ( A (Call Fba (Var 'e' S) )) )
+     ( (  ) '=' (  ) )
+  )
+ );
+
+/*
+Функция RefalStyleReverse определена в примере 5. 
+$ENTRY Go { e.ls = <pal e.ls <RefalStyleReverse e.ls>>; }
+pal {
+     = True;
+ s.x = True;
+ s.x e.ls s.x = <pal e.ls>;
+ s.x e.ls s.y = False;
+}
+*/
+ pal = ( 
+   (Go (( (Var 'e' ls) ) 
+               '=' ((Call pal (Var 'e' ls) (Call RefalStyleReverse (Var 'e' ls))) ) ))
+   (RefalStyleReverse 
+     ( ( (Var 's' x) (Var 'e' 1) ) 
+               '=' ( (Call RefalStyleReverse (Var 'e' 1) ) (Var 's' x) ) )
+     ( (  ) '=' (  ) )
+  )
+   (pal 
+     ( (  ) '=' ( True ) )
+     ( ( (Var 's' x) ) '=' ( True ) )
+     ( ( (Var 's' x) (Var 'e' ls) (Var 's' x) ) 
+               '=' ( (Call pal (Var 'e' ls) ) ) )
+     ( ( (Var 's' x) (Var 'e' ls) (Var 's' y) ) '=' ( False ) )
+  )
+ );
+
+/*
+$ENTRY Go { e.string = <Search  ('abcabcacab') e.string>; }
+Search {
+(s.a e.1) s.a e.2  = <Look (s.a e.1) s.a e.2 ((s.a e.1) e.2)>;
+(s.a e.1) s.b e.2  = <Search (s.a e.1) e.2>;
+(s.a e.1)          = False ;
+}
+
+Look {
+(s.a e.1) s.a e.2 (e.3) = <Look (e.1) e.2 (e.3)>;
+(s.a e.1) s.b e.2 (e.3) = <Search e.3>;
+(s.a e.1)         (e.3) = <Search e.3>;
+(       )     e.2 (e.3) = True ;
+}
+*/
+ Search = ( 
+   (Go (( (Var 'e' string) ) 
+               '=' ((Call Search ('*' 'abcabcacab') (Var 'e' string)) ) ))
+   (Search 
+     ( ( ('*' (Var 's' a) (Var 'e' 1)) (Var 's' a) (Var 'e' 2) ) 
+               '=' ( (Call Look ('*' (Var 's' a) (Var 'e' 1)) (Var 's' a) (Var 'e' 2) ('*' ('*' (Var 's' a) (Var 'e' 1)) (Var 'e' 2) ) )) )
+     ( ( ('*' (Var 's' a) (Var 'e' 1)) (Var 's' b) (Var 'e' 2) ) 
+               '=' ( (Call Search ('*' (Var 's' a) (Var 'e' 1)) (Var 'e' 2) )) )
+     ( ( ('*' (Var 's' a) (Var 'e' 1)) ) '=' ( False ) )
+  )
+   (Look 
+     ( ( ('*' (Var 's' a) (Var 'e' 1)) (Var 's' a) (Var 'e' 2) ('*' (Var 'e' 3)) ) 
+               '=' ( (Call Look ('*' (Var 'e' 1)) (Var 'e' 2) ('*' (Var 'e' 3) ) )) )
+     ( ( ('*' (Var 's' a) (Var 'e' 1)) (Var 's' b) (Var 'e' 2) ('*' (Var 'e' 3)) ) 
+               '=' ( (Call Search (Var 'e' 3) )) )
+     ( ( ('*' (Var 's' a) (Var 'e' 1))                         ('*' (Var 'e' 3)) ) 
+               '=' ( (Call Search (Var 'e' 3) )) )
+     ( ( ('*' )  (Var 'e' 2) ('*' (Var 'e' 3)) ) '=' ( True ) )
+  )
+ );
+
+/*
+$ENTRY Sq { e.numb = <Times (e.numb) (e.numb)>; }
+*/
+ Sq = ( 
+   (Sq (( (Var 'e' numb) ) 
+               '=' ((Call Times ('*' (Var 'e' numb)) ('*' (Var 'e' numb)) ) ) ))
+   (Times 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' (  ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' ( (Call Plus ('*' (Call Times ('*' (Var 'e' u)) ('*' (Var 'e' v))) ) ('*' (Var 'e' u)) )) )
+   )
+   (Plus 
+     ( ( ('*' (Var 'e' u)) ('*') ) '=' ( (Var 'e' u) ) )
+     ( ( ('*' (Var 'e' u)) ('*' I (Var 'e' v)) ) 
+               '=' (I (Call Plus ('*' (Var 'e' u)) ('*' (Var 'e' v)) )) )
+   )
+ );
+
+/*
+* Call for a concrete Turing machine (a program).             
+$ENTRY Go {
+ (e.LeftTape) (s.CurrSymb) (e.RightTape) =
+   <Turing (
+    (start           	B	B	stop      	right)
+    (start          	Q	Q	start     	right)
+    (start         	P	Q	moveleft 	left )
+    (moveleft   	Q	Q	moveleft  	left )
+    (moveleft    	B	Q	start 	right) )
+   (start)  (e.LeftTape) (s.CurrSymb) (e.RightTape) >;
+ }
+
+* The interpreter itself. 
+* <Turing (e.Program) (s.CurrState)(e.LeftPartOfTape)                
+* 	(s.CurrSymb)(e.RightPartOfTape)>
+Turing  {
+  (e.instr) (stop) (e.left) (s.symbol) (e.right) 
+              = (e.left) (s.symbol) (e.right) ;
+
+  (e.instr) (s.q) (e.left) (s.symbol) (e.right)  
+              = <Turing (e.instr) <Turing1 
+                                         <Search (s.q s.symbol) (e.instr)> 
+                                                 (e.left) (s.symbol) (e.right)>  >;
+ }
+
+Turing1   {
+ (s.c s.r left) (e.left s.a) (s.symbol) (e.right) 
+                         = (s.r) (e.left) (s.a) (s.c e.right) ;
+ (s.c s.r right) (e.left) (s.symbol) (s.a e.right) 
+                         = (s.r) (e.left s.c) (s.a) (e.right) ;
+ }
+Search {
+   (s.key1 s.key2) ((s.key1 s.key2 e.value) e.table) = (e.value);
+   (s.key1 s.key2) ((e.row) e.table)
+	= <Search (s.key1 s.key2) (e.table)>;
+}
+*/
+ Turing = ( 
+   (Go (( ('*' (Var 'e' LeftTape)) ('*' (Var 's' CurrSymb)) ('*' (Var 'e' RightTape)) ) 
+               '=' ((Call Turing 
+                          ('*'
+    ('*' start         	B	B	stop      	right)
+    ('*' start         	Q	Q	start     	right)
+    ('*' start         	P	Q	moveleft 	left )
+    ('*' moveleft   	Q	Q	moveleft  	left )
+    ('*' moveleft    	B	Q	start 	right)
+                          )
+   ('*' start) ('*' (Var 'e' LeftTape)) ('*' (Var 's' CurrSymb)) ('*' (Var 'e' RightTape))
+                    ) ) ))
+   (Turing 
+     ( ( ('*' (Var 'e' instr)) ('*' stop) ('*' (Var 'e' left)) ('*' (Var 's' symbol)) ('*' (Var 'e' right)) ) 
+               '=' ( ('*' (Var 'e' left)) ('*' (Var 's' symbol)) ('*' (Var 'e' right)) ) )
+     ( ( ('*' (Var 'e' instr)) ('*' (Var 's' q)) ('*' (Var 'e' left)) ('*' (Var 's' symbol)) ('*' (Var 'e' right)) ) 
+               '=' ( (Call Turing ('*' (Var 'e' instr)) 
+                           (Call Turing1 (Call Search ('*' (Var 's' q) (Var 's' symbol)) ('*' (Var 'e' instr)))
+                                         ('*' (Var 'e' left)) ('*' (Var 's' symbol)) ('*' (Var 'e' right)) ) ) ) )
+  )
+   (Turing1 
+     ( ( ('*' (Var 's' c) (Var 's' r) left) ('*' (Var 'e' left) (Var 's' a)) ('*' (Var 's' symbol)) ('*' (Var 'e' right)) ) 
+               '=' ( ('*' (Var 's' r)) ('*' (Var 'e' left)) ('*' (Var 's' a)) ('*' (Var 's' c) (Var 'e' right)) ) )
+     ( ( ('*' (Var 's' c) (Var 's' r) right) ('*' (Var 'e' left)) ('*' (Var 's' symbol)) ('*' (Var 's' a) (Var 'e' right)) ) 
+               '=' ( ('*' (Var 's' r)) ('*' (Var 'e' left) (Var 's' c)) ('*' (Var 's' a)) ('*' (Var 'e' right)) ) )
+  )
+   (Search 
+     ( ( ('*' (Var 's' key1) (Var 's' key2)) 
+         ('*' ('*' (Var 's' key1) (Var 's' key2) (Var 'e' value)) (Var 'e' table)) ) 
+               '=' ( ('*' (Var 'e' value)) ) )
+     ( ( ('*' (Var 's' key1) (Var 's' key2)) 
+         ('*' ('*' (Var 'e' row)) (Var 'e' table)) ) 
+               '=' ( (Call Search ('*' (Var 's' key1) (Var 's' key2)) ('*' (Var 'e' table)) )) )
+  )
+ );
+
+
+}
+
+*********************************************************************************
+Timing {
+ = <Prout Timing_DoublePQ '...'> 
+   <Timing Turing_DoublePQ>;
+
+ Turing_DoublePQ =  
+            <Prout 'Turing_DoublePQ:'>
+            <Interpreter (Call Go ('*' <Data DoublePQBlanks>) ('*' P) ('*' <Data DoublePQ>)) 
+                         <Prog Turing> <Prout 'Start step: ' <Step> <Nil <TimeElapsed 0>>> >
+            <Prout 'Steps: ' <Step> '\n' 'Time elapsed: ' <TimeElapsed>> ;
+
+}
+
+Nil { e.1 = ; }
+
+Data {
+ Plus = ('*' I I I) ('*' I I);
+ Replace = ('*' name A B) 
+           1 2 ('*' name);
+ DoublePQ  =
+  P P P P P P P P P P P P
+*  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P /* 32*16=512 */
+/*
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+/*
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+  P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P P
+*/
+  B B B B
+  ;
+
+ DoublePQBlanks  = <Blanks <Data DoublePQ>>;
+
+ Mult1 =
+  '11111111111111111111'  /* 20 */
+  '11111111111111111111'  /* 20 */
+;
+
+ Mult2 =
+  '11111111111111111111'  /* 20 */
+  '1111111111'  /* 10 */
+;
+
+ MultBlanks = <Times (<Blanks <Data Mult1>>) (<Data Mult2>)>;
+
+}
+
+Times { 
+ (e.u) () = ;
+ (e.u) (s.I e.v) = <Times (e.u) (e.v)> e.u;
+}
+
+Blanks {
+         = ;
+ s.1 e.x = B <Blanks e.x>;
+}
+
+
+
+
