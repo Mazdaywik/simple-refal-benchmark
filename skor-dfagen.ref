@@ -40,7 +40,21 @@
  * Main part.
  */
 
-$ENTRY GO {
+$ENTRY Go {
+  = <Go3> <Go3> <Go3>
+}
+
+Go3 {
+  = <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2>
+}
+
+Go2 {
+  = <Nil <GO1> <GO1> <GO1> <GO1> <GO1> <GO1> <GO1> <GO1> <GO1> <GO1>>
+}
+
+Nil { e.X = }
+
+GO1 {
     = <Prout 'DFA Generator'>
       <Prout '    source-file     : ' <Arg 1>>
       <Prout '    dest-file       : ' <Arg 2>>
