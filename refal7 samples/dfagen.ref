@@ -1,0 +1,413 @@
+
+/****************************************************************************
+ DFA Generator.
+
+ Copyright (c) 2008 Sergei Yu. Skorobogatov. All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+ ****************************************************************************
+ File:
+     dfagen.ref
+
+ Description:
+     Generates acyclic DFA from a set of strings.
+
+ Author:
+     Sergei Skorobogatov (Sergei.Skorobogatov@supercompilers.com)
+ ***************************************************************************/
+
+/*
+ * Main part.
+ */
+
+$ENTRY GO {
+    = <Prout 'DFA Generator'>
+      <Prout '    source-file     : ' <Arg 1>>
+      <Prout '    dest-file       : ' <Arg 2>>
+      <Prout '---------------------/'>
+      <Open 'r' 1 <Arg 1>>
+      <Open 'w' 2 <Arg 2>>
+      <SaveFile 2 <Process <Parse <LoadFile 1>>>>;
+    }
+
+Process {
+    (NO) e.Data = <OutDFA () <CodeDFA 0 <Build e.Data>>>;
+
+    (JAVA t.Variant (e.Package) (e.Class) (e.Throws)) e.Data
+        = 'package ' e.Package ';' CAR_RET CAR_RET
+          <Java_OutImports t.Variant>
+          'public abstract class ' e.Class CAR_RET
+          '{' CAR_RET
+          '    public void match(' <Java_OutArgs t.Variant> ')' e.Throws CAR_RET
+          '    {' CAR_RET
+          <Java_OutLocalDecls t.Variant>
+          <Java_OutDFA t.Variant <CodeDFA 0 <Build e.Data>>>
+          '    }' CAR_RET
+          <Java_OutAbstractMethods (e.Throws) e.Data>
+          <Java_OutFixedMethods t.Variant (e.Throws)>
+          '}' CAR_RET;
+    }
+
+Parse {
+    '?' CAR_RET e.1 = (NO) <Parse2 e.1>;
+    'Java,' e.Variant ',' e.Package ',' e.Class ',' e.Throws CAR_RET e.1 =
+        (JAVA (e.Variant) (e.Package) (e.Class) (<PrepareThrowsClause (e.Variant) e.Throws>)) <Parse2 e.1>;
+    }
+
+Parse2 {
+    = ;
+    e.Clause CAR_RET e.1 = <ParseClause e.Clause> <Parse2 e.1>;
+    e.Clause = <ParseClause e.Clause>;
+    }
+
+ParseClause {
+    = ;
+    ' ' e.1 = <ParseClause e.1>;
+    '\"' e.1 = <ParseClause2 () e.1>;
+    }
+
+ParseClause2 {
+    (e.P) '\\\\' e.1 = <ParseClause2 (e.P '\\') e.1>;
+    (e.P) '\\\"' e.1 = <ParseClause2 (e.P '\"') e.1>;
+    (e.P) '\"' e.1 = <ParseClause3 (e.P) e.1>;
+    (e.P) s.X e.1 = <ParseClause2 (e.P s.X) e.1>;
+    }
+
+ParseClause3 {
+    (e.P) ' ' e.1 = <ParseClause3 (e.P) e.1>;
+    (e.P) '=' e.1 = <ParseClause4 (e.P) e.1>;
+    }
+
+ParseClause4 {
+    (e.P) ' ' e.1 = <ParseClause4 (e.P) e.1>;
+    (e.P) e.1 ' ' = <ParseClause4 (e.P) e.1>;
+    (e.P) e.C = (e.P (EXIT e.C));
+    }
+
+PrepareThrowsClause {
+    (e.Variant) ' ' e.1 = <PrepareThrowsClause (e.Variant) e.1>;
+    (e.Variant) 'throws ' e.1 = <PrepareThrowsClause (e.Variant) e.1>;
+    ('string') = ;
+    ('reader') = CAR_RET '        throws IOException';
+    ('string') e.1 = CAR_RET '        throws ' e.1;
+    ('reader') e.1 = CAR_RET '        throws IOException, ' e.1;
+    }
+
+LoadFile {
+    s.1 = <LoadFile2 s.1 <Get s.1>>;
+    }
+
+LoadFile2 {
+    s.1 0 = ;
+    s.1 e.2 0 = e.2;
+    s.1 e.2 = e.2 CAR_RET <LoadFile s.1>;
+    }
+
+SaveFile {
+    s.1 = ;
+    s.1 e.2 CAR_RET e.3 = <Put s.1 e.2> <SaveFile s.1 e.3>;
+    s.1 e.2 = <Put s.1 e.2>;
+    }
+
+/*
+ * Building DFA.
+ */
+
+Build {
+    e.1 = <Factorize <Prepare e.1>>;
+    }
+
+Factorize {
+    (EXIT e.1) = (EXIT e.1);
+    (s.X e.Y) e.1 = <Factorize2 s.X ((e.Y)) e.1>;
+    }
+
+Factorize2 {
+    s.X (e.S) (s.X e.Y) e.1 = <Factorize2 s.X (e.S (e.Y)) e.1>;
+    s.X (e.S) e.1 = (s.X <Build e.S>) <Factorize e.1>;
+    }
+
+Prepare {
+    e.1 ((e.Y)) e.2 = <Sort e.1 e.2> (e.Y);
+    e.1 = <Sort e.1> (EXIT ());
+    }
+
+Sort {
+    e.1 (s.X1 e.Y1) e.2 (s.X2 e.Y2) e.3
+        , <Compare (<Ord s.X1>) <Ord s.X2>>: '+'
+        = e.1 <Sort (s.X2 e.Y2) e.2 (s.X1 e.Y1) e.3>;
+
+    e.1 = e.1;
+    }
+
+/*
+ * Converting DFA to abstract imperative language
+ */
+
+CodeDFA {
+    s.N t.1 = <CodeReturn s.N t.1>;
+
+    s.N (s.X e.Y) t.1 = <CodeIfSeq s.N () (s.X e.Y) t.1>;
+
+    s.N e.Cases t.1
+        = (SWITCH s.N
+               <CodeCaseSeq s.N e.Cases>
+               (DEFAULT <CodeReturn s.N t.1>)
+          );
+    }
+
+CodeIfSeq {
+    s.N (e.Xs) (s.X t.1 (EXIT ())) (EXIT ())
+        = <CodeIfSeq <Add s.N 1> (e.Xs (s.N s.X)) t.1 (EXIT ())>;
+
+    s.N (e.Xs) (s.X e.Y) t.1
+        = (IF s.N IS (e.Xs (s.N s.X)) THEN
+               <CodeDFA <Add s.N 1> e.Y>
+           ELSE
+               <CodeReturn s.N t.1>
+          );
+    }
+
+CodeCaseSeq {
+    s.N = ;
+    s.N (s.X e.Y) e.2
+        = (CASE s.X <CodeDFA <Add s.N 1> e.Y>) <CodeCaseSeq s.N e.2>;
+    }
+
+CodeReturn {
+    s.N (EXIT ()) = (RETURN s.N FAILURE);
+    s.N (EXIT e.Success) = (RETURN s.N e.Success);
+    }
+
+/*
+ * Generating language-neutral output.
+ */
+
+OutDFA {
+    (e.Indent) (SWITCH s.X e.Cases (DEFAULT e.Default))
+        = e.Indent 'switch s[' <Symb s.X> ']' CAR_RET
+          e.Indent '{' CAR_RET
+          <OutCases (e.Indent '    ') e.Cases>
+          e.Indent '    default:' CAR_RET
+          <OutDFA (e.Indent '        ') e.Default>
+          e.Indent '}' CAR_RET;
+
+    (e.Indent) (IF s.X IS (e.Conditions) THEN t.1 ELSE t.2)
+        = e.Indent 'if (' <OutConditionSeq e.Conditions> ')' CAR_RET
+          <OutDFA (e.Indent '    ') t.1>
+          e.Indent 'else' CAR_RET
+          <OutDFA (e.Indent '    ') t.2>;
+
+    (e.Indent) (RETURN s.X e.Result)
+        = e.Indent 'return ' <Symb s.X> ', ' <OutResult e.Result> CAR_RET;
+    }
+
+OutConditionSeq {
+    t.1 t.2 e.3 = <OutCondition t.1> ' and ' <OutConditionSeq t.2 e.3>;
+    t.1 = <OutCondition t.1>;
+    }
+
+OutCondition {
+    (s.N s.X) = 's[' <Symb s.N> '] == ' s.X;
+}
+
+OutCases {
+    (e.Indent) = ;
+
+    (e.Indent) (CASE s.X t.1) e.2
+        = e.Indent 'case ' s.X ':' CAR_RET
+          <OutDFA (e.Indent '    ') t.1>
+          <OutCases (e.Indent) e.2>;
+    }
+
+OutResult {
+    FAILURE = 'FAILURE';
+    e.1 = e.1;
+    }
+
+/*
+ * Generating Java output.
+ */
+
+Java_OutImports {
+    ('string') = ;
+    ('reader')
+        = 'import java.io.IOException;' CAR_RET
+          'import java.io.PushbackReader;' CAR_RET CAR_RET;
+    }
+
+Java_OutArgs {
+    ('string') = 'String s, int pos';
+    ('reader') = 'PushbackReader r';
+}
+
+Java_OutLocalDecls {
+    ('string') = '        final int len = s.length();' CAR_RET CAR_RET;
+    ('reader') = '        int c;' CAR_RET CAR_RET;
+}
+
+Java_OutDFA {
+    ('string') e.1 = <Java_str_OutDFA ('        ') e.1>;
+    ('reader') e.1 = <Java_rdr_OutDFA ('        ') e.1>;
+    }
+
+Java_str_OutDFA {
+    (e.Indent) (SWITCH s.X e.Cases (DEFAULT e.Default))
+        = e.Indent 'if (' <Java_OutIndex s.X> ' < len)' CAR_RET
+          e.Indent '{' CAR_RET
+          e.Indent '    switch (s.charAt(' <Java_OutIndex s.X> '))' CAR_RET
+          e.Indent '    {' CAR_RET
+          <Java_str_OutCases (e.Indent '    ') e.Cases>
+          e.Indent '    default:' CAR_RET
+          <Java_str_OutDFA (e.Indent '        ') e.Default>
+          e.Indent '    }' CAR_RET
+          e.Indent '}' CAR_RET
+          e.Indent 'else' CAR_RET
+          e.Indent '{' CAR_RET
+          e.Indent '    adjustPosition(' <Symb s.X> ');' CAR_RET
+          e.Indent '    fail();' CAR_RET
+          e.Indent '}' CAR_RET;
+
+    (e.Indent) (IF s.X IS (e.Conditions) THEN t.1 ELSE t.2)
+        = e.Indent 'if (' <Java_str_OutConditionSeq e.Conditions> ')' CAR_RET
+          e.Indent '{' CAR_RET
+          <Java_str_OutDFA (e.Indent '    ') t.1>
+          e.Indent '}' CAR_RET
+          e.Indent 'else' CAR_RET
+          e.Indent '{' CAR_RET
+          <Java_str_OutDFA (e.Indent '    ') t.2>
+          e.Indent '}' CAR_RET;
+
+    (e.Indent) (RETURN s.X e.Result)
+        = e.Indent 'adjustPosition(' <Symb s.X> ');' CAR_RET
+          <Java_OutResult (e.Indent) s.X e.Result>;
+    }
+
+Java_str_OutConditionSeq {
+    e.1 (s.N s.X) = <Java_OutIndex s.N> ' < len' <Java_str_OutConditionSeq2 e.1 (s.N s.X)>;
+    }
+
+Java_str_OutConditionSeq2 {
+    t.1 e.2 = ' && ' <Java_str_OutCondition t.1> <Java_str_OutConditionSeq2 e.2>;
+    = ;
+    }
+
+Java_str_OutCondition {
+    (s.N s.X) = 's.charAt(' <Java_OutIndex s.N> ') == ' <Java_CharLiteral s.X>;
+    }
+
+Java_str_OutCases {
+    (e.Indent) = ;
+
+    (e.Indent) (CASE s.X t.1) e.2
+        = e.Indent 'case ' <Java_CharLiteral s.X> ':' CAR_RET
+          <Java_str_OutDFA (e.Indent '    ') t.1>
+          e.Indent '    break;' CAR_RET CAR_RET
+          <Java_str_OutCases (e.Indent) e.2>;
+    }
+
+Java_rdr_OutDFA {
+    (e.Indent) (SWITCH s.X e.Cases (DEFAULT e.Default))
+        = e.Indent 'switch (c = r.read())' CAR_RET
+          e.Indent '{' CAR_RET
+          <Java_rdr_OutCases (e.Indent) e.Cases>
+          e.Indent 'default:' CAR_RET
+          e.Indent '    if (c != -1)' CAR_RET
+          e.Indent '        r.unread(c);' CAR_RET
+          <Java_rdr_OutDFA (e.Indent '    ') e.Default>
+          e.Indent '}' CAR_RET;
+
+    (e.Indent) (IF s.X IS (e.Conditions) THEN t.1 ELSE t.2)
+        = e.Indent 'if (' <Java_rdr_OutConditionSeq (e.Indent) e.Conditions> ')' CAR_RET
+          e.Indent '{' CAR_RET
+          <Java_rdr_OutDFA (e.Indent '    ') t.1>
+          e.Indent '}' CAR_RET
+          e.Indent 'else' CAR_RET
+          e.Indent '{' CAR_RET
+          e.Indent '    if (c != -1)' CAR_RET
+          e.Indent '        r.unread(c);' CAR_RET
+          <Java_rdr_OutDFA (e.Indent '    ') t.2>
+          e.Indent '}' CAR_RET;
+
+    (e.Indent) (RETURN s.X e.Result)
+        = <Java_OutResult (e.Indent) s.X e.Result>;
+    }
+
+Java_rdr_OutConditionSeq {
+    (e.Indent) t.1 = <Java_rdr_OutCondition t.1>;
+    (e.Indent) t.1 t.2 e.3
+        = <Java_rdr_OutCondition t.1> ' && ' CAR_RET
+          e.Indent '    ' <Java_rdr_OutConditionSeq (e.Indent) t.2 e.3>;
+    }
+
+Java_rdr_OutCondition {
+    (s.N s.X) = '(c = r.read()) == ' <Java_CharLiteral s.X>;
+    }
+
+Java_rdr_OutCases {
+    (e.Indent) = ;
+
+    (e.Indent) (CASE s.X t.1) e.2
+        = e.Indent 'case ' <Java_CharLiteral s.X> ':' CAR_RET
+          <Java_rdr_OutDFA (e.Indent '    ') t.1>
+          e.Indent '    break;' CAR_RET CAR_RET
+          <Java_rdr_OutCases (e.Indent) e.2>;
+    }
+
+Java_OutResult {
+    (e.Indent) s.X FAILURE
+        = e.Indent 'fail();' CAR_RET;
+
+    (e.Indent) s.X e.1
+        = e.Indent e.1 '();' CAR_RET;
+    }
+
+Java_OutIndex {
+    0 = 'pos';
+    s.N = 'pos+' <Symb s.N>;
+    }
+
+Java_CharLiteral {
+    s.X
+        , '0123456789~`?<>{}!@#$%^&*()-_=+/,.:;|'
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+          'abcdefghijklmnopqrstuvwxyz': e.1 s.X e.2 = '\'' s.X '\'';
+
+    s.X = '\'?\'';
+    }
+
+Java_OutAbstractMethods {
+    (e.Throws) = CAR_RET;
+    (e.Throws) (e.P (EXIT e.C)) e.1
+        = CAR_RET '    protected abstract void ' e.C '()' e.Throws ';'
+          <Java_OutAbstractMethods (e.Throws) e.1>;
+    }
+
+Java_OutFixedMethods {
+    ('string') (e.Throws)
+        = '    protected abstract void adjustPosition(int delta);' CAR_RET
+          '    protected abstract void fail()'  e.Throws ';' CAR_RET;
+
+    ('reader') (e.Throws)
+        = '    protected abstract void fail()'  e.Throws ';' CAR_RET;
+    }

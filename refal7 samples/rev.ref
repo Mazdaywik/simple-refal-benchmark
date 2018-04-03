@@ -1,0 +1,7 @@
+
+$ENTRY Go = <Prout <Rev 'abcdef'>>;
+
+Rev {
+    = ;
+    s.1 e.2 = <Rev e.2> s.1;
+    };

@@ -1,0 +1,9 @@
+
+$ENTRY Go = <Prout <Pal 'redivider'>>;
+
+Pal {
+    = TRUE;
+    s = TRUE;
+    s.X e.1 s.X = <Pal e.1>;
+    e = FALSE;
+    };
