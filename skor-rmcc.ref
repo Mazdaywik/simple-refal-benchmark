@@ -40,7 +40,11 @@
  * Main part.
  */
 
-$ENTRY GO {
+$ENTRY Go {
+  = <GO1> <GO1> <GO1> <GO1> <GO1>
+}
+
+GO1 {
     = <Prout 'Real Men Compiler Constructor'>
       <Prout '    source-file : ' <Arg 1>>
       <Prout '    token-file  : ' <Arg 2>>

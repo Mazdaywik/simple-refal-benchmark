@@ -62,10 +62,10 @@ Loop {
 RandomFuncs {
  (Fnames s.fn) (Sents s.cnt) t.ln t.dp /* The number of sentences: */
       = (Func (<PutEntry s.fn> s.fn)
-        <RandomFunc <Add <RandomDigit s.cnt> 1> t.ln t.dp (Pref) (Post)>);
+        <RandomFunc <Add <RandomDigit_ s.cnt> 1> t.ln t.dp (Pref) (Post)>);
  (Fnames s.fn e.fns) (Sents s.cnt) t.ln t.dp /* The number of sentences: */
       = (Func (<RandomEntry s.fn> s.fn)
-              <RandomFunc <Add <RandomDigit s.cnt> 1> t.ln t.dp (Pref) (Post)>)
+              <RandomFunc <Add <RandomDigit_ s.cnt> 1> t.ln t.dp (Pref) (Post)>)
         <RandomFuncs (Fnames e.fns) (Sents s.cnt) t.ln t.dp>;
 }
 
@@ -73,7 +73,7 @@ RandomFunc {
  0     t.ln t.dp t.pref t.post = ;
  s.cnt (Length s.ln) (Depth s.dp) t.pref1 t.post1,
                   <Rp Length '=' 0> : e.rp,
-                  <Start (CntCond 0 (CntBlock <RandomDigit 2>))
+                  <Start (CntCond 0 (CntBlock <RandomDigit_ 2>))
                          (Length <Add s.ln 1>) (Depth <Add s.dp 1>) (Vars) t.pref1 t.post1
                   >: (Pref e.pref) (Post e.post) e.sent
                 = /*<Prout (Pref e.pref1) (Post e.post1)>*/ (Sent e.sent)
@@ -161,7 +161,7 @@ RandomBlock {
 
  s.cnt (CntBlock s.bl) (Length s.ln) (Depth s.dp) (Vars e.vars) (Pref e.pref1) (Post e.post1),
                   <Dg Length> <Br Length '=' <Cp Length>>: e.trash, /* Restore the current length */
-                  <Start (CntCond <RandomDigit 5> (CntBlock <RandomDigit s.bl>))
+                  <Start (CntCond <RandomDigit_ 5> (CntBlock <RandomDigit_ s.bl>))
                          (Length <Add s.ln 1>) (Depth <Add s.dp 1>) (Vars e.vars)
                          (Pref e.pref1) (Post e.post1)
                   >: (Pref e.pref) (Post e.post) e.sent
@@ -171,7 +171,7 @@ RandomBlock {
                   >;
 
  (CntBlock s.bl) (Length s.ln) (Depth s.dp) s.n (Vars e.vars),
- <RandomDigit 3>: { 0 = <RandomBlock (CntBlock s.bl) (Length s.ln) (Depth s.dp) s.n (Vars e.vars)>;
+ <RandomDigit_ 3>: { 0 = <RandomBlock (CntBlock s.bl) (Length s.ln) (Depth s.dp) s.n (Vars e.vars)>;
                     s.cnt = (Cond
                              (Expr <RandomExpr (<RandomSize (Length <Add s.ln 1>) (Depth <Add s.dp 1>)>
                                                (Vars e.vars) (Expr s.n)
@@ -192,7 +192,7 @@ RandomPattern {
 }
 
 RandomPrefix {
-  = <RandomExpr ((Length <RandomDigit 5>) (Depth <RandomDigit 5>)
+  = <RandomExpr ((Length <RandomDigit_ 5>) (Depth <RandomDigit_ 5>)
                              (Vars <RandomVars Pref 13>) (Patt 13)
                 )>;
 }
@@ -225,13 +225,13 @@ Dec {
 
 RandomSize {
  (Length s.ln) (Depth s.dp)
-          = /*<Prout RandomSize1>*/ (Length <RandomDigit s.ln>)
-            /*<Prout RandomSize2>*/ (Depth <RandomDigit <Sub s.dp 1>>);
+          = /*<Prout RandomSize1>*/ (Length <RandomDigit_ s.ln>)
+            /*<Prout RandomSize2>*/ (Depth <RandomDigit_ <Sub s.dp 1>>);
 }
 
 RandomLength {
  (Length 0) = (Length 0);
- (Length s.ln) = (Length <RandomDigit s.ln>);
+ (Length s.ln) = (Length <RandomDigit_ s.ln>);
 }
 
 RandomTerm {
@@ -250,21 +250,21 @@ RandomTerm1 {
 }
 
 RandomChar {
- s.char = <Chr <Add <Ord s.char> <RandomDigit 3>>>;
+ s.char = <Chr <Add <Ord s.char> <RandomDigit_ 3>>>;
 }
 
 RandomWord {
  0    (e.chars) = <Implode e.chars>;
  s.ln (e.chars) = <RandomWord <Sub s.ln 1> (e.chars <RandomChar 'A'>)>;
- s.ln           = <RandomWord <Add <RandomDigit s.ln> 1> ()>;
+ s.ln           = <RandomWord <Add <RandomDigit_ s.ln> 1> ()>;
 }
 
 RandomFNameList {
  0 (e.fns s.n e.1 s.n e.2) = e.fns <RandomFNameList 0 (s.n e.1 e.2)>;
  0 (e.fns) = e.fns;
  s.cnt (e.fns) = <RandomFNameList <Sub s.cnt 1> (e.fns <RandomWord 4>)>;
-        ,<RandomDigit 3>: {    2   = Go <RandomFNameList <Add <RandomDigit 7> 1> ()>;
-                               s.n = <RandomFNameList <Add <RandomDigit 7> 1> ()>;
+        ,<RandomDigit_ 3>: {    2   = Go <RandomFNameList <Add <RandomDigit_ 7> 1> ()>;
+                               s.n = <RandomFNameList <Add <RandomDigit_ 7> 1> ()>;
                           };
 }
 
@@ -276,15 +276,15 @@ ExternalFuncs {
 
 RandomEntry {
  Go = "$ENTRY" <Rp Entry '=' Yes>;
- s.fn , <RandomDigit 3>: { 2   = "$ENTRY" <Rp Entry '=' Yes>;
+ s.fn , <RandomDigit_ 3>: { 2   = "$ENTRY" <Rp Entry '=' Yes>;
                            s.n = ;
                          };
 }
 
-RandomDig { = <RandomDigit 10>; }
+RandomDig { = <RandomDigit_ 10>; }
 
 RandomValue {
- t.frequencies = <GetRandom 0 <Random 1> <Scale 0 t.frequencies>>;
+ t.frequencies = <GetRandom 0 <Random_ 1> <Scale 0 t.frequencies>>;
 }
 
 Scale {
@@ -304,7 +304,7 @@ GetRandom {
 MaxMacroDigit { = <Sub (1 0) 1>; }
 
 Random5 {
- , <Mod <Random 1> 31>: s.n,
+ , <Mod <Random_ 1> 31>: s.n,
         : { ,<Compare 6 s.n>: '+'  = 0;
             ,<Compare 12 s.n>: '+' = 1;
             ,<Compare 18 s.n>: '+' = 2;
@@ -314,7 +314,7 @@ Random5 {
 }
 
 Random6 {
- , <Mod <Random 1> 37>: s.n,
+ , <Mod <Random_ 1> 37>: s.n,
         : { ,<Compare 6 s.n>: '+'  = 0;
             ,<Compare 12 s.n>: '+' = 1;
             ,<Compare 18 s.n>: '+' = 2;
@@ -325,11 +325,11 @@ Random6 {
 }
 
 Random200 {
- , <Mod <Random 1> 1201>: s.n = <Random200a 6 s.n 0>;
+ , <Mod <Random_ 1> 1201>: s.n = <Random200a 6 s.n 0>;
 }
 
 Random10 {
- , <Mod <Random 1> 61>: s.n = <Random200a 6 s.n 0>;
+ , <Mod <Random_ 1> 61>: s.n = <Random200a 6 s.n 0>;
 }
 
 Random200a {
@@ -340,7 +340,7 @@ Random200a {
 
 
 Random-2in26 {
- , <RandomDigit 528>: s.n
+ , <RandomDigit_ 528>: s.n
  , /* <Prout Random-2in26 '= ' s.n> : , */
         : { ,<Compare 256 s.n>: '+'  = 1;
                                      = 0;
@@ -365,18 +365,18 @@ Var {
 }
 
 GetRandomVar {
- t.vars (Patt s.cnt) = <GetRandomVar t.vars (Patt s.cnt) <Add <Mod <Random 1> 13> 1>>;
+ t.vars (Patt s.cnt) = <GetRandomVar t.vars (Patt s.cnt) <Add <Mod <Random_ 1> 13> 1>>;
  (Vars e.vars (Var s.t s.n) e.1) (Patt s.cnt) s.n = (Var s.t s.n);
 
  t.vars (Expr 0) = ;
- t.vars (Expr s.cnt) = <GetRandomVar t.vars (Expr s.cnt) <Mod <Random 1> s.cnt>>;
+ t.vars (Expr s.cnt) = <GetRandomVar t.vars (Expr s.cnt) <Mod <Random_ 1> s.cnt>>;
  (Vars t.Var e.vars) (Expr s.cnt)  0  = t.Var;
  (Vars t.Var e.vars) (Expr s.cnt) s.m = <GetRandomVar (Vars e.vars) (Expr s.cnt) <Sub s.m 1>>;
 }
 
 RandomCall { , <Cp FunNames>
   : {  t.FunNames   0   = (NoCall);
-       t.FunNames s.cnt = <RandomCall t.FunNames <Mod <Random 1> s.cnt>>;
+       t.FunNames s.cnt = <RandomCall t.FunNames <Mod <Random_ 1> s.cnt>>;
     };
  (FunNames s.n e.ns) 0 = (Call s.n);
  (FunNames s.n e.ns) s.cnt = <RandomCall (FunNames e.ns) <Sub s.cnt 1>>;
@@ -704,3 +704,33 @@ Switch {
 
 IfRandomComments {  = <Cp Comments>; }
 Nil { e.x = ; }
+
+********************************************************************************
+
+RandomDigit_ {
+  s.Maximum = <% <Random_ 1> <+ s.Maximum 1>>;
+}
+
+Random_ {
+  1 = <Random-Rotate <Dg "Fibonacci state">>;
+}
+
+Random-Rotate {
+  (e.Prefix s.24) e.Suffix s.55
+    = <Random-Rotate-Aux (<+ s.24 s.55>) (e.Prefix) s.24 e.Suffix>;
+
+  /* empty */
+    = <Random-Rotate
+        ( 1   2   3   4   5   6   7   8   9  10
+         11  12  13  14  15  16  17  18  19  20
+         21  22  23  24) 25  26  27  28  29  30
+         31  32  33  34  35  36  37  38  39  40
+         41  42  43  44  45  46  47  48  49  50
+         51  52  53  54  55
+      >;
+}
+
+Random-Rotate-Aux {
+  (e.Overflow s.Next) (e.Prefix) e.Suffix
+    = s.Next <Br "Fibonacci state" '=' (s.Next e.Prefix) e.Suffix>;
+}

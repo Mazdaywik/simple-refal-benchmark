@@ -1,8 +1,0 @@
-
-$ENTRY Go { = <Prout <Fib 'iiiiiii' FIRST 'a' SECOND 'b'>>; };
-
-Fib {
-    FIRST e.1 SECOND e.2 = e.2;
-    'i' e.Count FIRST e.1 SECOND e.2 = <Fib e.Count FIRST e.2 SECOND e.1 e.2>;
-    };
-    

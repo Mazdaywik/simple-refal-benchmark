@@ -1,8 +1,0 @@
-
-$ENTRY Go = <Prout <Fact 5>>;
-
-Fact s.N = 1 1 =>
-    $FUNC Do {
-        s.Mul s.N = s.Mul;
-        s.Mul s.I = <Do <"*" s.Mul s.I> <"+" s.I 1>>;
-        };
