@@ -1,0 +1,91 @@
+$ENTRY Go {
+  = <Check '12*(23+X-45/Q)*Y'>
+    <Check '12*(23+X-45/Q)*Y)'>
+}
+
+Check {
+  e.Expr
+    , <ParseE e.Expr> : t.Expr
+    = <Prout '[' e.Expr '] -- valid, ' t.Expr>;
+
+  e.Expr = <Prout '[' e.Expr '] -- invalid'>;
+}
+
+* E → E + T | T
+ParseE {
+  e.Expr s.Op e.Term
+    , <ParseE e.Expr> : t.Expr
+    , <OneOf s.Op '+-'> : True
+    , <ParseT e.Term> : t.Term
+    = (t.Expr s.Op t.Term);
+
+  e.Term , <ParseT e.Term> : t.Term = t.Term;
+
+  e.Other = /* пусто */;
+}
+
+OneOf {
+  t.Term e.Samples-B t.Term e.Samples-E = True;
+  t.Term e.Samples = False;
+}
+
+* T → T * F | F
+ParseT {
+  e.Term s.Op e.Factor
+    , <ParseT e.Term> : t.Term
+    , <OneOf s.Op '*/'> : True
+    , <ParseF e.Factor> : t.Factor
+    = (t.Term s.Op t.Factor);
+
+  e.Factor , <ParseF e.Factor> : t.Factor = t.Factor;
+
+  e.Other = /* пусто */;
+}
+
+* F → (E) | NUM | VAR
+ParseF {
+  '(' e.Expr ')' , <ParseE e.Expr> : t.Expr = t.Expr;
+  e.Number , <ParseNUM e.Number> : s.Number = s.Number;
+  e.Variable , <ParseVAR e.Variable> : s.Variable = s.Variable;
+
+  e.Other = /* пусто */;
+}
+
+* NUM: DIGIT DIGIT*
+ParseNUM {
+  s.Digit e.Digits
+    , <IsDigit s.Digit> : True
+    , <IsDigits e.Digits> : True
+    = <Numb s.Digit e.Digits>;
+
+  e.Other = /* пусто */;
+}
+
+IsDigit {
+  s.Digit , <Type s.Digit> : 'D' s.0 s.Digit = True;
+  s.Other = False;
+}
+
+IsDigits {
+  s.Digit e.Digits
+    , <IsDigit s.Digit> : True
+    , <IsDigits e.Digits> : True
+    = True;
+
+  /* пусто */ = True;
+
+  e.Other = False;
+}
+
+* VAR: identifier
+ParseVAR {
+  e.Var-B '-' e.Var-E = /* пусто, в имени переменной не допустим дефис */;
+
+  e.Variable
+    , <Implode e.Variable>
+    : {
+        0 e.Tail = /* пусто */;
+        s.Var /* без остатка */ = s.Var;
+        s.Var e.Rest = /* пусто */;
+      };
+}
