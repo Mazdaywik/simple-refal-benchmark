@@ -1,0 +1,11 @@
+*$FROM SCP4/trace
+*$FROM SCP4/scp4
+*$FROM SCP4/drive
+*$FROM SCP4/basic
+*$FROM SCP4/comparet
+*$FROM SCP4/access
+*$FROM SCP4/analyse
+*$FROM SCP4/global
+*$FROM SCP4/key
+*$FROM SCP4/final
+*$FROM SCP4/reflib
