@@ -41,10 +41,6 @@
  */
 
 $ENTRY Go {
-  = <Go3> <Go3> <Go3>
-}
-
-Go3 {
   = <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2> <Go2>
 }
 

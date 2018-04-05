@@ -45,9 +45,9 @@ A pattern is the partial case of an expression.
 *$MATCHING ForRepeatedSpecialization;
 
 $ENTRY Go {
-  =
+*  =
 *    <Testing>
-    <Timing>;
+*    <Timing>;
 *+ e.data = <Interpreter (Call Zip e.data) <Prog Zip>>;
 *+ e.data = <Interpreter (Call Go e.data) <Prog Zip>>;
 
@@ -55,7 +55,8 @@ $ENTRY Go {
 * Applicative:-+ has finished but there are a lot of garbage.
 *- e.data = <Interpreter (Call IncFact e.data) <Prog IncFact>>;
 * Time: 17.976
-*+- e.data = <Interpreter (Call Fact e.data) <Prog IncFact>>;
+*+-
+e.data = <Interpreter (Call Fact e.data) <Prog IncFact>>;
 * Time: 4.667
 *+! e.data = <Interpreter (Call Times e.data) <Prog IncFact>>;
 * Time: 2.273
@@ -348,7 +349,7 @@ Eq {
  (s.1 e.xpr1) (s.1 e.xpr2) = <Eq (e.xpr1) (e.xpr2)>;
 * Was: -- it is wrong. Consider <Eq (('*' A B) C) (('*' A) B C)>
 *- (('*' e.1) e.xpr1) (('*' e.2) e.xpr2) = <Eq (e.1 e.xpr1) (e.2 e.xpr2)>;
- (('*' e.1) e.xpr1) (('*' e.2) e.xpr2) = <ContEq <Eq (e.1) (e.2)> (e.ex) (e.ey)>;
+ (('*' e.1) e.xpr1) (('*' e.2) e.xpr2) = <ContEq <Eq (e.1) (e.2)> (e.xpr1) (e.xpr2)>;
  () () = True;
  (e.xpr1) (e.xpr2) = False;
 }
