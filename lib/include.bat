@@ -26,7 +26,7 @@ goto :EOF
 
   if x"%PROGRAM%"==x"" goto :EOF
 
-  if exist erase out.tmp
+  if exist out.tmp erase out.tmp
 
   call "%SRPATH%\bin\srmake" %OPT% "%PROGRAM%.ref" 2>NUL
   echo Perform %OPT_TXT%:
