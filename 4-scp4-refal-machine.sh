@@ -24,7 +24,7 @@ fi
   SCP4/inref4p nemytykh-RefalMachine.ref
 )
 
-TMPSCP=SCP4
+export TMPSCP=SCP4
 
 ME=$0
 COUNT=13
