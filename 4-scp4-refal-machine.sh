@@ -16,7 +16,7 @@ fi
   if [ ! -e SCP4/scp4a ]; then
     cd SCP4
     srmake install.ref
-    ./install
+    ./install linux
     ./refcall.bat
     cd ..
   fi
