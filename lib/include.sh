@@ -2,7 +2,7 @@
 
 if [ -z "$SRPATH" ]; then
   echo Set SRPATH environment:
-  echo "  SRPATH=~/simple-refal $ME"
+  echo "  SRPATH=~/refal-5-lambda $ME"
   exit 1
 fi
 
@@ -20,7 +20,7 @@ run_test() {
 
   rm -f out.tmp
 
-  "$SRPATH/bin/srmake" $OPT "$PROGRAM.ref" 2>/dev/null
+  "$SRPATH/bin/srmake" $OPT "$PROGRAM" 2>/dev/null
   echo Perform $OPT_TXT:
 
   for i in $(seq $COUNT); do
@@ -33,10 +33,8 @@ run_test() {
 }
 
 run_test "" no-opt
-run_test "-X-OC" OC
-run_test "-X-OR" OR
-run_test "-X-ORC" ORC
+run_test "-X-OP" OP
+run_test "-X-OQ" OQ
 run_test "--scratch -X-Od" Od
-run_test "--scratch -X-OdC" OdC
-run_test "--scratch -X-OdR" OdR
-run_test "--scratch -X-OdRC" OdRC
+run_test "--scratch -X-OdP" OdP
+run_test "--scratch -X-OdQ" OdQ

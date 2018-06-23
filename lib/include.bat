@@ -1,6 +1,6 @@
 if x"%SRPATH%"==x"" (
   echo Set SRPATH environment:
-  echo   set SRPATH=C:\path\to\simpler-refal
+  echo   set SRPATH=C:\path\to\refal-5-lambda
   echo   %ME%
   goto :EOF
 )
@@ -8,13 +8,11 @@ if x"%SRPATH%"==x"" (
 if not x"%~1"==x"" set COUNT=%~1
 
 call :RUN_TEST "" no-opt
-call :RUN_TEST "-X-OC" OC
-call :RUN_TEST "-X-OR" OR
-call :RUN_TEST "-X-ORC" ORC
+call :RUN_TEST "-X-OP" OP
+call :RUN_TEST "-X-OQ" OQ
 call :RUN_TEST "--scratch -X-Od" Od
-call :RUN_TEST "--scratch -X-OdC" OdC
-call :RUN_TEST "--scratch -X-OdR" OdR
-call :RUN_TEST "--scratch -X-OdRC" OdRC
+call :RUN_TEST "--scratch -X-OdP" OdP
+call :RUN_TEST "--scratch -X-OdQ" OdQ
 
 erase *.exe *.rasl *.cpp *.obj *.o *.tds *.tmp
 
@@ -28,7 +26,7 @@ goto :EOF
 
   if exist out.tmp erase out.tmp
 
-  call "%SRPATH%\bin\srmake" %OPT% "%PROGRAM%.ref" 2>NUL
+  call "%SRPATH%\bin\srmake" %OPT% "%PROGRAM%" 2>NUL
   echo Perform %OPT_TXT%:
   for /L %%i in (1, 1, %COUNT%) do (
     echo %%i
