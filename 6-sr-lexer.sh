@@ -2,7 +2,6 @@
 
 ME=$0
 COUNT=13
-PROGRAM=nemytykh-random-program-generator
-ARGS=20
+PROGRAM=SR-Lexer
+ARGS=SR-Lexer.sref
 source lib/include.sh "$1"
-rm -f test-*.ref

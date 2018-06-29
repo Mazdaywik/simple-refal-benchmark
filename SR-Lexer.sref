@@ -5,6 +5,10 @@ $INCLUDE "LibraryEx";
 $EXTERN EscapeChar, EscapeString, CharFromNum, UnEscapeString-SR;
 
 $ENTRY Go {
+  = <Go1> <Go1> <Go1> <Go1> <Go1> <Go1> <Go1> <Go1> <Go1> <Go1>;
+}
+
+$ENTRY Go1 {
   = <ArgList>
   : {
       (e.ProgName)
