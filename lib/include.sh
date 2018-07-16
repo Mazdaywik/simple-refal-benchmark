@@ -20,7 +20,8 @@ run_test() {
 
   rm -f out.tmp
 
-  "$SRPATH/bin/srmake" $OPT "$PROGRAM" 2>/dev/null
+  "$SRPATH/bin/srmake" $OPT -X-OC "$PROGRAM" \
+    -X--log="log-$PROGRAM-$OPT_TXT.log" $CFLAGS 2>/dev/null
   echo Perform $OPT_TXT:
 
   for i in $(seq $COUNT); do

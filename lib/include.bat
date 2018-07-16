@@ -26,7 +26,8 @@ goto :EOF
 
   if exist out.tmp erase out.tmp
 
-  call "%SRPATH%\bin\srmake" %OPT% "%PROGRAM%" 2>NUL
+  call "%SRPATH%\bin\srmake" %OPT% -X-OC "%PROGRAM%" ^
+    -X--log="log-%PROGRAM%-%OPT_TXT%.log" %CFLAGS% 2>NUL
   echo Perform %OPT_TXT%:
   for /L %%i in (1, 1, %COUNT%) do (
     echo %%i
